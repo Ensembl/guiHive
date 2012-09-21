@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>guiHive -- Take control over your eHive production system!</title>
+
+<!-- Local CSS style -->
+<link rel="stylesheet" href="/styles/main.css" type="text/css" />
+
+<!-- Remote JQuery -->
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7/jquery.js"></script> 
+<script src="http://malsup.github.com/jquery.form.js"></script> 
+
+<!-- Local javascripts -->
+<script src="/javascript/main.js"></script>
+
+</head>
+<body>
+
+<header>
+A Graphic User Interface fot the eHive Production system!
+</header>
+
+<div class="db_connexion">
+  <form action="/home/mp/gocode/src/guiHive/scripts/db_connect.pl" id="db_connect" method="post">
+    URL: <input type="text" name="db_url" autocomplete="off" size="80"/><br />
+    <input type="submit" value="Connect" />
+  </form>
+</div>
+
+</div>
+<div id="connexion_msg">
+  <p>Connexion details</p>
+</div>
+
+<div class="pipeline_diagram">
+  <p>The diagram of the pipeline</p>
+</div>
+
+<div class="analysis_details">
+  <p>The details of an analysis</p>
+</div>
+
+<footer>
+Experimental version. Send comments to mp@ebi.ac.uk
+</footer>
+</body>
+
+</html>
