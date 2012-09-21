@@ -1,0 +1,32 @@
+/* Connexion Div */
+
+.db_connexion {
+    width            : 960px
+}
+
+#connexion_msg {
+    width            : 960px;
+    color            : navy;
+    background-color : pink;
+    border           : 2px solid darkblue;
+    padding          : 5px;
+}
+
+/* Diagram Div */
+.pipeline_diagram {
+    height           : 400px; 
+    width            : 960px;
+    color            : white;
+    background-color : grey;
+    border           : double;
+    padding          : 5px;
+}
+
+/* Analysis Div */
+.analysis_details {
+    width            : 960px;
+    color            : aqua;
+    background-color : olive;
+    border           : groove;
+    padding          : active;
+}
