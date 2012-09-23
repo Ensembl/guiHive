@@ -8,7 +8,6 @@
 
 <!-- Remote JQuery -->
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7/jquery.js"></script> 
-<script src="http://malsup.github.com/jquery.form.js"></script> 
 
 <!-- Local javascripts -->
 <script src="/javascript/main.js"></script>
@@ -21,10 +20,10 @@ A Graphic User Interface fot the eHive Production system!
 </header>
 
 <div class="db_connexion">
-  <form action="/home/mp/gocode/src/guiHive/scripts/db_connect.pl" id="db_connect" method="post">
-    URL: <input type="text" name="db_url" autocomplete="off" size="80"/><br />
-    <input type="submit" value="Connect" />
-  </form>
+ <form action="" id="db_connect" method="post">
+   URL: <input type="text" id="db_url" name="db_url" size="80"/><br />
+   <input type="button" value="Connect" id="Connect"/>
+ </form>
 </div>
 
 </div>
