@@ -3,35 +3,35 @@ package main
 import (
 	"fmt"
 	"net/http"
+//	"net/url"
 	"log"
-	"github.com/ziutek/mymysql/mysql"
-	_ "github.com/ziutek/mymysql/native" // Native engine
 )
 
 
 
 func handler(w http.ResponseWriter, r *http.Request) {
-    fmt.Fprintf(w, "Hi there, I love %s!", r.URL.Path[1:])
+	fmt.Fprintf(w, "Hi there, I love %s!", r.URL.Path[1:])
 }
 
-
-func connectMySQLServer() mysql.Conn {
-	db := mysql.New("tcp", "", "localhost:2912", "ensadmin", "ensembl", "mp12_compara_nctrees_69a")
-	err := db.Connect()
+func scriptHandler(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
-	return db
+	log.Println("METHOD: ", r.Method)
+	log.Println("URL: ", r.URL)
+	log.Println("BODY: ", r.Body)
+	log.Println("URL: ", r.Form)
+	log.Println("FORM: ", r.Form.Get("url"))
 }
 
 func main() {
 	relPath := ".."
-	http.HandleFunc("/",        handler)
-	http.Handle("/static/",     http.FileServer(http.Dir(relPath)))
-	http.Handle("/styles/",     http.FileServer(http.Dir(relPath)))
-	http.Handle("/javascript/", http.FileServer(http.Dir(relPath)))
-//	http.HandleFunc("/scripts/",serveScripts)
-//	err := http.ListenAndServe(":12345", http.FileServer(http.Dir("/home/mp/gocode/src/guiHive/static/")))
+	http.HandleFunc("/",         handler)
+	http.Handle("/static/",      http.FileServer(http.Dir(relPath)))
+	http.Handle("/styles/",      http.FileServer(http.Dir(relPath)))
+	http.Handle("/javascript/",  http.FileServer(http.Dir(relPath)))
+	http.HandleFunc("/scripts/", scriptHandler)
 	err := http.ListenAndServe(":12345", nil)
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
