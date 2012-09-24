@@ -7,8 +7,10 @@ use Bio::EnsEMBL::Hive::URLFactory;
 use JSON::XS;
 use Data::Dumper;
 
-my $url = shift @ARGV || 'mysql://ensadmin:ensembl@127.0.0.1:2912/mp12_compara_nctrees_69b';
+my $json_url = shift @ARGV || 'mysql://ensadmin:ensembl@127.0.0.1:2912/mp12_compara_nctrees_69b';
 
+my $url = decode_json($json_url)->{url}->[0];
+print STDERR Dumper $url;
 
 my $dbConn = Bio::EnsEMBL::Hive::URLFactory->fetch($url);
 my $response;
@@ -34,12 +36,12 @@ sub formResponse {
   my ($dbConn) = @_;
   my $resp;
   $resp .= "<p>";
-  $resp .= "DB name: ". $dbConn->dbc->dbname. "<br />\n";
-  $resp .= "Host: ". $dbConn->dbc->host. "<br />\n";
-  $resp .= "Port: ". $dbConn->dbc->port. "<br />\n";
-  $resp .= "Driver: ". $dbConn->dbc->driver. "<br />\n";
-  $resp .= "Username: ". $dbConn->dbc->username. "<br />\n";
-  $resp .= '<\p>';
+  $resp .= "DB name: ". $dbConn->dbc->dbname. "<br />";
+  $resp .= "Host: ". $dbConn->dbc->host. "<br />";
+  $resp .= "Port: ". $dbConn->dbc->port. "<br />";
+  $resp .= "Driver: ". $dbConn->dbc->driver. "<br />";
+  $resp .= "Username: ". $dbConn->dbc->username. "<br />";
+  $resp .= "</p>";
   return $resp;
 }
 
@@ -49,9 +51,11 @@ sub formError {
 
 sub formAnalyses {
   my ($all_analyses) = @_;
-  my $encoded_analyses;
+  my $encoded_analyses = "<p>";
   for my $analysis (@{$all_analyses}) {
-    push @$encoded_analyses, $analysis->logic_name();
+#    push @$encoded_analyses, $analysis->logic_name();
+      $encoded_analyses .= $analysis->logic_name(). "<br />";
   }
+  $encoded_analyses .= "</p>";
   return $encoded_analyses;
 }
