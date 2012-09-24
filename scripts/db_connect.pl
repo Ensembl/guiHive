@@ -4,15 +4,11 @@ use strict;
 use warnings;
 
 use Bio::EnsEMBL::Hive::URLFactory;
-use CGI::Pretty;
 use JSON::XS;
 use Data::Dumper;
 
-my $query = new CGI::Pretty;
+my $url = shift @ARGV || 'mysql://ensadmin:ensembl@127.0.0.1:2912/mp12_compara_nctrees_69b';
 
-my $url = $query->param('db_url') || 'mysql://ensadmin:ensembl@127.0.0.1:2912/mp12_compara_nctrees_69b';
-
-my $remotehost = $query->remote_host();
 
 my $dbConn = Bio::EnsEMBL::Hive::URLFactory->fetch($url);
 my $response;
