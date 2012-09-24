@@ -2,7 +2,7 @@
 // wait for the DOM to be loaded 
 $(document).ready(function() { 
     $("#Connect").click(function() {
-	$.ajax({url        : "/scripts/test.pl",
+	$.ajax({url        : "/scripts/db_connect.pl",
 		type       : "post",
 //		beforeSend : beforeFunc,
 		data       : "url=" + $("#db_url").val(),
