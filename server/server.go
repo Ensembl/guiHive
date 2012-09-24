@@ -3,11 +3,10 @@ package main
 import (
 	"fmt"
 	"net/http"
-//	"net/url"
 	"log"
-	"os"
 	"os/exec"
 	"encoding/json"
+	"bytes"
 )
 
 func checkError (err error) {
@@ -32,19 +31,28 @@ func scriptHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println("URL2: ", r.Form)
 	log.Println("FORM: ", r.Form.Get("url"))
 
+	var outMsg bytes.Buffer
+	var errMsg bytes.Buffer
+
 	fname := ".." + r.URL.Path
 	args, err := json.Marshal(r.Form)
+	checkError(err)
 	log.Printf("ARGS in Go side: %s", args)
-	checkError(err)
-	fh, err := os.Open(fname)
-	checkError(err)
-	defer fh.Close()
 
 	cmd := exec.Command(fname, string(args))
-	resp, err := cmd.Output()
-	checkError(err)
-	log.Printf("RESP: %s", resp)
-	fmt.Fprintf(w, string(resp))
+	cmd.Stdout = &outMsg
+	cmd.Stderr = &errMsg
+
+	if err := cmd.Start(); err != nil {
+		log.Fatal(err)
+	}
+	if err := cmd.Wait(); err != nil {
+		log.Fatal(err)
+	}
+	
+	log.Printf("OUTMSG: %s", outMsg.Bytes())
+	log.Printf("ERRMSG: %s", errMsg.Bytes())
+	fmt.Fprintf(w, string(outMsg.Bytes()))
 	
 }
 
