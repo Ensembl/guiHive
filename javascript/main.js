@@ -6,7 +6,7 @@ $(document).ready(function() {
 		type       : "post",
 		data       : "url=" + $("#db_url").val(),
 		success    : function(res) {
-		    var resObj = JSON.parse(res)
+		    var resObj = JSON.parse(res);
 		    $("#connexion_msg").html(resObj.status);
 		    $("#pipeline_diagram").html(resObj.analyses);
 		}});
