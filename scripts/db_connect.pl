@@ -7,10 +7,9 @@ use Bio::EnsEMBL::Hive::URLFactory;
 use JSON::XS;
 use Data::Dumper;
 
-my $json_url = shift @ARGV || 'mysql://ensadmin:ensembl@127.0.0.1:2912/mp12_compara_nctrees_69b';
+my $json_url = shift @ARGV || '{"url":["mysql://ensro@127.0.0.1:2912/mp12_compara_nctrees_69b"]}';
 
 my $url = decode_json($json_url)->{url}->[0];
-print STDERR Dumper $url;
 
 my $dbConn = Bio::EnsEMBL::Hive::URLFactory->fetch($url);
 my $response;
