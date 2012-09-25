@@ -39,15 +39,16 @@ func scriptHandler(w http.ResponseWriter, r *http.Request) {
 	checkError(err)
 	log.Printf("ARGS in Go side: %s", args)
 
+	log.Println("EXECUTING SCRIPT: ", fname)
 	cmd := exec.Command(fname, string(args))
 	cmd.Stdout = &outMsg
 	cmd.Stderr = &errMsg
 
 	if err := cmd.Start(); err != nil {
-		log.Fatal(err)
+		log.Fatal("Error Starting Command: ", err)
 	}
 	if err := cmd.Wait(); err != nil {
-		log.Fatal(err)
+		log.Fatal("Error Executing Command: ", err)
 	}
 	
 	log.Printf("OUTMSG: %s", outMsg.Bytes())
