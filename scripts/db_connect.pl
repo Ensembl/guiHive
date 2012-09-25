@@ -5,9 +5,11 @@ use warnings;
 
 use Bio::EnsEMBL::Hive::URLFactory;
 use JSON::XS;
+use HTML::Template;
 use Data::Dumper;
 
 my $json_url = shift @ARGV || '{"url":["mysql://ensro@127.0.0.1:2912/mp12_compara_nctrees_69b"]}';
+my $analyses_template = '../static/pipeline_diagram.html'; # use BASEDIR or something similar
 
 my $url = decode_json($json_url)->{url}->[0];
 
@@ -48,7 +50,7 @@ sub formError {
   return "I can't connect to the database: Please check the URL and try again";
 }
 
-sub formAnalyses {
+sub formAnalyses_ {
   my ($all_analyses) = @_;
   my $encoded_analyses = "<p>";
   for my $analysis (@{$all_analyses}) {
@@ -57,4 +59,11 @@ sub formAnalyses {
   }
   $encoded_analyses .= "</p>";
   return $encoded_analyses;
+}
+
+sub formAnalyses {
+    my ($all_analyses) = @_;
+    my $template = HTML::Template->new(filename => $analyses_template);
+    $template->param(analyses => [ map{ {logic_name => $_->logic_name} } @$all_analyses] );
+    return $template->output();
 }
