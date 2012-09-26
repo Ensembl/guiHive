@@ -10,6 +10,8 @@ use Data::Dumper;
 
 my ($json_data) = @ARGV || '{"url":["mysql://ensro@127.0.0.1:2912/mp12_compara_nctrees_69b"], "logic_name":["infernal"]}';
 my $details_template = "../static/analysis_details.html"; ## TODO: use BASEDIR or something similar
+print STDERR $json_data;
+exit(0);
 
 ## TODO: A better way to decode the json data into the appropriate variables
 my $url = decode_json($json_data)->{url}->[0];
@@ -26,11 +28,13 @@ if (defined $dbConn) {
   };
   if ($@) {
     # TODO: We can loose connection from the database. This should be handled better
-    die "Can't connect to database\n";
+    print STDERR "Can't connect to database\n";
+    exit(444);
   }
   if (! defined $analysis) {
     # TODO: This is unlikely to happen since the logic_name comes from the database. This should be handled better.
-    die "Can't find analysis\n";
+      print STDERR "Can't find analysis\n";
+      exit(555);
   }
 
   $response->{analysis_info} = formAnalysisInfo($analysis);
