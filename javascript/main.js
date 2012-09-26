@@ -5,15 +5,35 @@ $(document).ready(function() {
 	$.ajax({url        : "/scripts/db_connect.pl",
 		type       : "post",
 		data       : "url=" + $("#db_url").val(),
-		success    : function(res) {
-		    var resObj = JSON.parse(res);
-		    $("#connexion_msg").html(resObj.status);
-		    $("#pipeline_diagram").html(resObj.analyses);
-		}});
+		dataType   : "json",
+		beforeSend : onSend_dbconnect,
+		success    : onSuccess
+	       });
     });
 
 }); 
 
-function beforeFunc() {
-    alert("url=" + $("#db_url").val())
+// res is the JSON-encoded response from the server in the Ajax call
+function onSuccess(res) {
+    $("#connexion_msg").html(res.status);
+    $("#pipeline_diagram").html(res.analyses);
+    $(".analysis_link").click(function() {
+	$.ajax({url        : "/scripts/test.pl",
+//		beforeSend : onSend,
+		type       : "post",
+		data       : "logic_name=" + $(this).val(),
+		success    : function(resp) {
+		    alert(resp);
+		    $("#analysis_details").html(resp);
+		}
+	       });
+    });
+}
+
+function onSend_dbconnect() {
+    $('#connexion_msg').html('<img src="http://static.tumblr.com/d0qlne1/qVol4tb08/loading.gif" />');
+}
+
+function onSend(req, settings) {
+    alert(req);
 }
