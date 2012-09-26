@@ -64,6 +64,6 @@ sub formAnalyses_ {
 sub formAnalyses {
     my ($all_analyses) = @_;
     my $template = HTML::Template->new(filename => $analyses_template);
-    $template->param(analyses => [ map{ {logic_name => $_->logic_name} } @$all_analyses] );
+    $template->param(analyses => [ map{ {logic_name_id => $_->logic_name, logic_name => $_->logic_name} } @$all_analyses] );
     return $template->output();
 }
