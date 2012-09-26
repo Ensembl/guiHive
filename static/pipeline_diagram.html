@@ -1,5 +1,9 @@
-<table border=1>
+<table border=0>
   <TMPL_LOOP NAME=analyses>
-    <tr><td><TMPL_VAR NAME=logic_name></td></tr>
+    <tr>
+      <td>
+	<button class="analysis_link" type="button" id="<TMPL_VAR NAME=logic_name_id>"><TMPL_VAR NAME=logic_name></button>
+    </td>
+    </tr>
   </TMPL_LOOP>
 </table>
