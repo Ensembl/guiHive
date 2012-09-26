@@ -50,17 +50,6 @@ sub formError {
   return "I can't connect to the database: Please check the URL and try again";
 }
 
-sub formAnalyses_ {
-  my ($all_analyses) = @_;
-  my $encoded_analyses = "<p>";
-  for my $analysis (@{$all_analyses}) {
-#    push @$encoded_analyses, $analysis->logic_name();
-      $encoded_analyses .= $analysis->logic_name(). "<br />";
-  }
-  $encoded_analyses .= "</p>";
-  return $encoded_analyses;
-}
-
 sub formAnalyses {
     my ($all_analyses) = @_;
     my $template = HTML::Template->new(filename => $analyses_template);
