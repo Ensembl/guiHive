@@ -9,9 +9,9 @@ import (
 	"bytes"
 )
 
-func checkError (err error) {
+func checkError (s string, err error, ss ...string) {
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("%s: %s [%s]\n",s, err, ss)
 	}
 }
 
@@ -21,7 +21,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 func scriptHandler(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()
-	checkError(err)
+	checkError("Can't parse Form", err)
 
 	log.Println("METHOD: ", r.Method)
 	log.Println("URL: ", r.URL)
@@ -29,14 +29,13 @@ func scriptHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println("PATH: ", r.URL.Path)
 	log.Println("BODY: ", r.Body)
 	log.Println("URL2: ", r.Form)
-	log.Println("FORM: ", r.Form.Get("url"))
 
 	var outMsg bytes.Buffer
 	var errMsg bytes.Buffer
 
 	fname := ".." + r.URL.Path
 	args, err := json.Marshal(r.Form)
-	checkError(err)
+	checkError("Can't Marshal JSON:", err)
 	log.Printf("ARGS in Go side: %s", args)
 
 	log.Println("EXECUTING SCRIPT: ", fname)
