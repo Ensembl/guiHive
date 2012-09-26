@@ -18,10 +18,11 @@ function onSuccess(res) {
     $("#connexion_msg").html(res.status);
     $("#pipeline_diagram").html(res.analyses);
     $(".analysis_link").click(function() {
-	$.ajax({url        : "/scripts/test.pl",
-//		beforeSend : onSend,
+	$.ajax({url        : "/scripts/db_fetch_analyis.pl",
+		beforeSend : onSend,
 		type       : "post",
-		data       : "logic_name=" + $(this).val(),
+		// TODO: Reading again from URL here?? What if it changed?
+		data       : "url=" + $("#db_url").val() + ",logic_name=" + this.id,
 		success    : function(resp) {
 		    alert(resp);
 		    $("#analysis_details").html(resp);
@@ -36,5 +37,5 @@ function onSend_dbconnect() {
 }
 
 function onSend(req, settings) {
-    alert(req);
+    alert(JSON.stringify(this));
 }
