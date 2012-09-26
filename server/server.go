@@ -62,6 +62,7 @@ func main() {
 	http.Handle("/static/",      http.FileServer(http.Dir(relPath)))
 	http.Handle("/styles/",      http.FileServer(http.Dir(relPath)))
 	http.Handle("/javascript/",  http.FileServer(http.Dir(relPath)))
+	http.Handle("/images/",      http.FileServer(http.Dir(relPath)))
 	http.HandleFunc("/scripts/", scriptHandler)
 	err := http.ListenAndServe(":12345", nil)
 	if err != nil {
