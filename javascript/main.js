@@ -31,7 +31,8 @@ function onSuccess(res) {
 }
 
 function onSend_dbconnect() {
-    $('#connexion_msg').html('<img src="http://static.tumblr.com/d0qlne1/qVol4tb08/loading.gif" />');
+//    $('#connexion_msg').html('<img src="http://static.tumblr.com/d0qlne1/qVol4tb08/loading.gif" />');
+    $('#connexion_msg').html('<img src="../images/preloader.gif" width="40px" height="40px"/>');
 }
 
 function onSend(req, settings) {
