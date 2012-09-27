@@ -1,3 +1,5 @@
+// Globally defined
+var url = "";
 
 // wait for the DOM to be loaded 
 $(document).ready(function() { 
@@ -17,15 +19,19 @@ $(document).ready(function() {
 function onSuccess(res) {
     $("#connexion_msg").html(res.status);
     $("#pipeline_diagram").html(res.analyses);
+    url = $("#db_url").val();
     $(".analysis_link").click(function() {
 	$.ajax({url        : "/scripts/db_fetch_analyis.pl",
-		beforeSend : onSend,
+//		beforeSend : onSend,
 		type       : "post",
-		// TODO: Reading again from URL here?? What if it changed?
-		data       : "url=" + $("#db_url").val() + ",logic_name=" + this.id,
+		dataType   : "json",
+		data       : "url=" + url + "&logic_name=" + this.id,
 		success    : function(resp) {
-		    alert(resp);
-		    $("#analysis_details").html(resp);
+		    if (resp.status == "ok") {
+			$("#analysis_details").html(resp.analysis_info);	
+		    } else {
+			$("#connexion_msg").html(resp.status);
+		    }
 		}
 	       });
     });

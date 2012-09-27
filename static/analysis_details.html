@@ -1,11 +1,29 @@
 <table border=0>
   <tr>
-    <td> id: <TMPL_VAR NAME=id> </td>
-    <td> logic_name: <TMPL_VAR NAME=logic_name> </td>
-    <td> module: <TMPL_VAR NAME=module> </td>
-    <td> parameters: <TMPL_VAR NAME=parameters> </td>
-    <td> priority: <TMPL_VAR NAME=priority> </td>
-    <td> batch size: <TMPL_VAR NAME=batch_size> </td>
-    <td> can be empty: <TMPL_VAR NAME=can_be_empty> </td>
-    <td> resource class id: <TMPL_VAR NAME=resource_class_id> </td>
+    <td> analysis id:</td><td><TMPL_VAR NAME=id> </td>
+  </tr>
+  <tr>
+    <td> logic_name:</td><td><TMPL_VAR NAME=logic_name> </td>
+  </tr>
+  <tr>
+    <td> module:</td><td><TMPL_VAR NAME=module> </td>
+  </tr>
+  <tr>
+    <td> parameters:</td><td><pre><TMPL_VAR NAME=parameters></pre></td>
+  </tr>
+  <tr>
+    <td> Hive capacity:</td><td><input type="text" size="5" value="<TMPL_VAR NAME=hive_capacity" name="<TMPL_VAR NAME=hive_capacity>" /></td>
+  </tr>
+  <tr>
+    <td> priority:</td><td><TMPL_VAR NAME=priority> </td>
+  </tr>
+  <tr>
+    <td> batch size:</td><td><TMPL_VAR NAME=batch_size> </td>
+  </tr>
+  <tr>
+    <td> can be empty:</td><td><TMPL_VAR NAME=can_be_empty> </td>
+  </tr>
+  <tr>
+    <td> resource class id:</td><td><TMPL_VAR NAME=resource_class_id> </td>
+  </tr>
 </table>
