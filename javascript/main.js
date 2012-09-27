@@ -21,7 +21,7 @@ function onSuccess(res) {
     $("#pipeline_diagram").html(res.analyses);
     url = $("#db_url").val();
     $(".analysis_link").click(function() {
-	$.ajax({url        : "/scripts/db_fetch_analyis.pl",
+	$.ajax({url        : "/scripts/db_fetch_analysis.pl",
 //		beforeSend : onSend,
 		type       : "post",
 		dataType   : "json",
