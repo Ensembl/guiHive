@@ -48,18 +48,28 @@ sub formAnalysisInfo {
   my ($analysis) = @_;
   my $analysis_stats = $analysis->stats();
 
-  my $parameters = $analysis->parameters();
-  $parameters =~ s/,/,<br \/>/g;
   my $info;
-  $info->{logic_name}        = "analysis/" . $analysis->logic_name();
-  $info->{module}            = "analysis/" . $analysis->module();
-  $info->{parameters}        = "analysis/" . $parameters, #$analysis->parameters();
-  $info->{id}                = "analysis/" . $analysis->dbID();
-  $info->{priority}          = "analysis_stats/" . $analysis_stats->priority();
-  $info->{batch_size}        = "analysis_stats/" . $analysis_stats->batch_size();
-  $info->{can_be_empty}      = "analysis_stats/" . $analysis_stats->can_be_empty();
-  $info->{resource_class_id} = "anslysis_stats/" . $analysis_stats->resource_class_id();
-  $info->{hive_capacity}     = "analysis_stats/" . $analysis_stats->hive_capacity();
+  $info->{logic_name}        = $analysis->logic_name();
+  $info->{module}            = $analysis->module();
+  $info->{parameters}        = template_mappings_PARAMS($analysis,
+							"parameters");
+  $info->{id}                = $analysis->dbID();
+  $info->{priority}          = template_mappings_SELECT($analysis_stats,
+							"priority",
+							build_values({1=>[0,20]}));
+
+  $info->{batch_size}        = template_mappings_SELECT($analysis_stats,
+							"batch_size",
+							build_values({1=>[0,9],10=>[10,90],100=>[100,1000]}));
+
+  $info->{can_be_empty}      = template_mappings_SELECT($analysis_stats,
+							"can_be_empty",
+							build_values({1=>[0,1]}));
+
+  $info->{resource_class_id} = $analysis_stats->resource_class_id();
+  $info->{hive_capacity}     = template_mappings_SELECT($analysis_stats,
+							"hive_capacity",
+							build_values({1=>[-1,9],10=>[10,90],100=>[100,1000]}));
 
   my $template = HTML::Template->new(filename => $details_template);
   $template->param(%$info);
@@ -67,3 +77,30 @@ sub formAnalysisInfo {
   return $template->output();
 }
 
+sub template_mappings_SELECT {
+  my ($obj, $method, $vals) = @_;
+  my $curr_val = $obj->$method;
+  return [map {{is_current => $curr_val == $_, $method."_value" => $_}} @$vals];
+}
+
+sub template_mappings_PARAMS {
+  my ($obj, $method) = @_;
+  my $curr_raw_val = $obj->$method;
+  my $curr_val = eval $curr_raw_val;
+  my $vals;
+  for my $param (keys %$curr_val) {
+    push @$vals, {"key" => $param, "value" => $curr_val->{$param}};
+  }
+  return $vals;
+}
+
+sub build_values {
+  my ($ranges) = @_;
+  my @vals;
+  for my $step (keys %$ranges) {
+    for (my $i = $ranges->{$step}->[0]; $i <= $ranges->{$step}->[1]; $i+=$step) {
+      push @vals, $i;
+    }
+  }
+  return [@vals];
+}
