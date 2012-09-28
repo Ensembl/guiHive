@@ -1,29 +1,68 @@
 <table border=0>
   <tr>
-    <td> analysis id:</td><td><TMPL_VAR NAME=id> </td>
+    <td> Analysis ID:</td><td><TMPL_VAR NAME=id> </td>
   </tr>
   <tr>
-    <td> logic_name:</td><td><TMPL_VAR NAME=logic_name> </td>
+    <td> Analysis name:</td><td><TMPL_VAR NAME=logic_name> </td>
   </tr>
   <tr>
-    <td> module:</td><td><TMPL_VAR NAME=module> </td>
+    <td> Module:</td><td><TMPL_VAR NAME=module> </td>
   </tr>
   <tr>
-    <td> parameters:</td><td><pre><TMPL_VAR NAME=parameters></pre></td>
+    <td> Parameters:</td>
+    <td>
+      <table border=0>
+	<TMPL_LOOP NAME=parameters>
+	  <tr>
+	    <td><TMPL_VAR NAME=key></td>
+	    <td><TMPL_VAR NAME=value></td>
+	    <td><button id="parameters" name="<TMPL_VAR NAME=id>" value="<TMPL_VAR NAME=key>" class="delete_param" >-</button></td>
+	  </tr>
+	</TMPL_LOOP>
+      </table>
+    </td>
   </tr>
   <tr>
-    <td> Hive capacity:</td><td><input type="text" size="5" value="<TMPL_VAR NAME=hive_capacity>" name="<TMPL_VAR NAME=hive_capacity>" /></td>
+    <td> Hive capacity:</td>
+    <td>
+      <select size="1" id="hive_capacity" name="<TMPL_VAR NAME=id>" class="set_val"> 
+	<TMPL_LOOP NAME=hive_capacity>
+	  <option <TMPL_IF NAME=is_current>selected </TMPL_IF>value="<TMPL_VAR NAME=hive_capacity_value>"><TMPL_VAR NAME=hive_capacity_value></option>
+	</TMPL_LOOP>
+      </select>
+    </td>
   </tr>
   <tr>
-    <td> priority:</td><td><TMPL_VAR NAME=priority> </td>
+    <td> Priority:</td>
+    <td>
+      <select size="1" id="priority" name="<TMPL_VAR NAME=id>" class="set_val">
+	<TMPL_LOOP NAME=priority>
+	  <option <TMPL_IF NAME=is_current>selected </TMPL_IF>value="<TMPL_VAR NAME=priority_value>"><TMPL_VAR NAME=priority_value></option>
+	</TMPL_LOOP>
+      </select>
+    </td>
   </tr>
   <tr>
-    <td> batch size:</td><td><TMPL_VAR NAME=batch_size> </td>
+    <td> Batch size:</td>
+    <td>
+      <select size="1" id="batch_size" name="<TMPL_VAR NAME=id>" class="set_val">
+	<TMPL_LOOP NAME=batch_size>
+	  <option <TMPL_IF NAME=is_current>selected </TMPL_IF>value="<TMPL_VAR NAME=batch_size_value>"><TMPL_VAR NAME=batch_size_value></option>
+	</TMPL_LOOP>
+      </select>
+    </td>
   </tr>
   <tr>
-    <td> can be empty:</td><td><TMPL_VAR NAME=can_be_empty> </td>
+    <td> Can be empty:</td>
+    <td>
+      <select size="1" id="can_be_empty" name="<TMPL_VAR NAME=id>" class="set_val">
+	<TMPL_LOOP NAME=can_be_empty>
+	  <option <TMPL_IF NAME=is_current>selected </TMPL_IF>value="<TMPL_VAR NAME=can_be_empty_value>"><TMPL_VAR NAME=can_be_empty_value></option>
+	</TMPL_LOOP>
+      </select>
+    </td>
   </tr>
   <tr>
-    <td> resource class id:</td><td><TMPL_VAR NAME=resource_class_id> </td>
+    <td> Resource class ID:</td><td><TMPL_VAR NAME=resource_class_id> </td>
   </tr>
 </table>
