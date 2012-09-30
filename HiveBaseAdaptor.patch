@@ -1,0 +1,11 @@
+--- modules/Bio/EnsEMBL/Hive/DBSQL/BaseAdaptor.pm.~1.14.~	2012-09-12 15:50:53.000000000 +0100
++++ modules/Bio/EnsEMBL/Hive/DBSQL/BaseAdaptor.pm	2012-09-29 02:08:38.000000000 +0100
+@@ -240,7 +240,7 @@
+         die "There are no dependent columns to update, as everything seems to belong to the primary key";
+     }
+ 
+-    my $sql = "UPDATE $table_name SET ".join(', ', map { "$columns_to_update->[$_]=$values_to_update->[$_]" } (0..@$columns_to_update-1) )." WHERE $primary_key_constraint";
++    my $sql = "UPDATE $table_name SET ".join(', ', map { "$columns_to_update->[$_]='$values_to_update->[$_]'" } (0..@$columns_to_update-1) )." WHERE $primary_key_constraint";
+     my $sth = $self->prepare($sql);
+     $sth->execute();
+     $sth->finish();
