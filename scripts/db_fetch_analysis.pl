@@ -8,6 +8,9 @@ use JSON::XS;
 use HTML::Template;
 use Data::Dumper;
 
+use lib "../scripts/lib";
+use msg;
+
 my $json_data = shift @ARGV || '{"url":["mysql://ensro@127.0.0.1:2912/mp12_compara_nctrees_69b"], "logic_name":["infernal"]}';
 my $details_template = "../static/analysis_details.html"; ## TODO: use BASEDIR or something similar
 
@@ -16,10 +19,7 @@ my $logic_name = decode_json($json_data)->{logic_name}->[0];
 
 my $dbConn = Bio::EnsEMBL::Hive::URLFactory->fetch($url);
 
-my $response = {
-		status => "ok",
-		analysis_info => "",
-	       };
+my $response = msg->new();
 
 if (defined $dbConn) {
   my $analysis;
@@ -27,22 +27,18 @@ if (defined $dbConn) {
     $analysis = $dbConn->get_AnalysisAdaptor()->fetch_by_logic_name_or_url($logic_name);
   };
   if ($@) {
-    $response->{status} = formError();
+      $response->status("I can't retrieve analysis with logic name $logic_name: $@");
   }
   if (! defined $analysis) {
-    $response->{status} = formError();
+      $response->status("I can't retrieve analysis with logic name $logic_name from the database");
   }
-  $response->{analysis_info} = formAnalysisInfo($analysis);
+  $response->out_msg(formAnalysisInfo($analysis));
 } else {
-  $response->{status} = formError();
+    $response->status("I have lost connection with the database\n")
 }
 
-my $json = JSON::XS->new->indent(0);
-print $json->encode($response);
+print $response->toJSON;
 
-sub formError {
-  return "I have lost connection to the database. Please connect again";
-}
 
 sub formAnalysisInfo {
   my ($analysis) = @_;
@@ -52,7 +48,7 @@ sub formAnalysisInfo {
   $info->{logic_name}        = $analysis->logic_name();
   $info->{module}            = $analysis->module();
   $info->{parameters}        = template_mappings_PARAMS($analysis,
-							"parameters");
+							"parameters", $analysis->dbID);
   $info->{id}                = $analysis->dbID();
   $info->{priority}          = template_mappings_SELECT($analysis_stats,
 							"priority",
@@ -84,12 +80,12 @@ sub template_mappings_SELECT {
 }
 
 sub template_mappings_PARAMS {
-  my ($obj, $method) = @_;
+  my ($obj, $method, $id) = @_;
   my $curr_raw_val = $obj->$method;
   my $curr_val = eval $curr_raw_val;
   my $vals;
   for my $param (keys %$curr_val) {
-    push @$vals, {"key" => $param, "value" => $curr_val->{$param}};
+    push @$vals, {"id" => $id, "key" => $param, "value" => $curr_val->{$param}};
   }
   return $vals;
 }
