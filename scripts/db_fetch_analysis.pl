@@ -62,7 +62,7 @@ sub formAnalysisInfo {
 							"can_be_empty",
 							build_values({1=>[0,1]}));
 
-  $info->{resource_class_id} = $analysis_stats->resource_class_id();
+  $info->{resource_class_id} = $analysis->resource_class_id();
   $info->{hive_capacity}     = template_mappings_SELECT($analysis_stats,
 							"hive_capacity",
 							build_values({1=>[-1,9],10=>[10,90],100=>[100,1000]}));
