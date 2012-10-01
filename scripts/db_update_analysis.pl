@@ -4,12 +4,14 @@ use strict;
 use warnings;
 
 use Bio::EnsEMBL::Hive::URLFactory;
+use Bio::EnsEMBL::Hive::Utils qw/stringify destringify/;
+
 use JSON::XS;
 
 use Data::Dumper;
 $Data::Dumper::Useqq=1;
 
-use lib "../scripts/lib";
+use lib "./scripts/lib";
 use msg;
 
 my $json_data = shift @ARGV || '{"action":["delete_param"],"analysis_id":["40"],"column_name":["parameters"],"newval":["mlss_id"],"url":["mysql://ensro@127.0.0.1:2912/mp12_compara_nctrees_69b"]}'; #'{"url":["mysql://ensro@127.0.0.1:2912/mp12_compara_nctrees_69b"], "column_name":["parameters"], "analysis_id":["27"], "newval":["cmalign_exe"], "action":["del_param"]}';
@@ -67,11 +69,9 @@ sub del_param {
   my ($obj, $method, $key) = @_;
   # TODO: This pattern is a good candidate for abstraction
   my $curr_raw_parameters = $obj->$method;
-  my $curr_parameters = eval $curr_raw_parameters;
+  my $curr_parameters = Bio::EnsEMBL::Hive::Utils->destringify($curr_raw_parameters);
   delete $curr_parameters->{$key};
-  my $new_raw_parameters = sprintf("%s", Dumper $curr_parameters);
-  $new_raw_parameters =~ s/\s*\$VAR1\s*=\s*//; # Is there a better way for this?
-  $new_raw_parameters =~ s/;$//;
+  my $new_raw_parameters = Bio::EnsEMBL::Hive::Utils->stringify($curr_parameters);
   $obj->parameters($new_raw_parameters);
   eval { $obj->adaptor->update($obj) };
   if ($@) {
