@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 
 use strict;
 use warnings;
@@ -7,8 +7,12 @@ use Bio::EnsEMBL::Hive::URLFactory;
 use JSON::XS;
 
 use Data::Dumper;
+$Data::Dumper::Useqq=1;
 
-my $json_data = shift @ARGV || '{"url":["mysql://ensadmin:ensembl@127.0.0.1:2912/mp12_compara_nctrees_69b"], "column_name":["hive_capacity"], "analysis_id":["20"], "newval":["100"], "action=["set_val"]}';
+use lib "../scripts/lib";
+use msg;
+
+my $json_data = shift @ARGV || '{"action":["delete_param"],"analysis_id":["40"],"column_name":["parameters"],"newval":["mlss_id"],"url":["mysql://ensro@127.0.0.1:2912/mp12_compara_nctrees_69b"]}'; #'{"url":["mysql://ensro@127.0.0.1:2912/mp12_compara_nctrees_69b"], "column_name":["parameters"], "analysis_id":["27"], "newval":["cmalign_exe"], "action":["del_param"]}';
 
 ## TODO: BETTER WAY TO DEAL WITH DECODING OF JSON
 my $url = decode_json($json_data)->{url}->[0];
@@ -19,86 +23,59 @@ my $action = decode_json($json_data)->{action}->[0];
 
 my $dbConn = Bio::EnsEMBL::Hive::URLFactory->fetch($url);
 
-my $response = {
-		status => "ok",
-	       };
-
-
 my $actions = {
-	       'set_val' => &set_val,
-	       'del_param' => &del_param,
+	       'set_val' => \&set_val,
+	       'delete_param' => \&del_param,
 	      };
-
-
 
 my $adaptor_name;
 
-sub set_val {
-  my ($obj, $column_name, $newval) = @_;
-  my $response_status = {
-			 status => "ok",
-			};
-  eval { $obj->column_name($newval) };
-  if ($@) {
-    $response->{status} = $@;
-  } else {
-    my $adaptor = $obj->adaptor();
-    eval { $adaptor->update($analysis); };
-    if ($@) {
-      $response->{status} = $@;
+my $response = msg->new();
+
+if (defined $dbConn) {
+    my $analysis = $dbConn->get_AnalysisAdaptor->fetch_by_analysis_id($analysis_id);
+    my $analysis_stats = $analysis->stats();
+
+    if ($analysis->can($column_name)) {
+	$response->status($actions->{$action}->($analysis, $column_name, $newval)); ## Check that the action exists first
+    } elsif ($analysis_stats->can($column_name)) {
+	$response->status($actions->{$action}->($analysis_stats, $column_name, $newval)); ## Check that the action exists first
+    } else {
+	$response->status("$column_name is not a valid method in Analysis or AnalysisStats");
     }
+} else {
+    $response->status("Error connecting to the database. Please try to connect again");
+}
+
+print $response->toJSON();
+
+sub set_val {
+  my ($obj, $method, $newval) = @_;
+  eval { $obj->$method($newval) };
+  if ($@) {
+      return "Error calling method $method: $@";
   }
-  return $response_status;
+  my $adaptor = $obj->adaptor();
+  eval { $adaptor->update($obj); };
+  if ($@) {
+      return "Error writing in the database: $@";
+  }
+  return;
 }
 
 sub del_param {
-  my ($adaptor_name, $obj) = @_;
-  
-}
-
-if (defined $dbConn) {
-  my $analysis = $dbConn->get_AnalysisAdaptor->fetch_by_analysis_id($analysis_id);
-  my $analysis_stats = $analysis->stats;
-
-  if ($analysis->can($column_name)) {
-    $response_status = $actions->{$analysis}
-    eval { $analysis->$column_name($newval) };
-    if ($@) {
-      $response->{status} = $@;
-    } else {
-      my $adaptor = $analysis->adaptor();
-      eval {
-	$adaptor->update($analysis);
-      };
-      if ($@) {
-	$response->{status} = $@;
-      }
-    }
-
-  } elsif ($analysis_stats->can($column_name)) {
-    $adaptor_name = "AnalysisStats";
-    eval { $analysis_stats->$column_name($newval) };
-    if ($@) {
-      $response->{status} = $@;
-    } else {
-      my $adaptor_method = "get_${adaptor_name}Adaptor";
-      my $adaptor = $dbConn->$adaptor_method;
-      eval {
-	$adaptor->update($analysis_stats);
-      };
-      if ($@) {
-	$response->{status} = $@;
-      }
-    }
-  } else {
-    ## Something wrong happened. This shouldn't be reached
-    $response->{status} = "$column_name is not a valid column!";
+  my ($obj, $method, $key) = @_;
+  # TODO: This pattern is a good candidate for abstraction
+  my $curr_raw_parameters = $obj->$method;
+  my $curr_parameters = eval $curr_raw_parameters;
+  delete $curr_parameters->{$key};
+  my $new_raw_parameters = sprintf("%s", Dumper $curr_parameters);
+  $new_raw_parameters =~ s/\s*\$VAR1\s*=\s*//; # Is there a better way for this?
+  $new_raw_parameters =~ s/;$//;
+  $obj->parameters($new_raw_parameters);
+  eval { $obj->adaptor->update($obj) };
+  if ($@) {
+      return "Error writing to the database: $@";
   }
-
-} else {
-  $response->{status} = "I have lost connection to the database. Please connect again";
+  return;
 }
-
-my $json = JSON::XS->new->indent(0);
-print $json->encode($response);
-
