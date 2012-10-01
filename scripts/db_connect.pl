@@ -8,11 +8,10 @@ use JSON::XS;
 use HTML::Template;
 use Data::Dumper;
 
-use lib "../scripts/lib/";
 use msg;
 
 my $json_url = shift @ARGV || '{"url":["mysql://ensro@127.0.0.1:2912/mp12_compara_nctrees_69b"]}';
-my $analyses_template = '../static/pipeline_diagram.html'; # use BASEDIR or something similar
+my $analyses_template = $ENV{GUIHIVE_BASEDIR} . 'static/pipeline_diagram.html';
 
 my $url = decode_json($json_url)->{url}->[0];
 

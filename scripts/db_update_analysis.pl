@@ -8,20 +8,16 @@ use Bio::EnsEMBL::Hive::Utils qw/stringify destringify/;
 
 use JSON::XS;
 
-use Data::Dumper;
-$Data::Dumper::Useqq=1;
-
-use lib "../scripts/lib";
 use msg;
 
 my $json_data = shift @ARGV || '{"action":["delete_param"],"analysis_id":["40"],"column_name":["parameters"],"newval":["mlss_id"],"url":["mysql://ensro@127.0.0.1:2912/mp12_compara_nctrees_69b"]}'; #'{"url":["mysql://ensro@127.0.0.1:2912/mp12_compara_nctrees_69b"], "column_name":["parameters"], "analysis_id":["27"], "newval":["cmalign_exe"], "action":["del_param"]}';
 
-## TODO: BETTER WAY TO DEAL WITH DECODING OF JSON
-my $url = decode_json($json_data)->{url}->[0];
-my $analysis_id = decode_json($json_data)->{analysis_id}->[0];
-my $column_name = decode_json($json_data)->{column_name}->[0];
-my $newval = decode_json($json_data)->{newval}->[0];
-my $action = decode_json($json_data)->{action}->[0];
+my $var = decode_json($json_data);
+my $url = $var->{url}->[0];
+my $analysis_id = $var->{analysis_id}->[0];
+my $column_name = $var->{column_name}->[0];
+my $newval = $var->{newval}->[0];
+my $action = $var->{action}->[0];
 
 my $dbConn = Bio::EnsEMBL::Hive::URLFactory->fetch($url);
 

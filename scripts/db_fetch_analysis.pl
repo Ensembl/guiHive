@@ -8,14 +8,14 @@ use JSON::XS;
 use HTML::Template;
 use Data::Dumper;
 
-use lib "../scripts/lib";
 use msg;
 
 my $json_data = shift @ARGV || '{"url":["mysql://ensro@127.0.0.1:2912/mp12_compara_nctrees_69b"], "logic_name":["infernal"]}';
-my $details_template = "../static/analysis_details.html"; ## TODO: use BASEDIR or something similar
+my $details_template = $ENV{GUIHIVE_BASEDIR} . "static/analysis_details.html"; ## TODO: use BASEDIR or something similar
 
-my $url = decode_json($json_data)->{url}->[0];
-my $logic_name = decode_json($json_data)->{logic_name}->[0];
+my $var = decode_json($json_data);
+my $url = $var->{url}->[0];
+my $logic_name = $var->{logic_name}->[0];
 
 my $dbConn = Bio::EnsEMBL::Hive::URLFactory->fetch($url);
 

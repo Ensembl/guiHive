@@ -1,9 +1,14 @@
+// Copyright 2012 Miguel Pignatelli. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
 package main
 
 import (
 	"fmt"
 	"net/http"
 	"log"
+	"os"
 	"os/exec"
 	"encoding/json"
 	"bytes"
@@ -23,12 +28,12 @@ func scriptHandler(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()
 	checkError("Can't parse Form", err)
 
-	log.Println("METHOD: ", r.Method)
-	log.Println("URL: ", r.URL)
-	log.Println("FRAGMENT: ", r.URL.Fragment)
-	log.Println("PATH: ", r.URL.Path)
-	log.Println("BODY: ", r.Body)
-	log.Println("URL2: ", r.Form)
+	debug("METHOD: ", r.Method)
+	debug("URL: ", r.URL)
+	debug("FRAGMENT: ", r.URL.Fragment)
+	debug("PATH: ", r.URL.Path)
+	debug("BODY: ", r.Body)
+	debug("URL2: ", r.Form)
 
 	var outMsg bytes.Buffer
 	var errMsg bytes.Buffer
@@ -36,9 +41,9 @@ func scriptHandler(w http.ResponseWriter, r *http.Request) {
 	fname := ".." + r.URL.Path
 	args, err := json.Marshal(r.Form)
 	checkError("Can't Marshal JSON:", err)
-	log.Printf("ARGS in Go side: %s", args)
+	debug("ARGS in Go side: %s", args)
 
-	log.Println("EXECUTING SCRIPT: ", fname)
+	debug("EXECUTING SCRIPT: ", fname)
 	cmd := exec.Command(fname, string(args))
 	cmd.Stdout = &outMsg
 	cmd.Stderr = &errMsg
@@ -50,13 +55,48 @@ func scriptHandler(w http.ResponseWriter, r *http.Request) {
 		log.Fatal("Error Executing Command: ", err)
 	}
 	
-	log.Printf("OUTMSG: %s", outMsg.Bytes())
-	log.Printf("ERRMSG: %s", errMsg.Bytes())
+	debug("OUTMSG: %s", outMsg.Bytes())
+	debug("ERRMSG: %s", errMsg.Bytes())
 	fmt.Fprintf(w, string(outMsg.Bytes()))
 	
 }
 
+func setEnvVar() error {
+	workingDirectory, err := os.Getwd()
+	if err != nil {
+		return err
+	}
+	debug("WORKING_DIRECTORY: %s\n", workingDirectory)
+
+	// PER5LIB
+	perl5lib := os.Getenv("PERL5LIB")
+	if perl5lib == "" {
+		perl5lib = fmt.Sprintf("%s../scripts/lib", workingDirectory)
+	} else {
+		perl5lib = fmt.Sprintf("%s:%s/../scripts/lib", perl5lib, workingDirectory)
+	}
+	debug("PERL5LIB: %s\n", perl5lib)
+	err = os.Setenv("PERL5LIB", perl5lib)
+	if err != nil {
+		return err
+	}
+
+	//GUIHIVE_BASEDIR
+	if err := os.Setenv("GUIHIVE_BASEDIR", fmt.Sprintf("%s/../", workingDirectory)); err != nil {
+		return err
+	}
+	// TODO: Unset && clean on exit??
+	debug("GUIHIVE_BASEDIR: %s", os.Getenv("GUIHIVE_BASEDIR"))
+
+	return nil
+}
+
 func main() {
+
+	//  Fix environmental variables
+	errV := setEnvVar()
+	checkError("Problem setting environmental variables: ", errV);
+
 	relPath := ".."
 	http.HandleFunc("/",         handler)
 	http.Handle("/static/",      http.FileServer(http.Dir(relPath)))
@@ -65,7 +105,5 @@ func main() {
 	http.Handle("/images/",      http.FileServer(http.Dir(relPath)))
 	http.HandleFunc("/scripts/", scriptHandler)
 	err := http.ListenAndServe(":12345", nil)
-	if err != nil {
-		log.Fatal("ListenAndServe: ", err)
-	}
+	checkError("ListenAndServe ", err)
 }
