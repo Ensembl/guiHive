@@ -11,7 +11,7 @@ use JSON::XS;
 use Data::Dumper;
 $Data::Dumper::Useqq=1;
 
-use lib "./scripts/lib";
+use lib "../scripts/lib";
 use msg;
 
 my $json_data = shift @ARGV || '{"action":["delete_param"],"analysis_id":["40"],"column_name":["parameters"],"newval":["mlss_id"],"url":["mysql://ensro@127.0.0.1:2912/mp12_compara_nctrees_69b"]}'; #'{"url":["mysql://ensro@127.0.0.1:2912/mp12_compara_nctrees_69b"], "column_name":["parameters"], "analysis_id":["27"], "newval":["cmalign_exe"], "action":["del_param"]}';
