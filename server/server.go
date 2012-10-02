@@ -12,7 +12,19 @@ import (
 	"os/exec"
 	"encoding/json"
 	"bytes"
+	"flag"
 )
+
+var (
+	port string
+)
+
+
+
+func init () {
+	flag.StringVar(&port, "port", "12345", "Port to listen (defaults to 12345)")
+	flag.Parse()
+}
 
 func checkError (s string, err error, ss ...string) {
 	if err != nil {
@@ -104,6 +116,7 @@ func main() {
 	http.Handle("/javascript/",  http.FileServer(http.Dir(relPath)))
 	http.Handle("/images/",      http.FileServer(http.Dir(relPath)))
 	http.HandleFunc("/scripts/", scriptHandler)
-	err := http.ListenAndServe(":12345", nil)
+	debug("Listening to port: %s", port)
+	err := http.ListenAndServe(":"+port, nil)
 	checkError("ListenAndServe ", err)
 }
