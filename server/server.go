@@ -40,12 +40,12 @@ func scriptHandler(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()
 	checkError("Can't parse Form", err)
 
-	debug("METHOD: ", r.Method)
-	debug("URL: ", r.URL)
-	debug("FRAGMENT: ", r.URL.Fragment)
-	debug("PATH: ", r.URL.Path)
-	debug("BODY: ", r.Body)
-	debug("URL2: ", r.Form)
+	debug("METHOD: %s", r.Method)
+	debug("URL: %s", r.URL)
+	debug("FRAGMENT: %s", r.URL.Fragment)
+	debug("PATH: %s", r.URL.Path)
+	debug("BODY: %s", r.Body)
+	debug("URL2: %s", r.Form)
 
 	var outMsg bytes.Buffer
 	var errMsg bytes.Buffer
@@ -55,7 +55,7 @@ func scriptHandler(w http.ResponseWriter, r *http.Request) {
 	checkError("Can't Marshal JSON:", err)
 	debug("ARGS in Go side: %s", args)
 
-	debug("EXECUTING SCRIPT: ", fname)
+	debug("EXECUTING SCRIPT: %s", fname)
 	cmd := exec.Command(fname, string(args))
 	cmd.Stdout = &outMsg
 	cmd.Stderr = &errMsg
