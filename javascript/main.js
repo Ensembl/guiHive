@@ -5,6 +5,7 @@ var url = "";
 $(document).ready(function() { 
     // Default value. Only for testing. TODO: Remove the following line
     $("#db_url").val("mysql://ensro@127.0.0.1:2912/mp12_compara_nctrees_69b");
+    // Keep the log scroll always at bottom
     $("#Connect").click(function() {
 	$.ajax({url        : "/scripts/db_connect.pl",
 		type       : "post",
@@ -17,10 +18,21 @@ $(document).ready(function() {
 
 }); 
 
+// There seems not to be good ways to automatically fire methods
+// when a div has change. This is a bit ugly, but other alternatives doesn't look
+// promising either. Anyway, we can implement something like:
+// http://stackoverflow.com/questions/3233991/jquery-watch-div/3234646#3234646
+// or (non-IE, AFAIK):
+// http://stackoverflow.com/questions/4979738/fire-jquery-event-on-div-change
+function scroll_down() {
+    $("#log").scrollTop($("#log").height()+10000000); // TODO: Try to avoid this arbitrary addition
+}
+
 // res is the JSON-encoded response from the server in the Ajax call
 function onSuccess_dbConnect(res) {
     $("#connexion_msg").html(res.status);
     $("#pipeline_diagram").html(res.out_msg);
+    $("#log").append(res.err_msg); scroll_down();
     url = $("#db_url").val();
     $(".analysis_link").click(function() {
 	$.ajax({url        : "/scripts/db_fetch_analysis.pl",
@@ -37,6 +49,7 @@ function onSuccess_fetchAnalysis(analysisRes) {
     if(analysisRes.status == "ok") {
 	$("#analysis_details").html(analysisRes.out_msg);
     } else {
+	$("#log").append(analysisRes.err_msg); scroll_down();
 	$("#connexion_msg").html(analysisRes.status);
     }
     $(".set_val").change(analysisRes, update_db);
@@ -50,7 +63,7 @@ function update_db(e) {
 	    dataType   : "json",
 	    success    : function(updateRes) {
 		if(updateRes.status != "ok") {
-		    alert(updateRes.status);
+		    $("#log").append(updateRes.err_msg); scroll_down();
 		}
 		complete: onSuccess_fetchAnalysis(e.data);
 	    }

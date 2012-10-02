@@ -24,13 +24,15 @@ if (defined $dbConn) {
     $all_analyses = $dbConn->get_AnalysisAdaptor()->fetch_all();
   };
   if ($@) {
-      $response->status("I can't get all the analysis from the database: $@");
+      $response->err_msg("I can't get all the analysis from the database:\n$@");
+      $response->status("FAILED");
   } else {
       $response->status(formResponse($dbConn));
       $response->out_msg(formAnalyses($all_analyses));
   }
 } else {
-    $response->status("I can't connect to the database. Please, check the URL and try again");
+    $response->err_msg("The provided URL seems to be invalid. Please check the URL and try again\n");
+    $response->status("FAILED");
 }
 
 print $response->toJSON();

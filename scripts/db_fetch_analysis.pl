@@ -27,14 +27,17 @@ if (defined $dbConn) {
     $analysis = $dbConn->get_AnalysisAdaptor()->fetch_by_logic_name_or_url($logic_name);
   };
   if ($@) {
-      $response->status("I can't retrieve analysis with logic name $logic_name: $@");
+    $response->err_msg("I can't retrieve analysis with logic name $logic_name: $@");
+    $response->status("");
   }
   if (! defined $analysis) {
-      $response->status("I can't retrieve analysis with logic name $logic_name from the database");
+      $response->err_msg("I can't retrieve analysis with logic name $logic_name from the database");
+      $response->status("FAILED");
   }
   $response->out_msg(formAnalysisInfo($analysis));
 } else {
-    $response->status("I have lost connection with the database\n")
+  $response->err_msg("I have lost connection with the database\n");
+  $response->status("FAILED");
 }
 
 print $response->toJSON;

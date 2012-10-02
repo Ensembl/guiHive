@@ -35,14 +35,18 @@ if (defined $dbConn) {
     my $analysis_stats = $analysis->stats();
 
     if ($analysis->can($column_name)) {
-	$response->status($actions->{$action}->($analysis, $column_name, $newval)); ## Check that the action exists first
+	$response->err_msg($actions->{$action}->($analysis, $column_name, $newval)); ## Check that the action exists first
+	$response->status($response->err_msg);
     } elsif ($analysis_stats->can($column_name)) {
-	$response->status($actions->{$action}->($analysis_stats, $column_name, $newval)); ## Check that the action exists first
+	$response->err_msg($actions->{$action}->($analysis_stats, $column_name, $newval)); ## Check that the action exists first
+	$response->status($response->err_msg);
     } else {
-	$response->status("$column_name is not a valid method in Analysis or AnalysisStats");
+	$response->err_msg("$column_name is not a valid method in Analysis or AnalysisStats");
+	$response->status("FAILED");
     }
 } else {
-    $response->status("Error connecting to the database. Please try to connect again");
+    $response->err_msg("Error connecting to the database. Please try to connect again");
+    $response->status("FAILED");
 }
 
 print $response->toJSON();

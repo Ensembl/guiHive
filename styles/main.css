@@ -12,6 +12,15 @@
     padding          : 5px;
 }
 
+/* Log div */ 
+#log {
+    width            : 960px;
+    color            : white;
+    background-color : black;
+    overflow         : auto;
+    max-height       : 100px;
+}
+
 /* Diagram Div */
 .pipeline_diagram {
     width            : 960px;
