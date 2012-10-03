@@ -48,11 +48,23 @@ sub formAnalysisInfo {
   my $analysis_stats = $analysis->stats();
 
   my $info;
+  $info->{id}                = $analysis->dbID();
   $info->{logic_name}        = $analysis->logic_name();
-  $info->{module}            = $analysis->module();
+  $info->{module}            = [
+				{module  => $analysis->module(),
+				 id      => $analysis->dbID(),
+				 adaptor => "analysisAdaptor",
+				 method  => "module",
+				}
+			       ];
+
   $info->{parameters}        = template_mappings_PARAMS($analysis,
 							"parameters", $analysis->dbID);
-  $info->{id}                = $analysis->dbID();
+
+  $info->{hive_capacity}     = template_mappings_SELECT($analysis_stats,
+							"hive_capacity",
+							build_values({1=>[-1,9],10=>[10,90],100=>[100,1000]}));
+
   $info->{priority}          = template_mappings_SELECT($analysis_stats,
 							"priority",
 							build_values({1=>[0,20]}));
@@ -66,9 +78,6 @@ sub formAnalysisInfo {
 							build_values({1=>[0,1]}));
 
   $info->{resource_class_id} = $analysis->resource_class_id();
-  $info->{hive_capacity}     = template_mappings_SELECT($analysis_stats,
-							"hive_capacity",
-							build_values({1=>[-1,9],10=>[10,90],100=>[100,1000]}));
 
   my $template = HTML::Template->new(filename => $details_template);
   $template->param(%$info);
@@ -79,7 +88,11 @@ sub formAnalysisInfo {
 sub template_mappings_SELECT {
   my ($obj, $method, $vals) = @_;
   my $curr_val = $obj->$method;
-  return [map {{is_current => $curr_val == $_, $method."_value" => $_}} @$vals];
+  return [{id                   => $obj->analysis_id,
+	   adaptor              => "analysisStatsAdaptor",
+	   method               => $method,
+	   values => [map {{is_current => $curr_val == $_, $method."_value" => $_}} @$vals]
+	  }];
 }
 
 sub template_mappings_PARAMS {
@@ -88,7 +101,12 @@ sub template_mappings_PARAMS {
   my $curr_val = eval $curr_raw_val;
   my $vals;
   for my $param (keys %$curr_val) {
-    push @$vals, {"id" => $id, "key" => $param, "value" => $curr_val->{$param}};
+    push @$vals, {"key"     => $param,
+		  "value"   => $curr_val->{$param},
+		  "id"      => $obj->dbID,
+		  "adaptor" => "analysisAdaptor",
+		  "method"  => "delete_param",
+		 };
   }
   return $vals;
 }
