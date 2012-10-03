@@ -5,7 +5,6 @@ var url = "";
 $(document).ready(function() { 
     // Default value. Only for testing. TODO: Remove the following line
     $("#db_url").val("mysql://ensro@127.0.0.1:2912/mp12_compara_nctrees_69b");
-    // Keep the log scroll always at bottom
     $("#Connect").click(function() {
 	$.ajax({url        : "/scripts/db_connect.pl",
 		type       : "post",
@@ -52,14 +51,19 @@ function onSuccess_fetchAnalysis(analysisRes) {
 	$("#log").append(analysisRes.err_msg); scroll_down();
 	$("#connexion_msg").html(analysisRes.status);
     }
-    $(".set_val").change(analysisRes, update_db);
-    $(".delete_param").click(analysisRes, update_db);
+    $(".update_param").change(analysisRes, update_db);
+    $(".update_param").click (analysisRes, update_db);
 }
 
 function update_db(e) {
     $.ajax({url        : "/scripts/db_update_analysis.pl",
 	    type       : "post",
-	    data       : "url=" + url + "&newval=" + this.value + "&column_name=" + this.id + "&analysis_id=" + this.name + "&action=" + $(this).attr("class"),
+	    data       : "url="+url + 
+                         "&newval="+this.value + 
+                         "&analysis_id="+$(this).attr("data-analysisID") + 
+                         "&adaptor="+$(this).attr("data-adaptor") + 
+                         "&method="+$(this).attr("data-method") + 
+                         "&action="+$(this).attr("data-action"),
 	    dataType   : "json",
 	    success    : function(updateRes) {
 		if(updateRes.status != "ok") {
