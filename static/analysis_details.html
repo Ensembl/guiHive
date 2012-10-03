@@ -24,29 +24,45 @@
     <td>
       <table border=1>
 	<TMPL_LOOP NAME=parameters>
-	  <tr>
-	    <td><TMPL_VAR NAME=key></td>
-	    <td><TMPL_VAR NAME=value></td>
-	    <td><button value="<TMPL_VAR NAME=key>"
-			class="update_param"
-			data-analysisID="<TMPL_VAR NAME=id>"
-			data-adaptor="<TMPL_VAR NAME=adaptor>"
-			data-method="<TMPL_VAR NAME=method>"
-			data-action="delete">-</button>
-	    </td>
-	  </tr>
+	  <TMPL_LOOP NAME=existing_parameters>
+	    <tr>
+	      <td><TMPL_VAR NAME=key></td>
+	      <td><input id="<TMPL_VAR NAME=parameterValueID>"
+			 type="text" 
+			 size=60
+			 value="<TMPL_VAR NAME=value>">
+	      </td>
+	      <TMPL_LOOP NAME=change_parameter>
+		<td><button class="update_param"
+			    data-analysisID="<TMPL_VAR NAME=id>"
+			    data-adaptor="<TMPL_VAR NAME=adaptor>"
+			    data-method="<TMPL_VAR NAME=method>"
+			    data-action="delete">-</button>
+		</td>
+	      </TMPL_LOOP> <!-- change_paramter -->
+	      <TMPL_LOOP NAME=delete_parameter>
+		<td><button class="update_param"
+			  data-analysisID="<TMPL_VAR NAME=id>"
+			    data-adaptor="<TMPL_VAR NAME=adaptor>"
+			    data-method="<TMPL_VAR NAME=method>"
+			    data-action="change">+</button>
+		</td>
+	      </TMPL_LOOP> <!-- delete_parameter -->
+	    </tr>
+	  </TMPL_LOOP> <!-- existing_parameters -->
+	  <TMPL_LOOP NAME=new_parameter>
+	    <tr>
+	      <td><input type="text" size=20></td>
+	      <td><input type="text" size=60></td>
+	      <td><button class="update_param"
+			  data-analysisID="<TMPL_VAR NAME=id>"
+			  data-adaptor="<TMPL_VAR NAME=adaptor>"
+			  data-method="<TMPL_VAR NAME=method>"
+			  data-action="add">+</button>
+	      </td>
+	    </tr>
+	  </TMPL_LOOP>
 	</TMPL_LOOP>
-	<tr>
-	  <td><input type="text" size=20></td>
-	  <td><input type="text" size=60></td>
-	  <td><button value="<TMPL_VAR NAME=key>,<TMPL_VAR NAME=value>"
-		      class="update_param"
-		      data-analysisID="<TMPL_VAR NAME=id>"
-		      data-adaptor="<TMPL_VAR NAME=adaptor>"
-		      data-method="<TMPL_VAR NAME=method>"
-		      data-action="add">+</button>
-	  </td>
-	</tr>
       </table>
     </td>
   </tr>

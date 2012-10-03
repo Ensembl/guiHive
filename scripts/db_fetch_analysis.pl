@@ -101,12 +101,16 @@ sub template_mappings_PARAMS {
   my $curr_val = eval $curr_raw_val;
   my $vals;
   for my $param (keys %$curr_val) {
-    push @$vals, {"key"     => $param,
-		  "value"   => $curr_val->{$param},
-		  "id"      => $obj->dbID,
-		  "adaptor" => "analysisAdaptor",
-		  "method"  => "delete_param",
-		 };
+    push @{$vals->{delete_parameter}}, {"key"     => $param,
+					"id"      => $obj->dbID,
+					"adaptor" => "analysisAdaptor",
+					"method"  => "delete_param",
+    };
+    push @{$vals->{change_parameter}}, {"key"     => $param,
+					"id"      => $obj->dbID,
+					"adaptor" => "analysisAdaptor",
+					"method"  => "add_param",
+    };   
   }
   return $vals;
 }
