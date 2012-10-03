@@ -6,21 +6,46 @@
     <td> Analysis name:</td><td><TMPL_VAR NAME=logic_name> </td>
   </tr>
   <tr>
-    <td> Module:</td><td><TMPL_VAR NAME=module> </td>
+    <td> Module:</td>
+    <td><TMPL_LOOP NAME=module>
+	<input type="text"
+	       size=80
+	       value="<TMPL_VAR NAME=module>"
+	       class="update_param"
+	       data-analysisID="<TMPL_VAR NAME=id>"
+	       data-adaptor="<TMPL_VAR NAME=adaptor>"
+	       data-method="<TMPL_VAR NAME=method>"
+	       data-action="update">
+      </TMPL_LOOP>
+    </td>
   </tr>
   <tr>
     <td> Parameters:</td>
     <td>
-      <table border=0>
+      <table border=1>
 	<TMPL_LOOP NAME=parameters>
 	  <tr>
 	    <td><TMPL_VAR NAME=key></td>
 	    <td><TMPL_VAR NAME=value></td>
-	    <td><button id="parameters" name="<TMPL_VAR NAME=id>" value="<TMPL_VAR NAME=key>" class="delete_param" >-</button></td>
+	    <td><button value="<TMPL_VAR NAME=key>"
+			class="update_param"
+			data-analysisID="<TMPL_VAR NAME=id>"
+			data-adaptor="<TMPL_VAR NAME=adaptor>"
+			data-method="<TMPL_VAR NAME=method>"
+			data-action="delete">-</button>
+	    </td>
 	  </tr>
 	</TMPL_LOOP>
 	<tr>
-	  <td></td>
+	  <td><input type="text" size=20></td>
+	  <td><input type="text" size=60></td>
+	  <td><button value="<TMPL_VAR NAME=key>,<TMPL_VAR NAME=value>"
+		      class="update_param"
+		      data-analysisID="<TMPL_VAR NAME=id>"
+		      data-adaptor="<TMPL_VAR NAME=adaptor>"
+		      data-method="<TMPL_VAR NAME=method>"
+		      data-action="add">+</button>
+	  </td>
 	</tr>
       </table>
     </td>
@@ -28,41 +53,69 @@
   <tr>
     <td> Hive capacity:</td>
     <td>
-      <select size="1" id="hive_capacity" name="<TMPL_VAR NAME=id>" class="set_val"> 
-	<TMPL_LOOP NAME=hive_capacity>
-	  <option <TMPL_IF NAME=is_current>selected </TMPL_IF>value="<TMPL_VAR NAME=hive_capacity_value>"><TMPL_VAR NAME=hive_capacity_value></option>
-	</TMPL_LOOP>
-      </select>
+      <TMPL_LOOP NAME=hive_capacity>
+	<select size="1"
+		class="update_param"
+		data-analysisID="<TMPL_VAR NAME=id>"
+		data-adaptor="<TMPL_VAR NAME=adaptor>"
+		data-method="<TMPL_VAR NAME=method>"
+		data-action="update">
+	  <TMPL_LOOP NAME=values>
+	    <option <TMPL_IF NAME=is_current>selected </TMPL_IF>value="<TMPL_VAR NAME=hive_capacity_value>"><TMPL_VAR NAME=hive_capacity_value></option>
+	  </TMPL_LOOP>
+	</select>
+      </TMPL_LOOP>
     </td>
   </tr>
   <tr>
     <td> Priority:</td>
     <td>
-      <select size="1" id="priority" name="<TMPL_VAR NAME=id>" class="set_val">
-	<TMPL_LOOP NAME=priority>
-	  <option <TMPL_IF NAME=is_current>selected </TMPL_IF>value="<TMPL_VAR NAME=priority_value>"><TMPL_VAR NAME=priority_value></option>
-	</TMPL_LOOP>
-      </select>
+      <TMPL_LOOP NAME=priority>
+	<select size="1"
+		class="update_param"
+		data-analysisID="<TMPL_VAR NAME=id>"
+		data-adaptor="<TMPL_VAR NAME=adaptor>"
+		data-method="<TMPL_VAR NAME=method>"
+		data-action="update">
+	  <TMPL_LOOP NAME=values>
+	    <option <TMPL_IF NAME=is_current>selected </TMPL_IF>value="<TMPL_VAR NAME=priority_value>"><TMPL_VAR NAME=priority_value></option>
+	  </TMPL_LOOP>
+	</select>
+      </TMPL_LOOP>
     </td>
   </tr>
   <tr>
     <td> Batch size:</td>
     <td>
-      <select size="1" id="batch_size" name="<TMPL_VAR NAME=id>" class="set_val">
-	<TMPL_LOOP NAME=batch_size>
-	  <option <TMPL_IF NAME=is_current>selected </TMPL_IF>value="<TMPL_VAR NAME=batch_size_value>"><TMPL_VAR NAME=batch_size_value></option>
-	</TMPL_LOOP>
-      </select>
+      <TMPL_LOOP NAME=batch_size>
+	<select size="1" 
+		class="update_param"
+		data-analysisID="<TMPL_VAR NAME=id>"
+		data-adaptor="<TMPL_VAR NAME=adaptor>"
+		data-method="<TMPL_VAR NAME=method>"
+		data-action="update">
+	  <TMPL_LOOP NAME=values>
+	    <option <TMPL_IF NAME=is_current>selected </TMPL_IF>value="<TMPL_VAR NAME=batch_size_value>"><TMPL_VAR NAME=batch_size_value></option>
+	  </TMPL_LOOP>
+	</select>
+      </TMPL_LOOP>
     </td>
   </tr>
   <tr>
     <td> Can be empty:</td>
     <td>
-      <select size="1" id="can_be_empty" name="<TMPL_VAR NAME=id>" class="set_val">
-	<TMPL_LOOP NAME=can_be_empty>
-	  <option <TMPL_IF NAME=is_current>selected </TMPL_IF>value="<TMPL_VAR NAME=can_be_empty_value>"><TMPL_VAR NAME=can_be_empty_value></option>
-	</TMPL_LOOP>
-      </select>
+      <TMPL_LOOP NAME=can_be_empty>
+	<select size="1"
+		class="update_param"
+		data-analysisID="<TMPL_VAR NAME=id>"
+		data-adaptor="<TMPL_VAR NAME=adaptor>"
+		data-method="<TMPL_VAR NAME=method>"
+		data-action="update">
+	  <TMPL_LOOP NAME=values>
+	    <option <TMPL_IF NAME=is_current>selected </TMPL_IF>value="<TMPL_VAR NAME=can_be_empty_value>"><TMPL_VAR NAME=can_be_empty_value></option>
+	  </TMPL_LOOP>
+	</select>
+      </TMPL_LOOP>
     </td>
   </tr>
   <tr>
