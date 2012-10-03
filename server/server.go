@@ -28,7 +28,7 @@ func init () {
 
 func checkError (s string, err error, ss ...string) {
 	if err != nil {
-		log.Fatalf("%s: %s [%s]\n",s, err, ss)
+		log.Printf("%s: %s [%s]\n",s, err, ss)
 	}
 }
 
@@ -61,10 +61,10 @@ func scriptHandler(w http.ResponseWriter, r *http.Request) {
 	cmd.Stderr = &errMsg
 
 	if err := cmd.Start(); err != nil {
-		log.Fatal("Error Starting Command: ", err)
+		log.Println("Error Starting Command: ", err)
 	}
 	if err := cmd.Wait(); err != nil {
-		log.Fatal("Error Executing Command: ", err)
+		log.Println("Error Executing Command: ", err)
 	}
 	
 	debug("OUTMSG: %s", outMsg.Bytes())
