@@ -10,7 +10,7 @@ use Data::Dumper;
 
 use msg;
 
-my $json_data = shift @ARGV || '{"url":["mysql://ensro@127.0.0.1:2912/mp12_compara_nctrees_69b"], "logic_name":["infernal"]}';
+my $json_data = shift @ARGV || '{"url":["mysql://ensadmin:ensembl@127.0.0.1:2912/mp12_compara_nctrees_69a2"], "logic_name":["CAFE_species_tree"]}';
 my $details_template = $ENV{GUIHIVE_BASEDIR} . "static/analysis_details.html"; ## TODO: use BASEDIR or something similar
 
 my $var = decode_json($json_data);
@@ -59,7 +59,8 @@ sub formAnalysisInfo {
 			       ];
 
   $info->{parameters}        = template_mappings_PARAMS($analysis,
-							"parameters", $analysis->dbID);
+							"parameters",
+							$analysis->dbID);
 
   $info->{hive_capacity}     = template_mappings_SELECT($analysis_stats,
 							"hive_capacity",
@@ -85,6 +86,18 @@ sub formAnalysisInfo {
   return $template->output();
 }
 
+sub module_mappings {
+  my ($obj, $method) = @_;
+  my $module = $obj->$method;
+  return [
+	  {"module"  => $module,
+	   "id"      => $obj->dbID,
+	   "adaptor" => "analysis",
+	   "method"  => "module",
+	  }
+	 ];
+}
+
 sub template_mappings_SELECT {
   my ($obj, $method, $vals) = @_;
   my $curr_val = $obj->$method;
@@ -96,23 +109,51 @@ sub template_mappings_SELECT {
 }
 
 sub template_mappings_PARAMS {
-  my ($obj, $method, $id) = @_;
+  my ($obj, $method) = @_;
   my $curr_raw_val = $obj->$method;
   my $curr_val = eval $curr_raw_val;
   my $vals;
+  my $adaptor = "analysisAdaptor";
+  my $i = 0;
   for my $param (keys %$curr_val) {
-    push @{$vals->{delete_parameter}}, {"key"     => $param,
-					"id"      => $obj->dbID,
-					"adaptor" => "analysisAdaptor",
-					"method"  => "delete_param",
-    };
-    push @{$vals->{change_parameter}}, {"key"     => $param,
-					"id"      => $obj->dbID,
-					"adaptor" => "analysisAdaptor",
-					"method"  => "add_param",
-    };   
+#    print STDERR "PARAM: $param\n";
+    push @{$vals->{existing_parameters}}, {
+					   "key"              => $param,
+					   "parameterKeyID"   => "p_$param",
+					   "parameterValueID" => "v_$param",
+					   "value"            => stringify_if_needed($curr_val->{$param}),
+					  };
+
+    push @{$vals->{existing_parameters}->[$i]->{delete_parameter}}, {"id"             => $obj->dbID,
+								     "adaptor"        => $adaptor,
+								     "method"         => "delete_param",
+								     "parameterKeyID" => "p_$param",
+								    };
+    push @{$vals->{existing_parameters}->[$i]->{change_parameter}}, {"id"               => $obj->dbID,
+								     "adaptor"          => $adaptor,
+								     "method"           => "add_param",
+								     "parameterKeyID"   => "p_$param",
+								     "parameterValueID" => "v_$param",
+								    };
+    $i++;
   }
-  return $vals;
+  $vals->{new_parameter} = [{"id"      => $obj->dbID,
+			    "adaptor" => $adaptor,
+			    "method"  => "add_param",
+			   }],
+  return [$vals];
+}
+
+sub stringify_if_needed {
+  my ($scalar) = @_;
+  if (ref $scalar) {
+    local $Data::Dumper::Indent    = 0;  # we want everything on one line
+    local $Data::Dumper::Terse     = 1;  # and we want it without dummy variable names
+    local $Data::Dumper::Sortkeys  = 1;  # make stringification more deterministic
+
+    return Dumper($scalar);
+  }
+  return $scalar;
 }
 
 sub build_values {

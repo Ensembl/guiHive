@@ -7,16 +7,27 @@
   </tr>
   <tr>
     <td> Module:</td>
-    <td><TMPL_LOOP NAME=module>
-	<input type="text"
-	       size=80
-	       value="<TMPL_VAR NAME=module>"
-	       class="update_param"
-	       data-analysisID="<TMPL_VAR NAME=id>"
-	       data-adaptor="<TMPL_VAR NAME=adaptor>"
-	       data-method="<TMPL_VAR NAME=method>"
-	       data-action="update">
-      </TMPL_LOOP>
+    <td>
+      <table border=1>
+	<TMPL_LOOP NAME=module>
+	  <tr>
+	    <td>
+	      <input type="text"
+		     size=87
+		     id="moduleName"
+		     value="<TMPL_VAR NAME=module>"
+		     data-value="<TMPL_VAR NAME=module>">
+	    </td>
+	    <td><button class="update_param"
+			data-analysisID="<TMPL_VAR NAME=id>"
+			data-adaptor="<TMPL_VAR NAME=adaptor>"
+			data-method="<TMPL_VAR NAME=method>"
+			data-action="change"
+			data-linkTo="moduleName">+</button>
+	    </td>
+	  </tr>
+	</TMPL_LOOP>
+      </table>
     </td>
   </tr>
   <tr>
@@ -26,10 +37,17 @@
 	<TMPL_LOOP NAME=parameters>
 	  <TMPL_LOOP NAME=existing_parameters>
 	    <tr>
-	      <td><TMPL_VAR NAME=key></td>
+	      <td>
+		<span id="<TMPL_VAR NAME=parameterKeyID>"
+		      size=30
+		      data-value="<TMPL_VAR NAME=key>">
+		  <TMPL_VAR NAME=key>
+		</span>
+	      </td>
 	      <td><input id="<TMPL_VAR NAME=parameterValueID>"
 			 type="text" 
 			 size=60
+			 data-value="<TMPL_VAR NAME=value>"
 			 value="<TMPL_VAR NAME=value>">
 	      </td>
 	      <TMPL_LOOP NAME=change_parameter>
@@ -37,32 +55,35 @@
 			    data-analysisID="<TMPL_VAR NAME=id>"
 			    data-adaptor="<TMPL_VAR NAME=adaptor>"
 			    data-method="<TMPL_VAR NAME=method>"
-			    data-action="delete">-</button>
+			    data-action="change"
+			    data-linkTo="<TMPL_VAR NAME=parameterKeyID>,<TMPL_VAR NAME=parameterValueID>">+</button>
 		</td>
 	      </TMPL_LOOP> <!-- change_paramter -->
 	      <TMPL_LOOP NAME=delete_parameter>
 		<td><button class="update_param"
-			  data-analysisID="<TMPL_VAR NAME=id>"
+			    data-analysisID="<TMPL_VAR NAME=id>"
 			    data-adaptor="<TMPL_VAR NAME=adaptor>"
 			    data-method="<TMPL_VAR NAME=method>"
-			    data-action="change">+</button>
+			    data-action="delete"
+			    data-linkTo="<TMPL_VAR NAME=parameterKeyID>">-</button>
 		</td>
 	      </TMPL_LOOP> <!-- delete_parameter -->
 	    </tr>
 	  </TMPL_LOOP> <!-- existing_parameters -->
 	  <TMPL_LOOP NAME=new_parameter>
 	    <tr>
-	      <td><input type="text" size=20></td>
-	      <td><input type="text" size=60></td>
+	      <td><input type="text" size=20 id="p_new_key"></td>
+	      <td><input type="text" size=60 id="p_new_value"></td>
 	      <td><button class="update_param"
 			  data-analysisID="<TMPL_VAR NAME=id>"
 			  data-adaptor="<TMPL_VAR NAME=adaptor>"
 			  data-method="<TMPL_VAR NAME=method>"
-			  data-action="add">+</button>
+			  data-action="add"
+			  data-linkTo="p_new_key,p_new_value">+</button>
 	      </td>
 	    </tr>
-	  </TMPL_LOOP>
-	</TMPL_LOOP>
+	  </TMPL_LOOP> <!-- new parameter -->
+	</TMPL_LOOP> <!-- parameters -->
       </table>
     </td>
   </tr>
@@ -77,7 +98,12 @@
 		data-method="<TMPL_VAR NAME=method>"
 		data-action="update">
 	  <TMPL_LOOP NAME=values>
-	    <option <TMPL_IF NAME=is_current>selected </TMPL_IF>value="<TMPL_VAR NAME=hive_capacity_value>"><TMPL_VAR NAME=hive_capacity_value></option>
+	    <option
+	       <TMPL_IF NAME=is_current>selected</TMPL_IF>
+	       value="<TMPL_VAR NAME=hive_capacity_value>"
+		 data-value="<TMPL_VAR NAME=hive_capacity_value>">
+	      <TMPL_VAR NAME=hive_capacity_value>
+	    </option>
 	  </TMPL_LOOP>
 	</select>
       </TMPL_LOOP>
@@ -94,7 +120,10 @@
 		data-method="<TMPL_VAR NAME=method>"
 		data-action="update">
 	  <TMPL_LOOP NAME=values>
-	    <option <TMPL_IF NAME=is_current>selected </TMPL_IF>value="<TMPL_VAR NAME=priority_value>"><TMPL_VAR NAME=priority_value></option>
+	    <option <TMPL_IF NAME=is_current>selected</TMPL_IF>
+		    value="<TMPL_VAR NAME=priority_value>"
+		    data-value="<TMPL_VAR NAME=priority_value>">
+	      <TMPL_VAR NAME=priority_value></option>
 	  </TMPL_LOOP>
 	</select>
       </TMPL_LOOP>

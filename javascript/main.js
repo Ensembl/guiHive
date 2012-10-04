@@ -45,35 +45,58 @@ function onSuccess_dbConnect(res) {
 
 // res is the JSON-encoded response from the server in the Ajax call
 function onSuccess_fetchAnalysis(analysisRes) {
+    var analysis = this;
     if(analysisRes.status == "ok") {
 	$("#analysis_details").html(analysisRes.out_msg);
     } else {
 	$("#log").append(analysisRes.err_msg); scroll_down();
 	$("#connexion_msg").html(analysisRes.status);
     }
-    $(".update_param").change(analysisRes, update_db);
-    $(".update_param").click (analysisRes, update_db);
+    $(".update_param").change(analysis, update_db);
+    $(".update_param").click (analysis, update_db);
 }
 
-function update_db(e) {
+function update_db(obj) {
+    var analysis = obj;
     $.ajax({url        : "/scripts/db_update_analysis.pl",
 	    type       : "post",
-	    data       : "url="+url + 
-                         "&newval="+this.value + 
-                         "&analysis_id="+$(this).attr("data-analysisID") + 
-                         "&adaptor="+$(this).attr("data-adaptor") + 
-                         "&method="+$(this).attr("data-method") + 
-                         "&action="+$(this).attr("data-action"),
+	    data       : buildURL(this),
 	    dataType   : "json",
 	    success    : function(updateRes) {
 		if(updateRes.status != "ok") {
 		    $("#log").append(updateRes.err_msg); scroll_down();
-		}
-		complete: onSuccess_fetchAnalysis(e.data);
-	    }
+		};
+	    },
+	    complete   : $(analysis).trigger('click'),
 	   });
 }
 			    
+function buildURL(obj) {
+    var value = "";
+    if ($(obj).attr("data-linkTo")) {
+	var ids = $(obj).attr("data-linkTo").split(",");
+	var vals = jQuery.map(ids, function(e,i) {
+	    var elem = $('#'+e);
+	    if ($(elem).is("span")) {
+		return $(elem).attr("data-value")
+	    } else {
+		return $(elem).attr("value")
+	    }
+	});
+	value = vals.join(",");
+    } else {
+	value = obj.value;
+    }
+
+    var URL = "url="+url + 
+        "&args="+value + 
+        "&analysis_id="+$(obj).attr("data-analysisID") + 
+        "&adaptor="+$(obj).attr("data-adaptor") + 
+        "&method="+$(obj).attr("data-method") + 
+        "&action="+$(obj).attr("data-action");
+    return(URL);
+}
+
 function onSend_dbConnect() {
     $('#connexion_msg').html('<img src="../images/preloader.gif" width="40px" height="40px"/>');
 }
