@@ -22,7 +22,6 @@
 			data-analysisID="<TMPL_VAR NAME=id>"
 			data-adaptor="<TMPL_VAR NAME=adaptor>"
 			data-method="<TMPL_VAR NAME=method>"
-			data-action="change"
 			data-linkTo="moduleName">+</button>
 	    </td>
 	  </tr>
@@ -55,7 +54,6 @@
 			    data-analysisID="<TMPL_VAR NAME=id>"
 			    data-adaptor="<TMPL_VAR NAME=adaptor>"
 			    data-method="<TMPL_VAR NAME=method>"
-			    data-action="change"
 			    data-linkTo="<TMPL_VAR NAME=parameterKeyID>,<TMPL_VAR NAME=parameterValueID>">+</button>
 		</td>
 	      </TMPL_LOOP> <!-- change_paramter -->
@@ -64,7 +62,6 @@
 			    data-analysisID="<TMPL_VAR NAME=id>"
 			    data-adaptor="<TMPL_VAR NAME=adaptor>"
 			    data-method="<TMPL_VAR NAME=method>"
-			    data-action="delete"
 			    data-linkTo="<TMPL_VAR NAME=parameterKeyID>">-</button>
 		</td>
 	      </TMPL_LOOP> <!-- delete_parameter -->
@@ -78,7 +75,6 @@
 			  data-analysisID="<TMPL_VAR NAME=id>"
 			  data-adaptor="<TMPL_VAR NAME=adaptor>"
 			  data-method="<TMPL_VAR NAME=method>"
-			  data-action="add"
 			  data-linkTo="p_new_key,p_new_value">+</button>
 	      </td>
 	    </tr>
@@ -96,13 +92,11 @@
 		data-analysisID="<TMPL_VAR NAME=id>"
 		data-adaptor="<TMPL_VAR NAME=adaptor>"
 		data-method="<TMPL_VAR NAME=method>"
-		data-action="update">
 	  <TMPL_LOOP NAME=values>
 	    <option
 	       <TMPL_IF NAME=is_current>selected</TMPL_IF>
-	       value="<TMPL_VAR NAME=hive_capacity_value>"
-		 data-value="<TMPL_VAR NAME=hive_capacity_value>">
-	      <TMPL_VAR NAME=hive_capacity_value>
+	       value="<TMPL_VAR NAME=hive_capacity_value>">
+	      <TMPL_VAR NAME=hive_capacity_display>
 	    </option>
 	  </TMPL_LOOP>
 	</select>
@@ -118,12 +112,10 @@
 		data-analysisID="<TMPL_VAR NAME=id>"
 		data-adaptor="<TMPL_VAR NAME=adaptor>"
 		data-method="<TMPL_VAR NAME=method>"
-		data-action="update">
 	  <TMPL_LOOP NAME=values>
 	    <option <TMPL_IF NAME=is_current>selected</TMPL_IF>
-		    value="<TMPL_VAR NAME=priority_value>"
-		    data-value="<TMPL_VAR NAME=priority_value>">
-	      <TMPL_VAR NAME=priority_value></option>
+		    value="<TMPL_VAR NAME=priority_value>">
+	      <TMPL_VAR NAME=priority_display></option>
 	  </TMPL_LOOP>
 	</select>
       </TMPL_LOOP>
@@ -138,9 +130,8 @@
 		data-analysisID="<TMPL_VAR NAME=id>"
 		data-adaptor="<TMPL_VAR NAME=adaptor>"
 		data-method="<TMPL_VAR NAME=method>"
-		data-action="update">
 	  <TMPL_LOOP NAME=values>
-	    <option <TMPL_IF NAME=is_current>selected </TMPL_IF>value="<TMPL_VAR NAME=batch_size_value>"><TMPL_VAR NAME=batch_size_value></option>
+	    <option <TMPL_IF NAME=is_current>selected </TMPL_IF>value="<TMPL_VAR NAME=batch_size_value>"><TMPL_VAR NAME=batch_size_display></option>
 	  </TMPL_LOOP>
 	</select>
       </TMPL_LOOP>
@@ -155,15 +146,26 @@
 		data-analysisID="<TMPL_VAR NAME=id>"
 		data-adaptor="<TMPL_VAR NAME=adaptor>"
 		data-method="<TMPL_VAR NAME=method>"
-		data-action="update">
 	  <TMPL_LOOP NAME=values>
-	    <option <TMPL_IF NAME=is_current>selected </TMPL_IF>value="<TMPL_VAR NAME=can_be_empty_value>"><TMPL_VAR NAME=can_be_empty_value></option>
+	    <option <TMPL_IF NAME=is_current>selected </TMPL_IF>value="<TMPL_VAR NAME=can_be_empty_value>"><TMPL_VAR NAME=can_be_empty_display></option>
 	  </TMPL_LOOP>
 	</select>
       </TMPL_LOOP>
     </td>
   </tr>
   <tr>
-    <td> Resource class ID:</td><td><TMPL_VAR NAME=resource_class_id> </td>
+    <td> Resource class ID:</td>
+    <td>
+      <TMPL_LOOP NAME=resource_class_id>
+	<select size="1"
+		class="update_param"
+		data-analysisID="<TMPL_VAR NAME=id>"
+		data-adaptor="<TMPL_VAR NAME=adaptor>"
+		data-method="<TMPL_VAR NAME=method>"
+	  <TMPL_LOOP NAME=values>
+	    <option <TMPL_IF NAME=is_current>selected </TMPL_IF>value="<TMPL_VAR NAME=resource_class_id_value>"><TMPL_VAR NAME=resource_class_id_display></option>
+	  </TMPL_LOOP>
+      </TMPL_LOOP>
+    </td>
   </tr>
 </table>

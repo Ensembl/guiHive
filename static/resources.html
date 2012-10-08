@@ -1,0 +1,59 @@
+<table border=0>
+
+  <tr>
+    <th>ID</th>
+    <th colspan="2">Name</th>
+    <th colspan="2">Meadow type</th>
+    <th colspan="2">Parameters</th>
+  </tr>
+
+  <TMPL_LOOP NAME=resources>
+    <tr>
+      <td><TMPL_VAR NAME=rcID></td>
+      <TMPL_LOOP NAME=resourceName>
+	<td>
+	  <input type="text"
+		 id="<TMPL_VAR NAME=rcName>"
+		 size=10
+		 value="<TMPL_VAR NAME=name>">
+	</td>
+	<td>
+	  <button class="update_param"
+		  data-analysisID="<TMPL_VAR NAME=id>"
+		  data-adaptor="<TMPL_VAR NAME=adaptor>"
+		  data-method="<TMPL_VAR NAME=method>"
+		  data-linkTo="<TMPL_VAR NAME=rcName>">+</button>
+	</td>
+      </TMPL_LOOP>
+      <TMPL_LOOP NAME=resourceMeadow>
+	<td>
+	  <input type="text"
+		 id="<TMPL_VAR NAME=rcMeadow>"
+		 size=10
+		 value="<TMPL_VAR NAME=meadow>">
+	</td>
+	<td>
+	  <button class="update_param"
+		  data-analysisID="<TMPL_VAR NAME=id>"
+		  data-adaptor="<TMPL_VAR NAME=adaptor>"
+		  data-method="<TMPL_VAR NAME=method>"
+		  data-linkTo="<TMPL_VAR NAME=rcMeadow>">+</button>
+	</td>
+      </TMPL_LOOP>
+      <TMPL_LOOP NAME=resourceParams>
+	<td><input type="text"
+		   id="<TMPL_VAR NAME=rcParams>"
+		   size=80
+		   value="<TMPL_VAR NAME=params>">
+	</td>
+	<td>
+	  <button class="update_param"
+		  data-analysisID="<TMPL_VAR NAME=id>"
+		  data-adaptor="<TMPL_VAR NAME=adaptor>"
+		  data-method="<TMPL_VAR NAME=method>"
+		  data-linkTo="<TMPL_VAR NAME=rcParams>">+</button>
+	</td>
+      </TMPL_LOOP>
+    </tr>
+  </TMPL_LOOP>
+</table>

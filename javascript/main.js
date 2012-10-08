@@ -4,7 +4,7 @@ var url = "";
 // wait for the DOM to be loaded 
 $(document).ready(function() { 
     // Default value. Only for testing. TODO: Remove the following line
-    $("#db_url").val("mysql://ensro@127.0.0.1:2912/mp12_compara_nctrees_69b");
+    $("#db_url").val("mysql://ensadmin:ensembl@127.0.0.1:2912/mp12_compara_nctrees_69a2");
     $("#Connect").click(function() {
 	$.ajax({url        : "/scripts/db_connect.pl",
 		type       : "post",
@@ -30,7 +30,8 @@ function scroll_down() {
 // res is the JSON-encoded response from the server in the Ajax call
 function onSuccess_dbConnect(res) {
     $("#connexion_msg").html(res.status);
-    $("#pipeline_diagram").html(res.out_msg);
+    $("#pipeline_diagram").html(res.out_msg.analyses);
+    $("#resource_details").html(res.out_msg.resources);
     $("#log").append(res.err_msg); scroll_down();
     url = $("#db_url").val();
     $(".analysis_link").click(function() {
@@ -41,6 +42,7 @@ function onSuccess_dbConnect(res) {
 		success    : onSuccess_fetchAnalysis
 	       });
     });
+    $(".update_param").click (analysis, update_db);
 }
 
 // res is the JSON-encoded response from the server in the Ajax call
@@ -92,8 +94,7 @@ function buildURL(obj) {
         "&args="+value + 
         "&analysis_id="+$(obj).attr("data-analysisID") + 
         "&adaptor="+$(obj).attr("data-adaptor") + 
-        "&method="+$(obj).attr("data-method") + 
-        "&action="+$(obj).attr("data-action");
+        "&method="+$(obj).attr("data-method");
     return(URL);
 }
 

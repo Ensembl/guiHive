@@ -8,6 +8,8 @@ use JSON::XS;
 use HTML::Template;
 use Data::Dumper;
 
+use lib ("./scripts/lib");
+use analysis_parameters;
 use msg;
 
 my $json_data = shift @ARGV || '{"url":["mysql://ensadmin:ensembl@127.0.0.1:2912/mp12_compara_nctrees_69a2"], "logic_name":["CAFE_species_tree"]}';
@@ -28,7 +30,7 @@ if (defined $dbConn) {
   };
   if ($@) {
     $response->err_msg("I can't retrieve analysis with logic name $logic_name: $@");
-    $response->status("");
+    $response->status("FAILED");
   }
   if (! defined $analysis) {
       $response->err_msg("I can't retrieve analysis with logic name $logic_name from the database");
@@ -54,7 +56,7 @@ sub formAnalysisInfo {
 				{module  => $analysis->module(),
 				 id      => $analysis->dbID(),
 				 adaptor => "analysisAdaptor",
-				 method  => "module",
+				 method  => "update_module",
 				}
 			       ];
 
@@ -66,7 +68,7 @@ sub formAnalysisInfo {
 							"hive_capacity",
 							build_values({1=>[-1,9],10=>[10,90],100=>[100,1000]}));
 
-  $info->{priority}          = template_mappings_SELECT($analysis_stats,
+  $info->{priority}          = template_mappings_SELECT($analysis,
 							"priority",
 							build_values({1=>[0,20]}));
 
@@ -74,11 +76,13 @@ sub formAnalysisInfo {
 							"batch_size",
 							build_values({1=>[0,9],10=>[10,90],100=>[100,1000]}));
 
-  $info->{can_be_empty}      = template_mappings_SELECT($analysis_stats,
+  $info->{can_be_empty}      = template_mappings_SELECT($analysis,
 							"can_be_empty",
 							build_values({1=>[0,1]}));
 
-  $info->{resource_class_id} = $analysis->resource_class_id();
+  $info->{resource_class_id} = template_mappings_SELECT($analysis,
+						       "resource_class_id",
+						       get_resource_class_ids());
 
   my $template = HTML::Template->new(filename => $details_template);
   $template->param(%$info);
@@ -98,16 +102,6 @@ sub module_mappings {
 	 ];
 }
 
-sub template_mappings_SELECT {
-  my ($obj, $method, $vals) = @_;
-  my $curr_val = $obj->$method;
-  return [{id                   => $obj->analysis_id,
-	   adaptor              => "analysisStatsAdaptor",
-	   method               => $method,
-	   values => [map {{is_current => $curr_val == $_, $method."_value" => $_}} @$vals]
-	  }];
-}
-
 sub template_mappings_PARAMS {
   my ($obj, $method) = @_;
   my $curr_raw_val = $obj->$method;
@@ -116,7 +110,6 @@ sub template_mappings_PARAMS {
   my $adaptor = "analysisAdaptor";
   my $i = 0;
   for my $param (keys %$curr_val) {
-#    print STDERR "PARAM: $param\n";
     push @{$vals->{existing_parameters}}, {
 					   "key"              => $param,
 					   "parameterKeyID"   => "p_$param",
@@ -156,6 +149,10 @@ sub stringify_if_needed {
   return $scalar;
 }
 
+
+### TODO: I think there is a bug here. We have to be sure that the current value is present
+# build_values may get an extra parameter (the current value) and insert it in the
+# list (in the correct place)
 sub build_values {
   my ($ranges) = @_;
   my @vals;
@@ -165,4 +162,32 @@ sub build_values {
     }
   }
   return [@vals];
+}
+
+sub template_mappings_SELECT {
+  my ($obj, $method, $vals, $displays) = @_;
+  $displays = $vals unless (defined $displays);
+  my @final_vals = ();
+  for (my $i=0; $i<scalar(@$vals); $i++) {
+      push @final_vals, [$vals->[$i], $displays->[$i]];
+  }
+  my $curr_val = $obj->$method;
+  return [{"id"       => $obj->can("analysis_id") ? $obj->analysis_id : $obj->dbID,
+	   "adaptor"  => "analysisStatsAdaptor",   ## TODO: BUG -- This is not always true
+	   "method"   => $method,
+	   "values"   => [map {{is_current => $curr_val == $_->[0], $method."_value" => $_->[0], $method."_display" => $_->[1]}} @final_vals],
+	  }];
+}
+
+sub get_resource_class_ids {
+    my $rcs;
+    for my $rc (@{$dbConn->get_ResourceClassAdaptor()->fetch_all}) {
+	$rcs->{$rc->dbID} = $rc->description->parameters;
+    }
+    my (@ids, @descs);
+    for my $rc_id (sort {$a <=> $b} keys %$rcs) {
+	push @ids, $rc_id;
+	push @descs, "$rc_id (" . $rcs->{$rc_id} . ")";
+    }
+    return [@ids], [@descs];
 }
