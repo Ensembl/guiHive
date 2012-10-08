@@ -72,14 +72,11 @@ use Bio::EnsEMBL::Hive::Utils qw/stringify destringify/;
     return $obj;
 };
 
-# update for ResourceDescriptionAdaptor
-# *Bio::EnsEMBL::Hive::DBSQL::ResourceDescriptionAdaptor::update = sub {
-#     my ($self, $obj) = @_;
-#     $self->updatable_column_list("parameters","meadow_type");
-
-#     SUPER::$self->update($obj, $obj);
-    
-# };
+*Bio::EnsEMBL::Hive::DBSQL::AnalysisStatsAdaptor::fetch_by_dbID = sub {
+  my ($self, $id) = @_;
+  my $obj = $self->fetch_by_analysis_id($id);
+  return $obj;
+};
 
 1;
 

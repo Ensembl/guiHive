@@ -12,7 +12,7 @@ use lib ("./scripts/lib");
 use analysis_parameters;
 use msg;
 
-my $json_data = shift @ARGV || '{"url":["mysql://ensadmin:ensembl@127.0.0.1:2912/mp12_compara_nctrees_69a2"], "logic_name":["CAFE_species_tree"]}';
+my $json_data = shift @ARGV || '{"url":["mysql://ensadmin:ensembl@127.0.0.1:2912/mp12_compara_nctrees_69a2"], "logic_name":["load_genomedb"]}';
 my $details_template = $ENV{GUIHIVE_BASEDIR} . "static/analysis_details.html"; ## TODO: use BASEDIR or something similar
 
 my $var = decode_json($json_data);
@@ -64,23 +64,28 @@ sub formAnalysisInfo {
 							"parameters",
 							$analysis->dbID);
 
-  $info->{hive_capacity}     = template_mappings_SELECT($analysis_stats,
+  $info->{hive_capacity}     = template_mappings_SELECT("AnalysisStats",
+							$analysis_stats,
 							"hive_capacity",
 							build_values({1=>[-1,9],10=>[10,90],100=>[100,1000]}));
 
-  $info->{priority}          = template_mappings_SELECT($analysis,
+  $info->{priority}          = template_mappings_SELECT("Analysis",
+							$analysis,
 							"priority",
 							build_values({1=>[0,20]}));
 
-  $info->{batch_size}        = template_mappings_SELECT($analysis_stats,
+  $info->{batch_size}        = template_mappings_SELECT("AnalysisStats",
+							$analysis_stats,
 							"batch_size",
 							build_values({1=>[0,9],10=>[10,90],100=>[100,1000]}));
 
-  $info->{can_be_empty}      = template_mappings_SELECT($analysis,
+  $info->{can_be_empty}      = template_mappings_SELECT("Analysis",
+							$analysis,
 							"can_be_empty",
 							build_values({1=>[0,1]}));
 
-  $info->{resource_class_id} = template_mappings_SELECT($analysis,
+  $info->{resource_class_id} = template_mappings_SELECT("Analysis",
+							$analysis,
 						       "resource_class_id",
 						       get_resource_class_ids());
 
@@ -107,7 +112,7 @@ sub template_mappings_PARAMS {
   my $curr_raw_val = $obj->$method;
   my $curr_val = eval $curr_raw_val;
   my $vals;
-  my $adaptor = "analysisAdaptor";
+  my $adaptor = "analysis";
   my $i = 0;
   for my $param (keys %$curr_val) {
     push @{$vals->{existing_parameters}}, {
@@ -165,7 +170,7 @@ sub build_values {
 }
 
 sub template_mappings_SELECT {
-  my ($obj, $method, $vals, $displays) = @_;
+  my ($adaptor, $obj, $method, $vals, $displays) = @_;
   $displays = $vals unless (defined $displays);
   my @final_vals = ();
   for (my $i=0; $i<scalar(@$vals); $i++) {
@@ -173,7 +178,7 @@ sub template_mappings_SELECT {
   }
   my $curr_val = $obj->$method;
   return [{"id"       => $obj->can("analysis_id") ? $obj->analysis_id : $obj->dbID,
-	   "adaptor"  => "analysisStatsAdaptor",   ## TODO: BUG -- This is not always true
+	   "adaptor"  => $adaptor,
 	   "method"   => $method,
 	   "values"   => [map {{is_current => $curr_val == $_->[0], $method."_value" => $_->[0], $method."_display" => $_->[1]}} @final_vals],
 	  }];

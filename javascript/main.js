@@ -3,6 +3,24 @@ var url = "";
 
 // wait for the DOM to be loaded 
 $(document).ready(function() { 
+    //  TODO: A better solution has to be found for this:
+    $("#show_resources").hide().click(function() {
+	$.ajax({url        : "/scripts/db_fetch_resource.pl",
+		type       : "post",
+		data       : "url=" + $("#db_url").val(),
+		dataType   : "json",
+		beforeSend : function() {showProcessing($("#resource_details"))},
+		success    : function(resourcesRes) {
+		    if(resourcesRes.status != "ok") {
+			$("#log").append(updateRes.err_msg); scroll_down();
+		    } else {
+			$("#resource_details").html(resourcesRes.out_msg);
+			$(".update_resource").click ($("#show_resources"), update_db);
+		    }
+		},
+	       });
+    });
+
     // Default value. Only for testing. TODO: Remove the following line
     $("#db_url").val("mysql://ensadmin:ensembl@127.0.0.1:2912/mp12_compara_nctrees_69a2");
     $("#Connect").click(function() {
@@ -10,7 +28,7 @@ $(document).ready(function() {
 		type       : "post",
 		data       : "url=" + $("#db_url").val(),
 		dataType   : "json",
-		beforeSend : onSend_dbConnect,
+		beforeSend : function() {showProcessing($("#connexion_msg"))},
 		success    : onSuccess_dbConnect
 	       });
     });
@@ -30,19 +48,19 @@ function scroll_down() {
 // res is the JSON-encoded response from the server in the Ajax call
 function onSuccess_dbConnect(res) {
     $("#connexion_msg").html(res.status);
-    $("#pipeline_diagram").html(res.out_msg.analyses);
-    $("#resource_details").html(res.out_msg.resources);
+    $("#pipeline_diagram").html(res.out_msg);
+    $("#show_resources").trigger('click');  // TODO: Best way to handle?
     $("#log").append(res.err_msg); scroll_down();
     url = $("#db_url").val();
+
     $(".analysis_link").click(function() {
 	$.ajax({url        : "/scripts/db_fetch_analysis.pl",
 		type       : "post",
 		data       : "url=" + url + "&logic_name=" + this.id,
 		dataType   : "json",
-		success    : onSuccess_fetchAnalysis
+		success    : onSuccess_fetchAnalysis,
 	       });
     });
-    $(".update_param").click (analysis, update_db);
 }
 
 // res is the JSON-encoded response from the server in the Ajax call
@@ -59,7 +77,8 @@ function onSuccess_fetchAnalysis(analysisRes) {
 }
 
 function update_db(obj) {
-    var analysis = obj;
+    var parent = obj;
+    alert(obj);
     $.ajax({url        : "/scripts/db_update_analysis.pl",
 	    type       : "post",
 	    data       : buildURL(this),
@@ -69,7 +88,7 @@ function update_db(obj) {
 		    $("#log").append(updateRes.err_msg); scroll_down();
 		};
 	    },
-	    complete   : $(analysis).trigger('click'),
+	    complete   :  function() {alert("reload"); $(parent).trigger('click')},
 	   });
 }
 			    
@@ -98,12 +117,8 @@ function buildURL(obj) {
     return(URL);
 }
 
-function onSend_dbConnect() {
-    $('#connexion_msg').html('<img src="../images/preloader.gif" width="40px" height="40px"/>');
-}
-
-function onSend_dbUpdate() {
-    $('#analysis_details').html('<img src="../images/preloader.gif" width="40px" height="40px"/>');
+function showProcessing(obj) {
+    obj.html('<img src="../images/preloader.gif" width="40px" height="40px"/>');
 }
 
 function onSend(req, settings) {

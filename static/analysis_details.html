@@ -91,13 +91,9 @@
 		class="update_param"
 		data-analysisID="<TMPL_VAR NAME=id>"
 		data-adaptor="<TMPL_VAR NAME=adaptor>"
-		data-method="<TMPL_VAR NAME=method>"
+		data-method="<TMPL_VAR NAME=method>">
 	  <TMPL_LOOP NAME=values>
-	    <option
-	       <TMPL_IF NAME=is_current>selected</TMPL_IF>
-	       value="<TMPL_VAR NAME=hive_capacity_value>">
-	      <TMPL_VAR NAME=hive_capacity_display>
-	    </option>
+	    <option <TMPL_IF NAME=is_current>selected</TMPL_IF> value="<TMPL_VAR NAME=hive_capacity_value>"> <TMPL_VAR NAME=hive_capacity_display> </option>
 	  </TMPL_LOOP>
 	</select>
       </TMPL_LOOP>
@@ -111,7 +107,7 @@
 		class="update_param"
 		data-analysisID="<TMPL_VAR NAME=id>"
 		data-adaptor="<TMPL_VAR NAME=adaptor>"
-		data-method="<TMPL_VAR NAME=method>"
+		data-method="<TMPL_VAR NAME=method>">
 	  <TMPL_LOOP NAME=values>
 	    <option <TMPL_IF NAME=is_current>selected</TMPL_IF>
 		    value="<TMPL_VAR NAME=priority_value>">
@@ -129,7 +125,7 @@
 		class="update_param"
 		data-analysisID="<TMPL_VAR NAME=id>"
 		data-adaptor="<TMPL_VAR NAME=adaptor>"
-		data-method="<TMPL_VAR NAME=method>"
+		data-method="<TMPL_VAR NAME=method>">
 	  <TMPL_LOOP NAME=values>
 	    <option <TMPL_IF NAME=is_current>selected </TMPL_IF>value="<TMPL_VAR NAME=batch_size_value>"><TMPL_VAR NAME=batch_size_display></option>
 	  </TMPL_LOOP>
@@ -145,7 +141,7 @@
 		class="update_param"
 		data-analysisID="<TMPL_VAR NAME=id>"
 		data-adaptor="<TMPL_VAR NAME=adaptor>"
-		data-method="<TMPL_VAR NAME=method>"
+		data-method="<TMPL_VAR NAME=method>">
 	  <TMPL_LOOP NAME=values>
 	    <option <TMPL_IF NAME=is_current>selected </TMPL_IF>value="<TMPL_VAR NAME=can_be_empty_value>"><TMPL_VAR NAME=can_be_empty_display></option>
 	  </TMPL_LOOP>
@@ -161,7 +157,7 @@
 		class="update_param"
 		data-analysisID="<TMPL_VAR NAME=id>"
 		data-adaptor="<TMPL_VAR NAME=adaptor>"
-		data-method="<TMPL_VAR NAME=method>"
+		data-method="<TMPL_VAR NAME=method>">
 	  <TMPL_LOOP NAME=values>
 	    <option <TMPL_IF NAME=is_current>selected </TMPL_IF>value="<TMPL_VAR NAME=resource_class_id_value>"><TMPL_VAR NAME=resource_class_id_display></option>
 	  </TMPL_LOOP>
