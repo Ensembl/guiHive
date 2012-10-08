@@ -3,7 +3,7 @@ var url = "";
 
 // wait for the DOM to be loaded 
 $(document).ready(function() { 
-    //  TODO: A better solution has to be found for this:
+    //  TODO: A better solution may be found for this:
     $("#show_resources").hide().click(function() {
 	$.ajax({url        : "/scripts/db_fetch_resource.pl",
 		type       : "post",
@@ -15,7 +15,7 @@ $(document).ready(function() {
 			$("#log").append(updateRes.err_msg); scroll_down();
 		    } else {
 			$("#resource_details").html(resourcesRes.out_msg);
-			$(".update_resource").click ($("#show_resources"), update_db);
+			$(".update_resource").click($("#show_resources"), update_db);
 		    }
 		},
 	       });
@@ -66,6 +66,7 @@ function onSuccess_dbConnect(res) {
 // res is the JSON-encoded response from the server in the Ajax call
 function onSuccess_fetchAnalysis(analysisRes) {
     var analysis = this;
+    alert(analysis);
     if(analysisRes.status == "ok") {
 	$("#analysis_details").html(analysisRes.out_msg);
     } else {
@@ -77,8 +78,6 @@ function onSuccess_fetchAnalysis(analysisRes) {
 }
 
 function update_db(obj) {
-    var parent = obj;
-    alert(obj);
     $.ajax({url        : "/scripts/db_update_analysis.pl",
 	    type       : "post",
 	    data       : buildURL(this),
@@ -88,7 +87,7 @@ function update_db(obj) {
 		    $("#log").append(updateRes.err_msg); scroll_down();
 		};
 	    },
-	    complete   :  function() {alert("reload"); $(parent).trigger('click')},
+	    complete   :  function() {obj.data.trigger('click')},
 	   });
 }
 			    
