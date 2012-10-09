@@ -9,7 +9,7 @@ use HTML::Template;
 use Data::Dumper;
 
 use lib ("./scripts/lib");
-use analysis_parameters;
+use new_hive_methods;
 use msg;
 
 my $json_data = shift @ARGV || '{"url":["mysql://ensadmin:ensembl@127.0.0.1:2912/mp12_compara_nctrees_69a2"], "logic_name":["load_genomedb"]}';
@@ -135,7 +135,7 @@ sub template_mappings_PARAMS {
 								    };
     $i++;
   }
-  $vals->{new_parameter} = [{"id"      => $obj->dbID,
+  $vals->{new_parameter} = [{"id"     => $obj->dbID,
 			    "adaptor" => $adaptor,
 			    "method"  => "add_param",
 			   }],
@@ -187,12 +187,12 @@ sub template_mappings_SELECT {
 sub get_resource_class_ids {
     my $rcs;
     for my $rc (@{$dbConn->get_ResourceClassAdaptor()->fetch_all}) {
-	$rcs->{$rc->dbID} = $rc->description->parameters;
+	$rcs->{$rc->dbID} = $rc->name;
     }
-    my (@ids, @descs);
+    my (@ids, @names);
     for my $rc_id (sort {$a <=> $b} keys %$rcs) {
 	push @ids, $rc_id;
-	push @descs, "$rc_id (" . $rcs->{$rc_id} . ")";
+	push @names, "$rc_id (" . $rcs->{$rc_id} . ")";
     }
-    return [@ids], [@descs];
+    return [@ids], [@names];
 }

@@ -43,4 +43,17 @@
       </TMPL_LOOP>
     </tr>
   </TMPL_LOOP>
+  <TMPL_LOOP NAME=create_resource>
+    <tr>
+      <td>ID</td>
+      <td><input type="text" size=30 id="r_new_name"></td><td></td>
+      <td><input type="text" size=20 id="r_new_meadow"></td>
+      <td><input type="text" size=50 id="r_new_parameters"></td>
+      <td><button class="create_resource"
+		  data-adaptor="<TMPL_VAR NAME=adaptor>"
+		  data-method="<TMPL_VAR NAME=method>"
+		  data-linkTo="r_new_name,r_new_meadow,r_new_parameters">+</button>
+      </td>
+    </tr>
+  </TMPL_LOOP>
 </table>

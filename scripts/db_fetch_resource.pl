@@ -11,7 +11,7 @@ use HTML::Entities;
 use Data::Dumper;
 
 use lib ("./scripts/lib");
-use analysis_parameters;
+use new_hive_methods;
 use msg;
 
 # Input data
@@ -42,29 +42,33 @@ if (defined $dbConn) {
 print $response->toJSON();
 
 sub formResources {
-    my ($all_resources) = @_;
-    my $template = HTML::Template->new(filename => $resources_template);
-    my $info;
-    my $i = 0;
-    for my $rc (sort {$a->dbID <=> $b->dbID} @$all_resources) {
-	my $rd = $rc->description();
-	$info->{"resources"}->[$i]->{"resourceName"} = [{ "name"      => $rc->name(),
-							  "id"        => $rc->dbID,
-							  "adaptor"   => "ResourceClass",
-							  "method"    => "name",
-							  "rcName"    => "rc_".$rc->name(),
-							}];
+  my ($all_resources) = @_;
+  my $template = HTML::Template->new(filename => $resources_template);
+  my $info;
+  my $i = 0;
+  for my $rc (sort {$a->dbID <=> $b->dbID} @$all_resources) {
+    my $rd = $rc->description();
+    $info->{"resources"}->[$i]->{ 'rcID' } = $rc->dbID;
+    $info->{"resources"}->[$i]->{ 'meadow' } = $rd->meadow_type();
 
-	$info->{"resources"}->[$i]->{"resourceParams"} = [{ "params"   => encode_entities($rd->parameters()),
-							    "id"       => $rc->dbID(),
-							    "adaptor"  => "ResourceDescription",
-							    "method"   => "parameters",
-							    "rcParams" => "rc_".$rc->dbID()."_".$rd->meadow_type(),
-							  }];
-	$info->{"resources"}->[$i]->{ 'rcID' } = $rc->dbID;
-	$info->{"resources"}->[$i]->{ 'meadow' } = $rd->meadow_type();
-	$i++;
-    }
-    $template->param(%$info);
-    return $template->output();
+    $info->{"resources"}->[$i]->{"resourceName"} = [{ "name"      => $rc->name(),
+						      "id"        => $rc->dbID,
+						      "adaptor"   => "ResourceClass",
+						      "method"    => "name",
+						      "rcName"    => "rc_".$rc->name(),
+						    }];
+
+    $info->{"resources"}->[$i]->{"resourceParams"} = [{ "params"   => encode_entities($rd->parameters()),
+							"id"       => $rc->dbID(),
+							"adaptor"  => "ResourceDescription",
+							"method"   => "parameters",
+							"rcParams" => "rc_".$rc->dbID()."_".$rd->meadow_type(),
+						      }];
+    $i++;
+  }
+  $info->{create_resource} = [{ "adaptor"    => "ResourceClass",
+			     "method"     => "create_full_description",
+			   }],
+  $template->param(%$info);
+  return $template->output();
 }

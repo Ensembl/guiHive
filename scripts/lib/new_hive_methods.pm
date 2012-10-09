@@ -14,7 +14,7 @@
 # The cost is not being coded in the class itself
 #
 
-package analysis_parameters;
+package new_hive_methods;
 
 use strict;
 use warnings;
@@ -72,10 +72,30 @@ use Bio::EnsEMBL::Hive::Utils qw/stringify destringify/;
     return $obj;
 };
 
+# This should be fetched correctly by AnalysisStatsAdaptor now
+# TODO: Test that this natively in the Adaptor and if so,
+# remove this injected method from here
 *Bio::EnsEMBL::Hive::DBSQL::AnalysisStatsAdaptor::fetch_by_dbID = sub {
   my ($self, $id) = @_;
   my $obj = $self->fetch_by_analysis_id($id);
   return $obj;
+};
+
+## To allow the creation of new resources (class + description) in one call
+*Bio::EnsEMBL::Hive::DBSQL::ResourceClassAdaptor::create_full_description = sub {
+  my ($self, $rc_name, $meadow_type, $parameters) = @_;
+  for my $rc (@{$self->fetch_all}) {
+    # if ($rc_name eq $rc->name) {
+    #   throw("This resource name exists in the database\n");
+    # }
+  }
+  my $rc = $self->create_new(-NAME => $rc_name);
+  my $rc_id = $rc->dbID();
+  $self->db->get_ResourceDescriptionAdaptor->create_new(
+							-RESOURCE_CLASS_ID => $rc_id,
+							-MEADOW_TYPE       => $meadow_type,
+							-PARAMETERS        => $parameters,
+						       );
 };
 
 1;

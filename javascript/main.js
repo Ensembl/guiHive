@@ -15,7 +15,14 @@ $(document).ready(function() {
 			$("#log").append(updateRes.err_msg); scroll_down();
 		    } else {
 			$("#resource_details").html(resourcesRes.out_msg);
-			$(".update_resource").click($("#show_resources"), update_db);
+			$(".update_resource").click(
+			    { reload:$("#show_resources"),
+			      script:"/scripts/db_update.pl"},
+			    update_db);
+			$(".create_resource").click(
+			    { reload:$("#show_resources"),
+			      script:"/scripts/db_create.pl"},
+			    update_db);
 		    }
 		},
 	       });
@@ -54,31 +61,38 @@ function onSuccess_dbConnect(res) {
     url = $("#db_url").val();
 
     $(".analysis_link").click(function() {
+	var button = $(this);
 	$.ajax({url        : "/scripts/db_fetch_analysis.pl",
 		type       : "post",
 		data       : "url=" + url + "&logic_name=" + this.id,
 		dataType   : "json",
-		success    : onSuccess_fetchAnalysis,
+		success    : function(resp) {onSuccess_fetchAnalysis(resp, button)},
 	       });
     });
 }
 
 // res is the JSON-encoded response from the server in the Ajax call
-function onSuccess_fetchAnalysis(analysisRes) {
-    var analysis = this;
-    alert(analysis);
+function onSuccess_fetchAnalysis(analysisRes, button) {
     if(analysisRes.status == "ok") {
 	$("#analysis_details").html(analysisRes.out_msg);
     } else {
 	$("#log").append(analysisRes.err_msg); scroll_down();
 	$("#connexion_msg").html(analysisRes.status);
     }
-    $(".update_param").change(analysis, update_db);
-    $(".update_param").click (analysis, update_db);
+    $(".update_param").change(
+	{reload:button,
+	 script:"/scripts/db_update.pl"},
+	update_db);
+    $(".update_param").click (
+	{reload:button,
+	 script:"/scripts/db_update.pl"},
+	update_db);
 }
 
 function update_db(obj) {
-    $.ajax({url        : "/scripts/db_update_analysis.pl",
+    var url = obj.data.script;
+    var button = obj.data.reload;
+    $.ajax({url        : url,
 	    type       : "post",
 	    data       : buildURL(this),
 	    dataType   : "json",
@@ -87,7 +101,7 @@ function update_db(obj) {
 		    $("#log").append(updateRes.err_msg); scroll_down();
 		};
 	    },
-	    complete   :  function() {obj.data.trigger('click')},
+	    complete   :  function() {button.trigger('click')},
 	   });
 }
 			    
@@ -110,9 +124,11 @@ function buildURL(obj) {
 
     var URL = "url="+url + 
         "&args="+value + 
-        "&analysis_id="+$(obj).attr("data-analysisID") + 
         "&adaptor="+$(obj).attr("data-adaptor") + 
         "&method="+$(obj).attr("data-method");
+    if ($(obj).attr("data-analysisID")) {
+	URL = URL.concat("&analysis_id="+$(obj).attr("data-analysisID"));
+    }
     return(URL);
 }
 
