@@ -13,13 +13,18 @@ import (
 	"encoding/json"
 	"bytes"
 	"flag"
+	"go/build"
+	"path"
+	"errors"
+)
+
+const (
+	projectDirName = "github.com/emepyc/guiHive"
 )
 
 var (
 	port string
 )
-
-
 
 func init () {
 	flag.StringVar(&port, "port", "12345", "Port to listen (defaults to 12345)")
@@ -73,31 +78,55 @@ func scriptHandler(w http.ResponseWriter, r *http.Request) {
 	
 }
 
-func setEnvVar() error {
+func pathExists(name string) bool {
+	_, err := os.Stat(name)
+	return err == nil
+}
+
+func guessProjectDir() (string, error) {
+	// First, we try to find the project dir in the working directory
 	workingDirectory, err := os.Getwd()
+	if err != nil {
+		return "", err
+	}
+	pathToIndex := workingDirectory + "/../static/index.html"
+	if pathExists(pathToIndex) {
+		return path.Clean(workingDirectory + "/.."), nil
+	}
+	for _, srcdir := range build.Default.SrcDirs() {
+		dirName := path.Join(srcdir, projectDirName)
+		if pathExists(dirName) {
+			return dirName, nil
+		}
+	}
+	return "", errors.New("Project directory not found")
+}
+
+func setEnvVar() error {
+	projectDirectory, err := guessProjectDir()
 	if err != nil {
 		return err
 	}
-	debug("WORKING_DIRECTORY: %s\n", workingDirectory)
+	debug("PROJECT_DIRECTORY: %s\n", projectDirectory)
 
 	// PER5LIB
 	perl5lib := os.Getenv("PERL5LIB")
+	pathToLibs := path.Clean(projectDirectory + "/scripts/lib")
 	if perl5lib == "" {
-		perl5lib = fmt.Sprintf("%s../scripts/lib", workingDirectory)
+		perl5lib = pathToLibs
 	} else {
-		perl5lib = fmt.Sprintf("%s:%s/../scripts/lib", perl5lib, workingDirectory)
+		perl5lib = perl5lib + ":" + pathToLibs
 	}
-	debug("PERL5LIB: %s\n", perl5lib)
 	err = os.Setenv("PERL5LIB", perl5lib)
 	if err != nil {
 		return err
 	}
+	debug("PERL5LIB: %s\n", os.Getenv("PERL5LIB"))
 
 	//GUIHIVE_BASEDIR
-	if err := os.Setenv("GUIHIVE_BASEDIR", fmt.Sprintf("%s/../", workingDirectory)); err != nil {
+	if err := os.Setenv("GUIHIVE_BASEDIR", projectDirectory); err != nil {
 		return err
 	}
-	// TODO: Unset && clean on exit??
 	debug("GUIHIVE_BASEDIR: %s", os.Getenv("GUIHIVE_BASEDIR"))
 
 	return nil
