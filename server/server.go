@@ -130,7 +130,7 @@ func setEnvVar() error {
 	debug("PERL5LIB: %s\n", os.Getenv("PERL5LIB"))
 
 	//GUIHIVE_BASEDIR
-	if err := os.Setenv("GUIHIVE_BASEDIR", projectDirectory); err != nil {
+	if err := os.Setenv("GUIHIVE_BASEDIR", projectDirectory + "/"); err != nil {
 		return err
 	}
 	debug("GUIHIVE_BASEDIR: %s", os.Getenv("GUIHIVE_BASEDIR"))
