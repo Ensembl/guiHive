@@ -2,8 +2,16 @@
   <TMPL_LOOP NAME=analyses>
     <tr>
       <td>
-	<button class="analysis_link" type="button" id="<TMPL_VAR NAME=logic_name_id>"><TMPL_VAR NAME=logic_name></button>
-    </td>
+	<table border=1>
+	  <tr>
+	    <td><TMPL_VAR NAME=logic_name></td>
+	    <td>
+	      <button class="analysis_link" type="button" id="<TMPL_VAR NAME=logic_name>">SHOW</button>
+	    </td>
+	    <td><TMPL_VAR NAME="done_jobs"</td>
+	  </tr>
+	</table>
+      </td>
     </tr>
   </TMPL_LOOP>
 </table>
