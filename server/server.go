@@ -45,17 +45,17 @@ func scriptHandler(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()
 	checkError("Can't parse Form", err)
 
-	debug("METHOD: %s", r.Method)
-	debug("URL: %s", r.URL)
+	debug("METHOD: %s"  , r.Method)
+	debug("URL: %s"     , r.URL)
 	debug("FRAGMENT: %s", r.URL.Fragment)
-	debug("PATH: %s", r.URL.Path)
-	debug("BODY: %s", r.Body)
-	debug("URL2: %s", r.Form)
+	debug("PATH: %s"    , r.URL.Path)
+	debug("BODY: %s"    , r.Body)
+	debug("URL2: %s"    , r.Form)
 
 	var outMsg bytes.Buffer
 	var errMsg bytes.Buffer
 
-	fname := ".." + r.URL.Path
+	fname := os.Getenv("GUIHIVE_BASEDIR") + r.URL.Path
 	args, err := json.Marshal(r.Form)
 	checkError("Can't Marshal JSON:", err)
 	debug("ARGS in Go side: %s", args)
@@ -80,6 +80,9 @@ func scriptHandler(w http.ResponseWriter, r *http.Request) {
 
 func pathExists(name string) bool {
 	_, err := os.Stat(name)
+	if os.IsNotExist(err) {
+		return false
+	}
 	return err == nil
 }
 
@@ -138,7 +141,7 @@ func main() {
 	errV := setEnvVar()
 	checkError("Problem setting environmental variables: ", errV);
 
-	relPath := ".."
+	relPath := os.Getenv("GUIHIVE_BASEDIR")
 	http.HandleFunc("/",         handler)
 	http.Handle("/static/",      http.FileServer(http.Dir(relPath)))
 	http.Handle("/styles/",      http.FileServer(http.Dir(relPath)))
