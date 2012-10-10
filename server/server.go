@@ -15,6 +15,7 @@ import (
 	"flag"
 	"go/build"
 	"path"
+	"path/filepath"
 	"errors"
 )
 
@@ -88,13 +89,15 @@ func pathExists(name string) bool {
 
 func guessProjectDir() (string, error) {
 	// First, we try to find the project dir in the working directory
-	workingDirectory, err := os.Getwd()
+	serverPath := os.Args[0]
+	serverDir := path.Base(serverPath)
+	pathToIndex := serverDir + "/../static/index.html"
+	absPathToIndex, err := filepath.Abs(pathToIndex)
 	if err != nil {
 		return "", err
 	}
-	pathToIndex := workingDirectory + "/../static/index.html"
-	if pathExists(pathToIndex) {
-		return path.Clean(workingDirectory + "/.."), nil
+	if pathExists(absPathToIndex) {
+		return path.Clean(absPathToIndex + "/../.."), nil
 	}
 	for _, srcdir := range build.Default.SrcDirs() {
 		dirName := path.Join(srcdir, projectDirName)
