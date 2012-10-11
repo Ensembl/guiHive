@@ -47,10 +47,12 @@ sub formMonitorInfo {
   my ($analysis_stats) = @_;
   my $template = HTML::Template->new(filename => $monitor_template);
   $template->param( 'jobs_total'      => $analysis_stats->total_job_count(),
-			   'jobs_done'       => $analysis_stats->done_job_count(),
-			   'jobs_failed'     => $analysis_stats->failed_job_count(),
-			   'jobs_ready'      => $analysis_stats->ready_job_count(),
-			   'jobs_semaphored' => $analysis_stats->semaphored_job_count(),
+		    'jobs_done'       => $analysis_stats->done_job_count(),
+		    'jobs_failed'     => $analysis_stats->failed_job_count(),
+		    'jobs_ready'      => $analysis_stats->ready_job_count(),
+		    'jobs_semaphored' => $analysis_stats->semaphored_job_count(),
+		    'jobs_running'    => $analysis_stats->inprogress_job_count(),
+		    'jobs_remaining'  => $analysis_stats->remaining_job_count(),
 			   );
   return $template->output();
 }
