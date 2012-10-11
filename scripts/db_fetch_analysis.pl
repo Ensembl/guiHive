@@ -13,14 +13,15 @@ use new_hive_methods;
 use msg;
 
 my $json_data = shift @ARGV || '{"url":["mysql://ensadmin:ensembl@127.0.0.1:2912/mp12_compara_nctrees_69a2"], "logic_name":["load_genomedb"]}';
-my $details_template = $ENV{GUIHIVE_BASEDIR} . "static/analysis_details.html"; ## TODO: use BASEDIR or something similar
+my $details_template = $ENV{GUIHIVE_BASEDIR} . "static/analysis_details.html";
 
+## Input
 my $var = decode_json($json_data);
 my $url = $var->{url}->[0];
 my $logic_name = $var->{logic_name}->[0];
 
+## Initialization
 my $dbConn = Bio::EnsEMBL::Hive::URLFactory->fetch($url);
-
 my $response = msg->new();
 
 if (defined $dbConn) {
@@ -38,7 +39,7 @@ if (defined $dbConn) {
   }
   $response->out_msg(formAnalysisInfo($analysis));
 } else {
-  $response->err_msg("I have lost connection with the database\n");
+  $response->err_msg("The provided URL seems to be invalid. Please check the URL and try again");
   $response->status("FAILED");
 }
 

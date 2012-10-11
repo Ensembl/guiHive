@@ -3,7 +3,11 @@ var url = "";
 
 // wait for the DOM to be loaded 
 $(document).ready(function() { 
-    //  TODO: A better solution may be found for this:
+    //  We are creating a hidden button for showing resources and 
+    //  firing it once the analysis are displayed
+    //  we are doing this to allow re-load of the resources when
+    //  they are changed (without having to reload the analysis too)
+    //  TODO: We may try to find a better solution for this
     $("#show_resources").hide().click(function() {
 	$.ajax({url        : "/scripts/db_fetch_resource.pl",
 		type       : "post",
@@ -42,14 +46,29 @@ $(document).ready(function() {
 
 }); 
 
-// There seems not to be good ways to automatically fire methods
-// when a div has change. This is a bit ugly, but other alternatives doesn't look
-// promising either. Anyway, we can implement something like:
-// http://stackoverflow.com/questions/3233991/jquery-watch-div/3234646#3234646
-// or (non-IE, AFAIK):
-// http://stackoverflow.com/questions/4979738/fire-jquery-event-on-div-change
-function scroll_down() {
-    $("#log").scrollTop($("#log").height()+10000000); // TODO: Try to avoid this arbitrary addition
+// One per analysis
+// Monitorizes the analysis
+function worker() {
+    var analysis_id = $(this).attr("data-analysisID");
+    var called_div = this;
+    $.ajax({ url      : "/scripts/db_monitor_analysis.pl",
+	     type     : "post",
+	     data     : "url=" + url + "&analysis_id=" + analysis_id,
+	     dataType : "json",
+	     success  : function(monitorRes) {
+		 if(monitorRes.status != "ok") {
+		     $("#log").append(monitorRes.err_msg); scroll_down();
+		 } else {
+		     $(called_div).html(monitorRes.out_msg)
+		 }
+	     },
+	     complete : setTimeout(function(){$(called_div).trigger("monitor")}, 10000), // 10seg TODO: Increase in production
+	   });
+}
+
+function monitor_analysis() {
+    $(".progress_monitor").bind("monitor", worker);
+    $(".progress_monitor").trigger("monitor");
 }
 
 // res is the JSON-encoded response from the server in the Ajax call
@@ -59,6 +78,8 @@ function onSuccess_dbConnect(res) {
     $("#show_resources").trigger('click');  // TODO: Best way to handle?
     $("#log").append(res.err_msg); scroll_down();
     url = $("#db_url").val();
+    // Now we start monitoring the analyses:
+    monitor_analysis();
 
     $(".analysis_link").click(function() {
 	var button = $(this);
@@ -140,3 +161,12 @@ function onSend(req, settings) {
     alert(JSON.stringify(this));
 }
 
+// There seems not to be good ways to automatically fire methods
+// when a div has change. This is a bit ugly, but other alternatives doesn't look
+// promising either. Anyway, we can implement something like:
+// http://stackoverflow.com/questions/3233991/jquery-watch-div/3234646#3234646
+// or (non-IE, AFAIK):
+// http://stackoverflow.com/questions/4979738/fire-jquery-event-on-div-change
+function scroll_down() {
+    $("#log").scrollTop($("#log").height()+10000000); // TODO: Try to avoid this arbitrary addition
+}
