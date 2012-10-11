@@ -90,9 +90,12 @@ func pathExists(name string) bool {
 func guessProjectDir() (string, error) {
 	// First, we try to find the project dir in the working directory
 	serverPath := os.Args[0]
-	serverDir := path.Base(serverPath)
+	serverDir := filepath.Dir(serverPath)
+	debug("SERVER_DIR: %s", serverDir);
 	pathToIndex := serverDir + "/../static/index.html"
+	debug("PATH_TO_INDEX: %s", pathToIndex);
 	absPathToIndex, err := filepath.Abs(pathToIndex)
+	debug("ABS_PATH_TO_INDEX: %s", absPathToIndex);
 	if err != nil {
 		return "", err
 	}
