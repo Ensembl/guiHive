@@ -16,7 +16,8 @@ my $url = decode_json($json_data)->{url}->[0];
 my $dbConn = Bio::EnsEMBL::Hive::URLFactory->fetch($url);
 my $response = msg->new();
 
-my $graph = Bio::EnsEMBL::Hive::Utils::Graph->new($dbConn, "/home/mp/src/ensembl-hive/hive_config.json");
+my $hive_config_file = $ENV{GUIHIVE_BASEDIR} . "config/hive_config.json";
+my $graph = Bio::EnsEMBL::Hive::Utils::Graph->new($dbConn, $hive_config_file);
 my $graphviz = $graph->build();
 
 ## Instead of printing we will need to parse the output to get coordinates and print using d3
