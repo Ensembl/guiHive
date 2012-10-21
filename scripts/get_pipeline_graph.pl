@@ -7,6 +7,8 @@ use warnings;
 use Bio::EnsEMBL::Hive::Utils::Graph;
 use Bio::EnsEMBL::Hive::URLFactory;
 use JSON::XS;
+use Graph::Reader::Dot;
+use Data::Dumper;
 
 use lib ("./scripts/lib");
 use msg;
@@ -21,4 +23,12 @@ my $graph = Bio::EnsEMBL::Hive::Utils::Graph->new($dbConn, $hive_config_file);
 my $graphviz = $graph->build();
 
 ## Instead of printing we will need to parse the output to get coordinates and print using d3
-print $graphviz->as_text;
+my $graph_txt =  $graphviz->as_text;
+
+print "$graph_txt\n";
+
+my $dotReader = Graph::Reader::Dot->new();
+open my $fh, "+<", \$graph_txt;
+my $gGraph = $dotReader->read_graph($fh);
+print STDERR Dumper [$gGraph->vertices];
+
