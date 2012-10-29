@@ -22,13 +22,12 @@ my $hive_config_file = $ENV{GUIHIVE_BASEDIR} . "config/hive_config.json";
 my $graph = Bio::EnsEMBL::Hive::Utils::Graph->new($dbConn, $hive_config_file);
 my $graphviz = $graph->build();
 
-## Instead of printing we will need to parse the output to get coordinates and print using d3
-my $graph_txt =  $graphviz->as_text;
+# We get the graph in svg. This is displayed directly in the web paged and parsed by d3
 
-print "$graph_txt\n";
+$response->out_msg($graphviz->as_svg);
 
-my $dotReader = Graph::Reader::Dot->new();
-open my $fh, "+<", \$graph_txt;
-my $gGraph = $dotReader->read_graph($fh);
-print STDERR Dumper [$gGraph->vertices];
+# my $dotReader = Graph::Reader::Dot->new();
+# open my $fh, "+<", \$graph_txt;
+# my $gGraph = $dotReader->read_graph($fh);
+# print STDERR Dumper [$gGraph->vertices];
 

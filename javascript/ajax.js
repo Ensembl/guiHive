@@ -6,7 +6,7 @@ $(document).ready(function() {
     //  We are creating a hidden button for showing resources and 
     //  firing it once the analysis are displayed
     //  we are doing this to allow re-load of the resources when
-    //  they are changed (without having to reload the analysis too)
+    //  they are changed (without having to reload the analysis too or re-connect to the db)
     //  TODO: We may try to find a better solution for this
     $("#show_resources").hide().click(function() {
 	$.ajax({url        : "/scripts/db_fetch_resource.pl",
@@ -33,7 +33,7 @@ $(document).ready(function() {
     });
 
     // Default value. Only for testing. TODO: Remove the following line
-    $("#db_url").val("mysql://ensadmin:ensembl@127.0.0.1:2912/mp12_compara_nctrees_69a2");
+    $("#db_url").val("mysql://ensadmin:ensembl@127.0.0.1:2912/mp12_compara_nctrees_69d");
     $("#Connect").click(function() {
 	$.ajax({url        : "/scripts/db_connect.pl",
 		type       : "post",
@@ -74,7 +74,7 @@ function monitor_analysis() {
 // res is the JSON-encoded response from the server in the Ajax call
 function onSuccess_dbConnect(res) {
     $("#connexion_msg").html(res.status);
-    $("#pipeline_diagram").html(res.out_msg);
+    draw_diagram(res.out_msg);
     $("#show_resources").trigger('click');  // TODO: Best way to handle?
     $("#log").append(res.err_msg); scroll_down();
     url = $("#db_url").val();
@@ -90,6 +90,34 @@ function onSuccess_dbConnect(res) {
 		success    : function(resp) {onSuccess_fetchAnalysis(resp, button)},
 	       });
     });
+}
+
+function draw_diagram(xml) {
+    $("#pipeline_diagram").html(xml);
+
+    var vis = d3.select("#pipeline_diagram")
+	.append('svg:g')
+	.call(d3.behavior.zoom().on("zoom", redraw))
+	.append('svg:g')
+
+    vis.append('svg:rect')
+    .attr('width', 600)
+    .attr('height', 600)
+    .attr('fill', 'white');
+
+    function redraw() {
+	console.log("here", d3.event.translate, d3.event.scale);
+    }
+
+    d3.selectAll(".node text")
+    .attr("text-decoration", "underline");
+    d3.selectAll("ellipse")
+    .attr("fill", "green");
+    d3.select("svg")
+	.append("svg:g")
+	.call(d3.behavior.zoom().on("zoom", function() { redraw(svg) }))
+	.append("svg:g");
+    // Insert here code to avoid scrolling on mouse events
 }
 
 // res is the JSON-encoded response from the server in the Ajax call

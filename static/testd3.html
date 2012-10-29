@@ -23,23 +23,59 @@
       <script>
 	d3.xml("../images/test.svg", "image/svg+xml", function(xml) {
 	var importedNode = document.importNode(xml.documentElement, true);
-	d3.select("#viz").node().appendChild(importedNode);
+
+        var g = d3.select("#viz")
+        .append("svg:svg")
+	.attr("pointer-events", "all")
+	.append("svg:g");
+
+        g
+	.call(d3.behavior.zoom().on("zoom", function() {redraw(g)}))
+        .append("circle")
+        .style("fill", "red")
+        .attr("cx", 200)
+        .attr("cy", 200)
+        .attr("r", 50);
+
+        g
+        .append("circle")
+        .style("fill", "blue")
+        .attr("cx", 250)
+        .attr("cx", 250)
+        .attr("r", 20);
+
+        g
+        .node().appendChild(importedNode);
+
+	var w = d3.select("svg").attr("width");
+	var h = d3.select("svg").attr("height");
 
 	var svg = d3.select("svg");
 	svg.selectAll("ellipse")
-	.attr("fill", "red");
+	.attr("fill", "blue");
 	
-	d3.selectAll(".node text")
+	var nodes = d3.selectAll(".node text")
 	.attr("font-size", "16.00")
 	.attr("font-family", "Arial")
 	.attr("text-decoration", "underline");
+	
+<!-- 	svg.append('svg:rect') -->
+<!-- 	.attr('width', w) -->
+<!-- 	.attr('height', h) -->
+<!-- 	.attr('fill', 'white'); -->
 
-	d3.selectAll(".node")
-	.call(d3.behavior.drag()
-	.on("drag", function(d) {console.log(d);
-	                         d.attr("x", d3.event.dx).attr("y", d3.event.dy)}));
+<!-- 	d3.selectAll(".node") -->
+<!-- 	.call(d3.behavior.drag() -->
+<!-- 	.on("drag", function(d) {console.log(d); -->
+<!-- 	                         d.attr("x", d3.event.dx).attr("y", d3.event.dy)})); -->
 	
 	})
+        function redraw(viz) {
+           viz.attr("transform",
+	      "translate(" + d3.event.translate + ")"
+	      + " scale(" + d3.event.scale + ")");
+        }
+
 
       </script>
     </body>

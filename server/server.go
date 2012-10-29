@@ -97,10 +97,12 @@ func guessProjectDir() (string, error) {
 		return "", err
 	}
 	if pathExists(absPathToIndex) {
+		fmt.Println("ABSPATHTOINDEX: ", absPathToIndex)
 		return path.Clean(absPathToIndex + "/../.."), nil
 	}
 	for _, srcdir := range build.Default.SrcDirs() {
 		dirName := path.Join(srcdir, projectDirName)
+		fmt.Println("DIRNAME: ", dirName)
 		if pathExists(dirName) {
 			return dirName, nil
 		}
