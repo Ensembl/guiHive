@@ -27,10 +27,11 @@
         var g = d3.select("#viz")
         .append("svg:svg")
 	.attr("pointer-events", "all")
+	.append("svg:g")
+	.call(d3.behavior.zoom().on("zoom", function() {redraw(g)}))
 	.append("svg:g");
 
         g
-	.call(d3.behavior.zoom().on("zoom", function() {redraw(g)}))
         .append("circle")
         .style("fill", "red")
         .attr("cx", 200)

@@ -92,32 +92,28 @@ function onSuccess_dbConnect(res) {
     });
 }
 
-function draw_diagram(xml) {
-    $("#pipeline_diagram").html(xml);
+function redraw(viz) {
+    console.log("here", d3.event.translate, d3.event.scale);
+    viz.attr("transform",
+	     "translate(" + d3.event.translate + ")"
+	     + " scale("  + d3.event.scale + ")");
+}
 
-    var vis = d3.select("#pipeline_diagram")
-	.append('svg:g')
-	.call(d3.behavior.zoom().on("zoom", redraw))
-	.append('svg:g')
 
-    vis.append('svg:rect')
-    .attr('width', 600)
-    .attr('height', 600)
-    .attr('fill', 'white');
+function draw_diagram(xmlStr) {
+    var DOMParser = new window.DOMParser();
+    var xml = DOMParser.parseFromString(xmlStr,'img/svg+xml');
+    var importedNode = document.importNode(xml.documentElement,true);
 
-    function redraw() {
-	console.log("here", d3.event.translate, d3.event.scale);
-    }
-
-    d3.selectAll(".node text")
-    .attr("text-decoration", "underline");
-    d3.selectAll("ellipse")
-    .attr("fill", "green");
-    d3.select("svg")
+    var g = d3.select("#pipeline_diagram")
+	.append("svg:svg")
+	.attr("pointer-events", "all")
 	.append("svg:g")
-	.call(d3.behavior.zoom().on("zoom", function() { redraw(svg) }))
+	.call(d3.behavior.zoom().on("zoom", function() { redraw(g) }))
 	.append("svg:g");
-    // Insert here code to avoid scrolling on mouse events
+
+    g.node().appendChild(importedNode);
+    jQuery.map($('g title'), function(v,i) {console.log(v.val());});
 }
 
 // res is the JSON-encoded response from the server in the Ajax call

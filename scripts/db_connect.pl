@@ -55,20 +55,20 @@ sub formResponse {
 }
 
 sub formAnalyses {
-#     my ($dbConn) = @_;
-#     my $hive_config_file = $ENV{GUIHIVE_BASEDIR} . "config/hive_config.json";
-#     my $graph = Bio::EnsEMBL::Hive::Utils::Graph->new($dbConn, $hive_config_file);
-#     my $graphviz = $graph->build();
+    my ($dbConn) = @_;
+    my $hive_config_file = $ENV{GUIHIVE_BASEDIR} . "config/hive_config.json";
+    my $graph = Bio::EnsEMBL::Hive::Utils::Graph->new($dbConn, $hive_config_file);
+    my $graphviz = $graph->build();
 
-    my $graphviz = GraphViz->new();
+    # my $graphviz = GraphViz->new();
 
-    $graphviz->add_node('London');
-    $graphviz->add_node('Paris', label => 'City of Louvre');
-    $graphviz->add_node('New York');
+    # $graphviz->add_node('London');
+    # $graphviz->add_node('Paris', label => 'City of Louvre');
+    # $graphviz->add_node('New York');
 
-    $graphviz->add_edge('London' => 'Paris');
-    $graphviz->add_edge('London' => 'New York', label => 'Far');
-    $graphviz->add_edge('Paris'  => 'London');
+    # $graphviz->add_edge('London' => 'Paris');
+    # $graphviz->add_edge('London' => 'New York', label => 'Far');
+    # $graphviz->add_edge('Paris'  => 'London');
 
     return $graphviz->as_svg;
 }
