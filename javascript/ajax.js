@@ -1,5 +1,7 @@
 // Globally defined
 var url = "";
+// Compile the analysis_id regexp once
+var analysis_id_regexp = /analysis_(\d+)/;
 
 // wait for the DOM to be loaded 
 $(document).ready(function() { 
@@ -46,12 +48,24 @@ $(document).ready(function() {
 
 }); 
 
-// One per analysis
-// Monitorizes the analysis
-function worker() {
-    var analysis_id = $(this).attr("data-analysisID");
-    var called_div = this;
-    $.ajax({ url      : "/scripts/db_monitor_analysis.pl",
+
+function monitor_analysis() {
+    jQuery.map($('.node title'), function(v,i) {
+	var titleText = $(v).text();
+	var matches = analysis_id_regexp.exec(titleText);
+	if (matches != null &&  matches.length > 1) {
+	    $(v).bind("monitor", {analysis_id: matches[1]}, worker);
+	    $(v).trigger("monitor");
+	}
+    });
+}
+
+// One monitor per analysis
+function worker(event) {
+    var analysis_id = event.data.analysis_id;
+    var called_elem = $(this).parent();
+    console.log("ELEM: " + called_elem);
+    $.ajax({ url      : "/scripts/db_monitor_analysis2.pl",
 	     type     : "post",
 	     data     : "url=" + url + "&analysis_id=" + analysis_id,
 	     dataType : "json",
@@ -59,17 +73,21 @@ function worker() {
 		 if(monitorRes.status != "ok") {
 		     $("#log").append(monitorRes.err_msg); scroll_down();
 		 } else {
-		     $(called_div).html(monitorRes.out_msg)
+		     var colour = monitorRes.out_msg.colour;
+		     console.log(colour);
+		     d3.select(called_elem)
+			 .attr('fill', colour);
+//		     $(called_div).html(monitorRes.out_msg)
 		 }
 	     },
-	     complete : setTimeout(function(){$(called_div).trigger("monitor")}, 10000), // 10seg TODO: Increase in production
+	     complete : setTimeout(function(){$(called_elem).trigger("monitor")}, 10000), // 10seg TODO: Increase in production
 	   });
 }
 
-function monitor_analysis() {
-    $(".progress_monitor").bind("monitor", worker);
-    $(".progress_monitor").trigger("monitor");
-}
+//function monitor_analysis() {
+//    $(".progress_monitor").bind("monitor", worker);
+//    $(".progress_monitor").trigger("monitor");
+//}
 
 // res is the JSON-encoded response from the server in the Ajax call
 function onSuccess_dbConnect(res) {
@@ -93,7 +111,6 @@ function onSuccess_dbConnect(res) {
 }
 
 function redraw(viz) {
-    console.log("here", d3.event.translate, d3.event.scale);
     viz.attr("transform",
 	     "translate(" + d3.event.translate + ")"
 	     + " scale("  + d3.event.scale + ")");
@@ -105,6 +122,8 @@ function draw_diagram(xmlStr) {
     var xml = DOMParser.parseFromString(xmlStr,'img/svg+xml');
     var importedNode = document.importNode(xml.documentElement,true);
 
+    // TODO: This is creating a nested svg structure. It is working fine, but it may be better
+    // to find a way to get a cleaner structure and still have the zoom, panning capabilities
     var g = d3.select("#pipeline_diagram")
 	.append("svg:svg")
 	.attr("pointer-events", "all")
@@ -113,7 +132,6 @@ function draw_diagram(xmlStr) {
 	.append("svg:g");
 
     g.node().appendChild(importedNode);
-    jQuery.map($('g title'), function(v,i) {console.log(v.val());});
 }
 
 // res is the JSON-encoded response from the server in the Ajax call

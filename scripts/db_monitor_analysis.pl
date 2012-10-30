@@ -12,7 +12,7 @@ use lib ("./scripts/lib"); ## Only needed for testing the script.
 use new_hive_methods; # needed?
 use msg;
 
-my $json_data = shift @ARGV || '{"url":["mysql://ensadmin:ensembl@127.0.0.1:2912/mp12_compara_nctrees_69a2"], "analysis_id":["22"]}';
+my $json_data = shift @ARGV || '{"url":["mysql://ensadmin:ensembl@127.0.0.1:2912/mp12_compara_nctrees_69d"], "analysis_id":["22"]}';
 my $monitor_template = $ENV{GUIHIVE_BASEDIR} . "static/analysis_monitor.html";
 
 my $var         = decode_json($json_data);
