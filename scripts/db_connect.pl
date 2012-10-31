@@ -56,8 +56,7 @@ sub formResponse {
 
 sub formAnalyses {
     my ($dbConn) = @_;
-    my $hive_config_file = $ENV{GUIHIVE_BASEDIR} . "config/hive_config.json";
-    my $graph = Bio::EnsEMBL::Hive::Utils::Graph->new($dbConn, $hive_config_file);
+    my $graph = Bio::EnsEMBL::Hive::Utils::Graph->new($dbConn);
     my $graphviz = $graph->build();
 
     # my $graphviz = GraphViz->new();
