@@ -13,7 +13,6 @@ use new_hive_methods;   # needed?
 use msg;
 
 my $json_data = shift @ARGV || '{"url":["mysql://ensadmin:ensembl@127.0.0.1:2912/mp12_compara_nctrees_69d"], "analysis_id":["22"]}';
-my $config_file = $ENV{GUIHIVE_BASEDIR} . "config/hive_config.json";
 
 my $var         = decode_json($json_data);
 my $url         = $var->{url}->[0];
@@ -35,7 +34,7 @@ if (defined $dbConn) {
 	$response->err_msg("I can't retrieve analysis_stats with id $analysis_id from the database");
 	$response->status("FAILED");
     }
-    $response->out_msg(formMonitorInfo($analysis_stats, $config_file));
+    $response->out_msg(formMonitorInfo($analysis_stats));
 } else {
     $response->err_msg("The provided URL seems to be invalid. Please check it and try again");
     $response->status("FAILED");
@@ -44,7 +43,7 @@ if (defined $dbConn) {
 print $response->toJSON;
 
 sub formMonitorInfo {
-    my ($analysis_stats, $config_file) = @_;
+    my ($analysis_stats) = @_;
     my $config = Bio::EnsEMBL::Hive::Utils::Config->new();
     my $status = $analysis_stats->status();
     my $status_colour = $config->get('Graph', 'Node', $analysis_stats->status, 'Colour');
