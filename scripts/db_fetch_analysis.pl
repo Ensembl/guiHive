@@ -12,13 +12,13 @@ use lib ("./scripts/lib");
 use new_hive_methods;
 use msg;
 
-my $json_data = shift @ARGV || '{"url":["mysql://ensadmin:ensembl@127.0.0.1:2912/mp12_compara_nctrees_69a2"], "logic_name":["load_genomedb"]}';
+my $json_data = shift @ARGV || '{"url":["mysql://ensadmin:ensembl@127.0.0.1:2912/mp12_compara_nctrees_69d"], "analysis_id":["12"]}';
 my $details_template = $ENV{GUIHIVE_BASEDIR} . "static/analysis_details.html";
 
 ## Input
 my $var = decode_json($json_data);
 my $url = $var->{url}->[0];
-my $logic_name = $var->{logic_name}->[0];
+my $analysis_id = $var->{analysis_id}->[0];
 
 ## Initialization
 my $dbConn = Bio::EnsEMBL::Hive::URLFactory->fetch($url);
@@ -27,14 +27,14 @@ my $response = msg->new();
 if (defined $dbConn) {
   my $analysis;
   eval {
-    $analysis = $dbConn->get_AnalysisAdaptor()->fetch_by_logic_name_or_url($logic_name);
+    $analysis = $dbConn->get_AnalysisAdaptor()->fetch_by_analysis_id($analysis_id);
   };
   if ($@) {
-    $response->err_msg("I can't retrieve analysis with logic name $logic_name: $@");
+    $response->err_msg("I can't retrieve analysis with id $analysis_id: $@");
     $response->status("FAILED");
   }
   if (! defined $analysis) {
-      $response->err_msg("I can't retrieve analysis with logic name $logic_name from the database");
+      $response->err_msg("I can't retrieve analysis with analysis_id $analysis_id from the database");
       $response->status("FAILED");
   }
   $response->out_msg(formAnalysisInfo($analysis));
