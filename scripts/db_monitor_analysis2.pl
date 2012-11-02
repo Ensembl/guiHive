@@ -12,6 +12,15 @@ use lib ("./scripts/lib");  # Only needed for testing the script
 use new_hive_methods;   # needed?
 use msg;
 
+## colors encoding the different job status we may have
+my $job_colors = {
+		  'semaphored' => 'yellow',
+		  'ready'      => 'cyan',
+		  'inprogress' => 'blue',
+		  'failed'     => 'red',
+		  'done'       => 'green',
+		 };
+
 my $json_data = shift @ARGV || '{"url":["mysql://ensadmin:ensembl@127.0.0.1:2912/mp12_compara_nctrees_69d"], "analysis_id":["22"]}';
 
 my $var         = decode_json($json_data);
@@ -43,9 +52,40 @@ if (defined $dbConn) {
 print $response->toJSON;
 
 sub formMonitorInfo {
-    my ($analysis_stats) = @_;
-    my $config = Bio::EnsEMBL::Hive::Utils::Config->new();
-    my $status = $analysis_stats->status();
-    my $status_colour = $config->get('Graph', 'Node', $analysis_stats->status, 'Colour');
-    return {colour => $status_colour};
+  my ($analysis_stats) = @_;
+  my $config = Bio::EnsEMBL::Hive::Utils::Config->new();
+  my $status = $analysis_stats->status();
+  my $status_colour = $config->get('Graph', 'Node', $analysis_stats->status, 'Colour');
+  my $full_status = {status => $status_colour,
+		     jobs   => {
+				counts => [],
+				colors => [],
+			       },
+		    };
+
+  for my $job_status (qw/semaphored ready inprogress failed done/) {
+    my $method_name = ${job_status} . "_job_count";
+    my $count = $analysis_stats->$method_name;
+      push @{$full_status->{jobs}->{counts}}, $count+0;
+      push @{$full_status->{jobs}->{colors}}, $job_colors->{$job_status};
+  }
+
+  # We can't have all zeros
+  if (sum($full_status->{jobs}->{counts})) {
+    push @{$full_status->{jobs}->{counts}}, 0;
+  } else {
+    push @{$full_status->{jobs}->{counts}}, 1;
+  }
+  push @{$full_status->{jobs}->{colors}}, "white";
+
+  return $full_status;
+}
+
+sub sum {
+  my ($arr) = @_;
+  my $res = 0;
+  for my $i (@$arr) {
+    $res+=$i;
+  }
+  return $res;
 }

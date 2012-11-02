@@ -3,6 +3,10 @@ var url = "";
 // Compile the analysis_id regexp once
 var analysis_id_regexp = /analysis_(\d+)/;
 
+// global?
+var arc;
+var pie;
+
 // wait for the DOM to be loaded 
 $(document).ready(function() { 
     //  We are creating a hidden button for showing resources and 
@@ -35,7 +39,7 @@ $(document).ready(function() {
     });
 
     // Default value. Only for testing. TODO: Remove the following line
-    $("#db_url").val("mysql://ensadmin:ensembl@127.0.0.1:2912/mp12_compara_nctrees_69d");
+    $("#db_url").val("mysql://ensadmin:ensembl@127.0.0.1:2912/mp12_long_mult");
     $("#Connect").click(function() {
 	$.ajax({url        : "/scripts/db_connect.pl",
 		type       : "post",
@@ -54,7 +58,45 @@ function monitor_analysis() {
 	var titleText = $(v).text();
 	var matches = analysis_id_regexp.exec(titleText);
 	if (matches != null &&  matches.length > 1) {
-	    $(v).bind("monitor", {analysis_id: matches[1]}, worker);
+	    var analysis_id = matches[1];
+	    var gRoot = $(v).parent()[0]; 
+	    var bbox = gRoot.getBBox();
+	    // Links to the analysis_details
+	    d3.select(gRoot)
+		.attr("data-analysis_id", analysis_id)
+	        .on("click", function(){
+		    var button = $(this);
+		    $.ajax({url        : "/scripts/db_fetch_analysis.pl",
+			    type       : "post",
+			    data       : "url=" + url + "&analysis_id=" + $(this).attr("data-analysis_id"),
+			    dataType   : "json",
+			    success    : function(resp) {onSuccess_fetchAnalysis(resp, button)},
+			   });
+		});
+
+	    var innerRadius = bbox.height/7;
+	    var outerRadius = bbox.height/2;
+
+	    pie = d3.layout.pie()
+		.sort(null)
+
+	    arc = d3.svg.arc()
+		.innerRadius(innerRadius)
+		.outerRadius(outerRadius)
+	    arcglobal = arc;
+	    // piecharts with jobs information
+	    var gpie = d3.select(gRoot)
+		.append("g")
+		.attr("transform", "translate(" + (bbox.x+bbox.width) + "," + bbox.y + ")");
+
+	    var path = gpie.selectAll("path").data(pie([1,1,1,1,1,1]))
+		.enter().append("path")
+		.attr("fill", "white")
+		.attr("stroke", "black")
+		.attr("d", arc)
+		.each(function(d) { this._current = d; }); // store initial values
+
+	    $(v).bind("monitor", {analysis_id:analysis_id, path:path}, worker);
 	    $(v).trigger("monitor");
 	}
     });
@@ -62,9 +104,15 @@ function monitor_analysis() {
 
 // One monitor per analysis
 function worker(event) {
+    var gRoot = $(this).parent()[0]; 
+    var bbox = gRoot.getBBox();
+    
     var analysis_id = event.data.analysis_id;
-    var called_elem = $(this).parent();
-    console.log("ELEM: " + called_elem);
+    var path        = event.data.path;
+
+    var called_elem = $(this);
+    var node_shape  = $(this).siblings("ellipse,polygon")[0];
+
     $.ajax({ url      : "/scripts/db_monitor_analysis2.pl",
 	     type     : "post",
 	     data     : "url=" + url + "&analysis_id=" + analysis_id,
@@ -73,21 +121,36 @@ function worker(event) {
 		 if(monitorRes.status != "ok") {
 		     $("#log").append(monitorRes.err_msg); scroll_down();
 		 } else {
-		     var colour = monitorRes.out_msg.colour;
-		     console.log(colour);
-		     d3.select(called_elem)
-			 .attr('fill', colour);
-//		     $(called_div).html(monitorRes.out_msg)
+		     // Here we change the color status of the node
+		     var color = monitorRes.out_msg.status;
+		     d3.select(node_shape).transition().duration(1500).delay(0).style('fill',color);
+
+		     // and include the pie charts showing the progression of the analysis
+		     var jobs_info   = monitorRes.out_msg.jobs;
+		     var jobs_counts = jobs_info.counts;
+		     var jobs_colors = jobs_info.colors;
+		     console.log(jobs_counts);
+		     console.log(jobs_colors);
+		     path = path.data(pie(jobs_counts))
+			 .attr("fill", function(d,i) { return jobs_colors[i] });
+		     // TODO: I am not able to pass "arc" to arcTween, this is why I have made arc global
+		     path.transition().duration(1000).attrTween("d", arcTween); // redraw the arcs
 		 }
 	     },
-	     complete : setTimeout(function(){$(called_elem).trigger("monitor")}, 10000), // 10seg TODO: Increase in production
+	     complete : setTimeout(function(){$(called_elem).trigger("monitor")}, 5000), // 5seg TODO: Increase in production
 	   });
 }
 
-//function monitor_analysis() {
-//    $(".progress_monitor").bind("monitor", worker);
-//    $(".progress_monitor").trigger("monitor");
-//}
+// Store the displayed angles in _current.
+// Then, interpolate from _current to the new angles.
+// During the transition, _current is updated in-place by d3.interpolate.
+function arcTween(a) {
+    var i = d3.interpolate(this._current, a);
+    this._current = i(0);
+    return function(t) {
+	return arc(i(t));
+    };
+}
 
 // res is the JSON-encoded response from the server in the Ajax call
 function onSuccess_dbConnect(res) {
@@ -98,16 +161,6 @@ function onSuccess_dbConnect(res) {
     url = $("#db_url").val();
     // Now we start monitoring the analyses:
     monitor_analysis();
-
-    $(".analysis_link").click(function() {
-	var button = $(this);
-	$.ajax({url        : "/scripts/db_fetch_analysis.pl",
-		type       : "post",
-		data       : "url=" + url + "&logic_name=" + this.id,
-		dataType   : "json",
-		success    : function(resp) {onSuccess_fetchAnalysis(resp, button)},
-	       });
-    });
 }
 
 function redraw(viz) {
