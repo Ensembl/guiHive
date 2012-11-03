@@ -3,9 +3,7 @@ var url = "";
 // Compile the analysis_id regexp once
 var analysis_id_regexp = /analysis_(\d+)/;
 
-// global?
-var arc;
-var pie;
+var total_jobs_counts = [];
 
 // wait for the DOM to be loaded 
 $(document).ready(function() { 
@@ -54,6 +52,9 @@ $(document).ready(function() {
 
 
 function monitor_analysis() {
+    var pie = d3.layout.pie()
+	.sort(null)
+
     jQuery.map($('.node title'), function(v,i) {
 	var titleText = $(v).text();
 	var matches = analysis_id_regexp.exec(titleText);
@@ -74,16 +75,12 @@ function monitor_analysis() {
 			   });
 		});
 
-	    var innerRadius = bbox.height/7;
-	    var outerRadius = bbox.height/2;
+	    var outerRadius = bbox.height/3;
+	    var innerRadius = outerRadius/4; //bbox.height/7;
 
-	    pie = d3.layout.pie()
-		.sort(null)
-
-	    arc = d3.svg.arc()
+	    var arc = d3.svg.arc()
 		.innerRadius(innerRadius)
 		.outerRadius(outerRadius)
-	    arcglobal = arc;
 	    // piecharts with jobs information
 	    var gpie = d3.select(gRoot)
 		.append("g")
@@ -96,7 +93,7 @@ function monitor_analysis() {
 		.attr("d", arc)
 		.each(function(d) { this._current = d; }); // store initial values
 
-	    $(v).bind("monitor", {analysis_id:analysis_id, path:path}, worker);
+	    $(v).bind("monitor", {analysis_id:analysis_id, path:path, arc:arc, pie:pie}, worker);
 	    $(v).trigger("monitor");
 	}
     });
@@ -109,6 +106,8 @@ function worker(event) {
     
     var analysis_id = event.data.analysis_id;
     var path        = event.data.path;
+    var arc         = event.data.arc;
+    var pie         = event.data.pie;
 
     var called_elem = $(this);
     var node_shape  = $(this).siblings("ellipse,polygon")[0];
@@ -121,6 +120,12 @@ function worker(event) {
 		 if(monitorRes.status != "ok") {
 		     $("#log").append(monitorRes.err_msg); scroll_down();
 		 } else {
+		     // The worker posts its value for total_job_count
+		     // This is not very fast, since workers can update their
+		     // size before all the other workers post their number of jobs
+		     // in the wall.
+		     total_jobs_counts[analysis_id] = monitorRes.out_msg.total;
+
 		     // Here we change the color status of the node
 		     var color = monitorRes.out_msg.status;
 		     d3.select(node_shape).transition().duration(1500).delay(0).style('fill',color);
@@ -129,27 +134,32 @@ function worker(event) {
 		     var jobs_info   = monitorRes.out_msg.jobs;
 		     var jobs_counts = jobs_info.counts;
 		     var jobs_colors = jobs_info.colors;
+
+		     var total_counts_extent = d3.extent(total_jobs_counts, function(d){return d});
+		     var pie_size_scale = d3.scale.linear()
+			 .range([bbox.height/5, bbox.height/3])
+			 .domain(total_counts_extent);
+		     console.log("TOTJC: " + total_jobs_counts[analysis_id]);
+		     console.log("SCALD: " + pie_size_scale(total_jobs_counts[analysis_id]));
+//		     arc.outerRadius(pie_size_scale(total_jobs_counts[analysis_id]));
+
 		     console.log(jobs_counts);
 		     console.log(jobs_colors);
 		     path = path.data(pie(jobs_counts))
 			 .attr("fill", function(d,i) { return jobs_colors[i] });
-		     // TODO: I am not able to pass "arc" to arcTween, this is why I have made arc global
-		     path.transition().duration(1000).attrTween("d", arcTween); // redraw the arcs
+
+		     path.transition().duration(1500).attrTween("d", function(a) {
+			 var i = d3.interpolate(this._current, a),
+			     k = d3.interpolate(arc.outerRadius()(), pie_size_scale(total_jobs_counts[analysis_id]));
+			 this._current = i(0);
+			 return function(t) {
+			     return arc.innerRadius(k(t)/4).outerRadius(k(t))(i(t));
+			 };
+		     }); // redraw the arcs
 		 }
 	     },
 	     complete : setTimeout(function(){$(called_elem).trigger("monitor")}, 5000), // 5seg TODO: Increase in production
 	   });
-}
-
-// Store the displayed angles in _current.
-// Then, interpolate from _current to the new angles.
-// During the transition, _current is updated in-place by d3.interpolate.
-function arcTween(a) {
-    var i = d3.interpolate(this._current, a);
-    this._current = i(0);
-    return function(t) {
-	return arc(i(t));
-    };
 }
 
 // res is the JSON-encoded response from the server in the Ajax call

@@ -57,6 +57,7 @@ sub formMonitorInfo {
   my $status = $analysis_stats->status();
   my $status_colour = $config->get('Graph', 'Node', $analysis_stats->status, 'Colour');
   my $full_status = {status => $status_colour,
+		     total  => $analysis_stats->total_job_count(),
 		     jobs   => {
 				counts => [],
 				colors => [],
