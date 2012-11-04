@@ -3,6 +3,7 @@ var url = "";
 // Compile the analysis_id regexp once
 var analysis_id_regexp = /analysis_(\d+)/;
 
+// TODO: Put this inside the monitor function
 var total_jobs_counts = [];
 
 // wait for the DOM to be loaded 
@@ -47,9 +48,7 @@ $(document).ready(function() {
 		success    : onSuccess_dbConnect
 	       });
     });
-
 }); 
-
 
 function monitor_analysis() {
     var pie = d3.layout.pie()
@@ -73,9 +72,19 @@ function monitor_analysis() {
 			    dataType   : "json",
 			    success    : function(resp) {onSuccess_fetchAnalysis(resp, button)},
 			   });
+
+		    // TODO: For now, there is a duplicated ajax call (one for analysis details
+		    // and one for jobs) because I still don't know where the jobs should be
+		    // accessible (here? in the pie-charts?)
+		    $.ajax({url        : "/scripts/db_fetch_jobs.pl",
+			    type       : "post",
+			    data       : "url=" + url + "&analysis_id=" + $(this).attr("data-analysis_id"),
+			    dataType   : "json",
+			    success    : function(resp) {onSuccess_fetchJobs(resp)},
+			   })
 		});
 
-	    var outerRadius = bbox.height/3;
+		    var outerRadius = bbox.height/3;
 	    var innerRadius = outerRadius/4; //bbox.height/7;
 
 	    var arc = d3.svg.arc()
@@ -139,9 +148,6 @@ function worker(event) {
 		     var pie_size_scale = d3.scale.linear()
 			 .range([bbox.height/5, bbox.height/3])
 			 .domain(total_counts_extent);
-		     console.log("TOTJC: " + total_jobs_counts[analysis_id]);
-		     console.log("SCALD: " + pie_size_scale(total_jobs_counts[analysis_id]));
-//		     arc.outerRadius(pie_size_scale(total_jobs_counts[analysis_id]));
 
 		     console.log(jobs_counts);
 		     console.log(jobs_colors);
@@ -213,6 +219,15 @@ function onSuccess_fetchAnalysis(analysisRes, button) {
 	{reload:button,
 	 script:"/scripts/db_update.pl"},
 	update_db);
+}
+
+function onSuccess_fetchJobs(jobsRes) {
+    if(jobsRes.status == "ok") {
+	$("#jobs").html(jobsRes.out_msg);
+    } else {
+	$("#log").append(jobsRes.err_msg); scroll_down();
+	$("#connexion_msg").html(jobsRes.status);
+    }
 }
 
 function update_db(obj) {
