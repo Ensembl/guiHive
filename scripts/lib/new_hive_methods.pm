@@ -98,5 +98,17 @@ use Bio::EnsEMBL::Hive::Utils qw/stringify destringify/;
 						       );
 };
 
+# There is no method in AnalysisJobAdaptor for fetching all the jobs for a given analysis_id
+*Bio::EnsEMBL::Hive::DBSQL::AnalysisJobAdaptor::fetch_jobs = sub {
+    my ($self, %args) = @_;
+    my ($analysis_id, $status, $retry_count) = @args{qw/analysis_id status retry_count/};
+
+    my @constraints;
+    push @constraints, "j.status='$status'" if ($status);
+    push @constraints, "j.analysis_id=$analysis_id" if ($analysis_id);
+    push @constraints, "j.retry_count >= $retry_count" if ($retry_count);
+    return $self->_generic_fetch(join " AND ", @constraints);
+};
+
 1;
 
