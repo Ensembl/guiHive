@@ -224,6 +224,7 @@ function onSuccess_fetchAnalysis(analysisRes, button) {
 function onSuccess_fetchJobs(jobsRes) {
     if(jobsRes.status == "ok") {
 	$("#jobs").html(jobsRes.out_msg);
+	$('#jobs_table').dataTable();
     } else {
 	$("#log").append(jobsRes.err_msg); scroll_down();
 	$("#connexion_msg").html(jobsRes.status);

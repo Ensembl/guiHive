@@ -1,30 +1,34 @@
-<table border=1>
-  <tr>
-    <th>job_id</th>
-    <th>analysis_id</th>
-    <th>input_id</th>
-    <th>worker_id</th>
-    <th>status</th>
-    <th>retry_count</th>
-    <th>completed</th>
-    <th>runtime_msec</th>
-    <th>query_count</th>
-    <th>semaphored_count</th>
-    <th>semaphored_job_id</th>
-  </tr>
-  <TMPL_LOOP NAME=job>
+<table border=1 id="jobs_table">
+  <thead>
     <tr>
-      <td><TMPL_VAR name=job_id></td>
-      <td><TMPL_VAR name=analysis_id></td>
-      <td><TMPL_VAR name=input_id></td>
-      <td><TMPL_VAR name=worker_id></td>
-      <td><TMPL_VAR name=status></td>
-      <td><TMPL_VAR name=retry_count></td>
-      <td><TMPL_VAR name=completed></td>
-      <td><TMPL_VAR name=runtime_msec></td>
-      <td><TMPL_VAR name=query_count></td>
-      <td><TMPL_VAR name=semaphore_count></td>
-      <td><TMPL_VAR name=semaphored_job_id></td>
+      <th>job_id</th>
+      <th>analysis_id</th>
+      <th>input_id</th>
+      <th>worker_id</th>
+      <th>status</th>
+      <th>retry_count</th>
+      <th>completed</th>
+      <th>runtime_msec</th>
+      <th>query_count</th>
+      <th>semaphored_count</th>
+      <th>semaphored_job_id</th>
     </tr>
-  </TMPL_LOOP>
+  </thead>
+  <tbody>
+    <TMPL_LOOP NAME=job>
+      <tr>
+	<td><TMPL_VAR name=job_id></td>
+	<td><TMPL_VAR name=analysis_id></td>
+	<td><TMPL_VAR name=input_id></td>
+	<td><TMPL_VAR name=worker_id></td>
+	<td><TMPL_VAR name=status></td>
+	<td><TMPL_VAR name=retry_count></td>
+	<td><TMPL_VAR name=completed></td>
+	<td><TMPL_VAR name=runtime_msec></td>
+	<td><TMPL_VAR name=query_count></td>
+	<td><TMPL_VAR name=semaphore_count></td>
+	<td><TMPL_VAR name=semaphored_job_id></td>
+      </tr>
+    </TMPL_LOOP>
+  </tbody>
 </table>
