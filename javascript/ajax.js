@@ -112,7 +112,7 @@ function worker(event) {
     var called_elem = $(this);
     var node_shape  = $(this).siblings("ellipse,polygon")[0];
 
-    $.ajax({ url      : "/scripts/db_monitor_analysis2.pl",
+    $.ajax({ url      : "/scripts/db_monitor_analysis.pl",
 	     type     : "post",
 	     data     : "url=" + url + "&analysis_id=" + analysis_id,
 	     dataType : "json",
