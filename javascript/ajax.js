@@ -223,8 +223,40 @@ function onSuccess_fetchAnalysis(analysisRes, button) {
 
 function onSuccess_fetchJobs(jobsRes) {
     if(jobsRes.status == "ok") {
+	$.datepicker.regional[""].dateFormat = 'dd/mm/yy';
+	$.datepicker.setDefaults($.datepicker.regional['']);
 	$("#jobs").html(jobsRes.out_msg);
-	$('#jobs_table').dataTable();
+	var oTable = $('#jobs_table').dataTable()
+	    .columnFilter( {
+		aoColumns : [ { type : "number" },
+			      { type : "number" },
+			      { type : "text"   },
+			      { type : "number" },
+			      { type : "select", values: [ 'SEMAPHORED', 'READY', 'DONE', 'FAILED' ] },
+			      { type : "number-range" },
+			      { type : "date-range" },
+			      { type : "number" },
+			      { type : "number" },
+			      { type : "number" },
+			      { type : "number" }
+			    ]
+	    });
+
+	oTable.$('td').editable("scripts/db_update.pl", {
+	    indicator  : 'Saving...',
+	    tooltip    : 'Click to edit...',
+	    callback   : function(value) {
+		var aPos = oTable.fnGetPosition(this);
+		oTable.fnUpdate( sValue, aPos[0], aPos[1] );
+	    },
+	    submitdata : function(value) {
+		return {
+		    "row_id" : this.parentNode.getAttribute('id'),
+		    "column" : oTable.fnGetPosition(this)[2]
+		}
+	    }
+	});
+
     } else {
 	$("#log").append(jobsRes.err_msg); scroll_down();
 	$("#connexion_msg").html(jobsRes.status);
