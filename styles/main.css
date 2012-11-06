@@ -39,3 +39,11 @@
     border           : groove;
     padding          : active;
 }
+
+/* date-range */
+.date_range_filter {
+    width            : 5.5em;
+}
+.ui-widget-content {
+    background-color : white;
+}
