@@ -133,7 +133,7 @@ function worker(event) {
 		     // This is not very fast, since workers can update their
 		     // size before all the other workers post their number of jobs
 		     // in the wall.
-		     total_jobs_counts[analysis_id] = monitorRes.out_msg.total;
+		     total_jobs_counts[analysis_id] = parseInt(monitorRes.out_msg.total);
 
 		     // Here we change the color status of the node
 		     var color = monitorRes.out_msg.status;
@@ -149,8 +149,12 @@ function worker(event) {
 			 .range([bbox.height/5, bbox.height/3])
 			 .domain(total_counts_extent);
 
-		     console.log(jobs_counts);
-		     console.log(jobs_colors);
+		     console.log("ANAID:  " + analysis_id);
+ 		     console.log(jobs_counts);
+		     console.log("TOT:    " + total_jobs_counts[analysis_id]);
+ 		     console.log(total_jobs_counts);
+ 		     console.log(total_counts_extent);
+ 		     console.log("SCALED: " + pie_size_scale(total_jobs_counts[analysis_id]));
 		     path = path.data(pie(jobs_counts))
 			 .attr("fill", function(d,i) { return jobs_colors[i] });
 
@@ -164,7 +168,7 @@ function worker(event) {
 		     }); // redraw the arcs
 		 }
 	     },
-	     complete : setTimeout(function(){$(called_elem).trigger("monitor")}, 5000), // 5seg TODO: Increase in production
+	     complete : setTimeout(function(){$(called_elem).trigger("monitor")}, 25000), // 5seg TODO: Increase in production
 	   });
 }
 
