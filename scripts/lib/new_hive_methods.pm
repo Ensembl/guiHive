@@ -65,7 +65,7 @@ use Bio::EnsEMBL::Hive::Utils qw/stringify destringify/;
     return $description;
 };
 
-# Consistent way of retrieving the adaptor from a dbID
+# Method for retrieving the ResourceDescription adaptor from a dbID
 *Bio::EnsEMBL::Hive::DBSQL::ResourceDescriptionAdaptor::fetch_by_dbID = sub {
     my ($self, $id) = @_;
     my $obj = $self->fetch_all_by_resource_class_id($id)->[0];
