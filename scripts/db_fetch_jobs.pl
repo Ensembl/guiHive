@@ -30,7 +30,7 @@ if (defined $dbConn) {
     my $params = {'analysis_id' => $analysis_id};
     $params->{status} = $status if (defined $status);
     eval {
-	$jobs = $dbConn->get_AnalysisJobAdaptor()->fetch_jobs(%$params);
+      $jobs = $dbConn->get_AnalysisJobAdaptor()->fetch_all_by_analysis_id_status($analysis_id, $status || undef, undef);
     };
     if ($@) {
 	$response->err_msg("I can't retrieve jobs with analysis_id $analysis_id and status $status: $@");
