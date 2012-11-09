@@ -24,7 +24,8 @@
 
 /* Diagram Div */
 .pipeline_diagram {
-    width            : 960px;
+    width            : 1560px;
+    height           : 950px;
     color            : white;
     background-color : grey;
     border           : double;
