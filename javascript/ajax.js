@@ -38,7 +38,7 @@ $(document).ready(function() {
     });
 
     // Default value. Only for testing. TODO: Remove the following line
-    $("#db_url").val("mysql://ensadmin:ensembl@127.0.0.1:2912/mp12_compara_nctrees_69d");
+    $("#db_url").val("mysql://ensadmin:ensembl@127.0.0.1:2912/mp12_long_mult");
     $("#Connect").click(function() {
 	$.ajax({url        : "/scripts/db_connect.pl",
 		type       : "post",
@@ -141,7 +141,6 @@ function worker(event) {
 
 		     // We update the labels in the nodes
 		     var breakdown_label = monitorRes.out_msg.breakdown_label;
-		     console.log($(gRoot).children("text")[1]);
 		     var label = $(gRoot).children("text")[1];
 		     $(label).text(breakdown_label);
 
@@ -155,12 +154,6 @@ function worker(event) {
 			 .range([bbox.height/5, bbox.height/3])
 			 .domain(total_counts_extent);
 
-		     console.log("ANAID:  " + analysis_id);
- 		     console.log(jobs_counts);
-		     console.log("TOT:    " + total_jobs_counts[analysis_id]);
- 		     console.log(total_jobs_counts);
- 		     console.log(total_counts_extent);
- 		     console.log("SCALED: " + pie_size_scale(total_jobs_counts[analysis_id]));
 		     path = path.data(pie(jobs_counts))
 			 .attr("fill", function(d,i) { return jobs_colors[i] });
 
@@ -252,7 +245,7 @@ function onSuccess_fetchJobs(jobsRes) {
 			    ]
 	    });
 
-	oTable.$('td').editable("scripts/db_update.pl", {
+	oTable.$('td').editable("/scripts/db_update.pl", {
 	    indicator  : 'Saving...',
 	    tooltip    : 'Click to edit...',
 	    callback   : function(value) {
@@ -261,8 +254,9 @@ function onSuccess_fetchJobs(jobsRes) {
 	    },
 	    submitdata : function(value) {
 		return {
-		    "row_id" : this.parentNode.getAttribute('id'),
-		    "column" : oTable.fnGetPosition(this)[2]
+		    "url"         : url,
+		    "adaptor"     : "AnalysisJobAdaptor",
+		    "analysis_id" : ""
 		}
 	    }
 	});
