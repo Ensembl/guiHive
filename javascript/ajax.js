@@ -84,7 +84,7 @@ function monitor_analysis() {
 			   })
 		});
 
-		    var outerRadius = bbox.height/3;
+	    var outerRadius = bbox.height/3;
 	    var innerRadius = outerRadius/4; //bbox.height/7;
 
 	    var arc = d3.svg.arc()
@@ -133,11 +133,17 @@ function worker(event) {
 		     // This is not very fast, since workers can update their
 		     // size before all the other workers post their number of jobs
 		     // in the wall.
-		     total_jobs_counts[analysis_id] = parseInt(monitorRes.out_msg.total);
+		     total_jobs_counts[analysis_id] = parseInt(monitorRes.out_msg.total_job_count);
 
 		     // Here we change the color status of the node
 		     var color = monitorRes.out_msg.status;
 		     d3.select(node_shape).transition().duration(1500).delay(0).style('fill',color);
+
+		     // We update the labels in the nodes
+		     var breakdown_label = monitorRes.out_msg.breakdown_label;
+		     console.log($(gRoot).children("text")[1]);
+		     var label = $(gRoot).children("text")[1];
+		     $(label).text(breakdown_label);
 
 		     // and include the pie charts showing the progression of the analysis
 		     var jobs_info   = monitorRes.out_msg.jobs;

@@ -56,19 +56,23 @@ sub formMonitorInfo {
   my $config = Bio::EnsEMBL::Hive::Utils::Config->new();
   my $status = $analysis_stats->status();
   my $status_colour = $config->get('Graph', 'Node', $analysis_stats->status, 'Colour');
+  my ($breakout_label, $total_job_count, $job_counts) = $analysis_stats->job_count_breakout();
+
   my $full_status = {status => $status_colour,
-		     total  => $analysis_stats->total_job_count(),
-		     jobs   => {
-				counts => [],
-				colors => [],
-			       },
+		     breakout_label => $breakout_label,
+		     total_job_count => $total_job_count,
+		     jobs_counts => {
+				     counts => [],
+				     colors => [],
+				    },
 		    };
 
+
   for my $job_status (qw/semaphored ready inprogress failed done/) {
-    my $method_name = ${job_status} . "_job_count";
-    my $count = $analysis_stats->$method_name;
-      push @{$full_status->{jobs}->{counts}}, $count+0;
-      push @{$full_status->{jobs}->{colors}}, $job_colors->{$job_status};
+    my $job_status_full = $job_status . "_job_count";
+    my $count = $job_counts->{$job_status_full};
+    push @{$full_status->{jobs}->{counts}}, $count+0;
+    push @{$full_status->{jobs}->{colors}}, $job_colors->{$job_status};
   }
 
   # We can't have all zeros
