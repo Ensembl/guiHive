@@ -48,21 +48,58 @@ if (defined $dbConn) {
 
 print $response->toJSON;
 
+
 sub formJobsInfo {
 # There is no method for prev_job_id. Should we include it?
     my ($jobs) = @_;
     my @all_jobs;
     my @methods = qw/analysis_id input_id worker_id status retry_count completed runtime_msec query_count semaphore_count semaphored_job_id/;
     for my $job (@$jobs) {
-	my $job_info;
-	$job_info->{job_id} = $job->dbID();
-	for my $method (@methods) {
-	    $job_info->{$method} = $job->$method;
-	}
-	push @all_jobs, $job_info;
+      my $job_id = $job->dbID();
+      my $unique_job_label = "job_" . $job_id;
+      my $adaptor = "AnalysisJob";
+      my $job_info = { job_id => $job_id,
+		       unique_job_label => $unique_job_label,
+		       analysis_id => $job->analysis_id(),
+		       JOB_INPUT_ID => [{
+					 input_id => $job->input_id(),
+					 job_label => $unique_job_label,
+					 adaptor => $adaptor,
+					 method => "input_id",
+					}],
+		       worker_id => $job->worker_id(),
+		       JOB_STATUS => [{
+				       status => $job->status(),
+				       job_label => $unique_job_label,
+				       adaptor => $adaptor,
+				       method => "status",
+				      }],
+		       JOB_RETRY_COUNT => [{
+					retry_count => $job->retry_count,
+					job_label => $unique_job_label,
+					adaptor => $adaptor,
+					method => "retry_count",
+				       }],
+		       completed => $job->completed(),
+		       runtime_msec => $job->runtime_msec(),
+		       JOB_SEMAPHORE_COUNT => [{
+						semaphore_count => $job->semaphore_count(),
+						job_label => $unique_job_label,
+						adaptor => $adaptor,
+						method => "semaphore_count",
+					       }],
+		       JOB_SEMAPHORED_JOB_ID => [{
+						  semaphored_job_id => $job->semaphored_job_id(),
+						  job_label => $unique_job_label,
+						  adaptor => $adaptor,
+						  method => "semaphored_job_id",
+						 }],
+		     };
+
+      push @all_jobs, $job_info;
     }
     my $template = HTML::Template->new(filename => $jobs_template);
-    $template->param('job' => [@all_jobs]);
+    $template->param('jobs' => [@all_jobs]);
     return $template->output();
 }
 

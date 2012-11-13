@@ -1,3 +1,4 @@
+<!-- TODO: Eliminate formatting code (borders, sizes, etc...) -->
 <table border=1 id="jobs_table">
   <thead>
     <tr>
@@ -15,19 +16,64 @@
     </tr>
   </thead>
   <tbody>
-    <TMPL_LOOP NAME=job>
+    <TMPL_LOOP NAME=JOBS>
       <tr>
-	<td><TMPL_VAR name=job_id></td>
-	<td><TMPL_VAR name=analysis_id></td>
-	<td><TMPL_VAR name=input_id></td>
-	<td><TMPL_VAR name=worker_id></td>
-	<td><TMPL_VAR name=status></td>
-	<td><TMPL_VAR name=retry_count></td>
+	<td id="<TMPL_VAR NAME=unique_job_label>"><TMPL_VAR NAME=job_id></td>
+
+	<td><TMPL_VAR NAME=analysis_id></td>
+
+	<TMPL_LOOP NAME=JOB_INPUT_ID>
+	  <td class="editable"
+	      data-linkTo="<TMPL_VAR NAME=job_label>"
+	      data-adaptor="<TMPL_VAR NAME=adaptor>"
+	      data-method="<TMPL_VAR NAME=method>">
+	    <TMPL_VAR NAME=input_id>
+	  </td>
+	</TMPL_LOOP>
+
+	<td><TMPL_VAR NAME=worker_id></td>
+
+	<TMPL_LOOP NAME=JOB_STATUS>
+	<td class="editableStatus"
+	    data-linkTo="<TMPL_VAR NAME=job_label>"
+	    data-adaptor="<TMPL_VAR NAME=adaptor>"
+	    data-method="<TMPL_VAR NAME=method>">
+	  <TMPL_VAR name=status>
+	</td>
+	</TMPL_LOOP>
+
+	<TMPL_LOOP NAME=JOB_RETRY_COUNT>
+	  <td class="editable"
+	      data-linkTo="<TMPL_VAR NAME=job_label>"
+	      data-adaptor="<TMPL_VAR NAME=adaptor>"
+	      data-method="<TMPL_VAR NAME=method>">
+	    <TMPL_VAR NAME=retry_count>
+	  </td>
+	</TMPL_LOOP>
+
 	<td><TMPL_VAR name=completed></td>
+
 	<td><TMPL_VAR name=runtime_msec></td>
+
 	<td><TMPL_VAR name=query_count></td>
-	<td><TMPL_VAR name=semaphore_count></td>
-	<td><TMPL_VAR name=semaphored_job_id></td>
+
+	<TMPL_LOOP NAME=JOB_SEMAPHORE_COUNT>
+	  <td class="editable"
+	      data-linkTo="<TMPL_VAR NAME=job_label>"
+	      data-adaptor="<TMPL_VAR NAME=adaptor>"
+	      data-method="<TMPL_VAR NAME=method>">
+	    <TMPL_VAR NAME=semaphore_count></td>
+	</TMPL_LOOP>
+
+	<TMPL_LOOP NAME=JOB_SEMAPHORED_JOB_ID>
+	  <td class="editable"
+	      data-linkTo="<TMPL_VAR NAME=job_label>"
+	      data-adaptor="<TMPL_VAR NAME=adaptor>"
+	      data-method="<TMPL_VAR NAME=method>">
+	    <TMPL_VAR name=semaphored_job_id>
+	  </td>
+	</TMPL_LOOP>
+
       </tr>
     </TMPL_LOOP>
   </tbody>

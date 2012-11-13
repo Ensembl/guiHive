@@ -98,6 +98,27 @@ use Bio::EnsEMBL::Hive::Utils qw/stringify destringify/;
 						       );
 };
 
+## AnalysisJobAdaptor doesn't have a generic update method
+## and it doesn't inherits from Hive::DBSQL::BaseAdaptor either
+## I guess that this will change in the future,
+## but for now I am injecting a generic update for that adaptor.
+*Bio::EnsEMBL::Hive::DBSQL::AnalysisJobAdaptor::update = sub {
+  my ($self, $job) = @_;
+  my $sql = "UPDATE job SET input_id='" . $job->input_id . "'";
+  $sql .= ",status='" . $job->status . "'";
+  $sql .= ",retry_count=" . $job->retry_count;
+  $sql .= ",semaphore_count=" . $job->semaphore_count;
+  $sql .= ",semaphored_job_id=" . $job->semaphored_job_id;
+  $sql .= " WHERE job_id=" . $job->dbID;
+
+  my $sth = $self->prepare($sql);
+  $sth->execute();
+  $sth->finish();
+
+  unless ($job->completed) {
+    $self->update_status($job);
+  }
+};
 
 1;
 

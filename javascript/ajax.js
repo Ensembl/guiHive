@@ -167,7 +167,7 @@ function worker(event) {
 		     }); // redraw the arcs
 		 }
 	     },
-	     complete : setTimeout(function(){$(called_elem).trigger("monitor")}, 25000), // 5seg TODO: Increase in production
+//	     complete : setTimeout(function(){$(called_elem).trigger("monitor")}, 25000), // 5seg TODO: Increase in production
 	   });
 }
 
@@ -245,26 +245,52 @@ function onSuccess_fetchJobs(jobsRes) {
 			    ]
 	    });
 
-	oTable.$('td').editable("/scripts/db_update.pl", {
+	oTable.$("td.editableStatus").editable("/scripts/db_update2.pl", {
+	    indicator  : "Saving...",
+	    tooltip    : "Click to edit...",
+	    data       : "{'SEMAPHORED':'SEMAPHORED','READY':'READY','RUN':'RUN','DONE':'DONE'}",
+	    type       : "select",
+	    submit     : "Ok",
+	    event      : "dblclick",
+	    callback   : function(response) {editableCallback.call(this, response, oTable)},
+	    submitdata : function() { return (buildSendParams(this)) }
+	});
+
+	oTable.$("td.editable").editable("/scripts/db_update2.pl", {
 	    indicator  : 'Saving...',
 	    tooltip    : 'Click to edit...',
-	    callback   : function(value) {
-		var aPos = oTable.fnGetPosition(this);
-		oTable.fnUpdate( sValue, aPos[0], aPos[1] );
-	    },
-	    submitdata : function(value) {
-		return {
-		    "url"         : url,
-		    "adaptor"     : "AnalysisJobAdaptor",
-		    "analysis_id" : ""
-		}
-	    }
+	    event      : "dblclick",
+	    callback   : function(response) {editableCallback.call(this, response, oTable)},
+	    submitdata : function() { return (buildSendParams(this)) }
 	});
 
     } else {
 	$("#log").append(jobsRes.err_msg); scroll_down();
 	$("#connexion_msg").html(jobsRes.status);
     }
+}
+
+function editableCallback(response, oTable) {
+    var aPos = oTable.fnGetPosition(this);
+    var value = jQuery.parseJSON(response);
+    oTable.fnUpdate( value.out_msg, aPos[0], aPos[1] );
+}
+
+function buildSendParams(obj) {
+    var value = "";
+    if ($(obj).attr("data-linkTo")) {
+	var elem = $('#'+$(obj).attr("data-linkTo"));
+	value = $(elem).text();
+    }
+
+    var urlHash = {url      : url,
+		   dbID     : value,
+		   adaptor  : $(obj).attr("data-adaptor"),
+		   method   : $(obj).attr("data-method"),
+		  };
+
+    console.log(urlHash);
+    return (urlHash);
 }
 
 function update_db(obj) {
@@ -289,6 +315,7 @@ function buildURL(obj) {
 	var ids = $(obj).attr("data-linkTo").split(",");
 	var vals = jQuery.map(ids, function(e,i) {
 	    var elem = $('#'+e);
+	    console.log("ELEM: " + $(elem).text());
 	    if ($(elem).is("span")) {
 		return $(elem).attr("data-value")
 	    } else {
