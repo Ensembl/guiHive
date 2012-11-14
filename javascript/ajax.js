@@ -245,6 +245,20 @@ function onSuccess_fetchJobs(jobsRes) {
 			    ]
 	    });
 
+	oTable.$("td.editableRetries").each(function() {
+	    var job_id = $(this).attr("data-linkTo");
+	    $(this).editable("/scripts/db_update2.pl", {
+		indicator  : "Saving...",
+		tooltip    : "Click to edit...",
+		loadurl    : "/scripts/db_fetch_max_retry_count.pl?url=" + url + "&job_id=" + job_id,
+		type       : "select",
+		submit     : "Ok",
+		event      : "dblclick",
+		callback   : function(response) {editableCallback.call(this, response, oTable)},
+		submitdata : function() { return (buildSendParams(this)) }
+	    });
+	});
+
 	oTable.$("td.editableStatus").editable("/scripts/db_update2.pl", {
 	    indicator  : "Saving...",
 	    tooltip    : "Click to edit...",
