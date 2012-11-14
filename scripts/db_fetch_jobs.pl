@@ -82,6 +82,7 @@ sub formJobsInfo {
 				       }],
 		       completed => $job->completed(),
 		       runtime_msec => $job->runtime_msec(),
+		       query_count  => $job->query_count(),
 		       JOB_SEMAPHORE_COUNT => [{
 						semaphore_count => $job->semaphore_count(),
 						job_label => $unique_job_label,
