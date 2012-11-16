@@ -51,11 +51,11 @@
 	  </td>
 	</TMPL_LOOP>
 
-	<td><TMPL_VAR name=completed></td>
+	<td><TMPL_VAR NAME=completed></td>
 
-	<td><TMPL_VAR name=runtime_msec></td>
+	<td><TMPL_VAR NAME=runtime_msec></td>
 
-	<td><TMPL_VAR name=query_count></td>
+	<td><TMPL_VAR NAME=query_count></td>
 
 	<TMPL_LOOP NAME=JOB_SEMAPHORE_COUNT>
 	  <td class="editable"
@@ -90,6 +90,46 @@
       <td></td>
       <td></td>
       <td></td>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td>2</td>
+      <td>3</td>
+      <td>4</td>
+      <td>
+	<TMPL_LOOP NAME=STATUS_COL_EDIT>
+	  <select size="1"
+		  class="update_param_all"
+		  data-column="<TMPL_VAR NAME=field>"
+		  data-column-index="4"
+		  data-adaptor="<TMPL_VAR name=adaptor>"
+		  data-method="<TMPL_VAR name=method>">
+	    <option selected="1" value=""></option>
+	    <option value="SEMAPHORED">SEMAPHORED</option>
+	    <option value="READY">READY</option>
+	    <option value="DONE">DONE</option>
+	  </select>
+	</TMPL_LOOP>
+      </td>
+      <td>
+	<TMPL_LOOP NAME=RETRY_COUNT_COL_EDIT>
+	  <select size="1"
+		  class="update_param_all"
+		  data-column="<TMPL_VAR NAME=field>"
+		  data-column-index="5"
+		  data-adaptor="<TMPL_VAR NAME=adaptor>"
+		  data-method="<TMPL_VAR NAME=method>">
+	    <option selected="selected" value=""></option>
+	    <option value="0">0</option>
+	    <option value="4">4</option>
+	  </select>
+	</TMPL_LOOP>
+      </td>
+      <td>7</td>
+      <td>8</td>
+      <td>9</td>
+      <td>10</td>
+      <td>11</td>
     </tr>
   </tfoot>
 </table>

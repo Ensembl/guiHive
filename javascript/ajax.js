@@ -57,8 +57,18 @@ function onSuccess_dbConnect(res) {
     monitor_analysis();
 }
 
+function display(analysis_id, fetch_url, callback) {
+    console.log("DISPLAY: " + analysis_id + ", " + fetch_url);
+    $.ajax({url        : fetch_url,
+	    type       : "post",
+	    data       : "url=" + url + "&analysis_id=" + analysis_id,
+	    dataType   : "json",
+	    success    : function(resp) {callback(resp, analysis_id, fetch_url)},
+	   });
+}
+
 // res is the JSON-encoded response from the server in the Ajax call
-function onSuccess_fetchAnalysis(analysisRes, button) {
+function onSuccess_fetchAnalysis(analysisRes, analysis_id, fetch_url) {
     if(analysisRes.status == "ok") {
 	$("#analysis_details").html(analysisRes.out_msg);
     } else {
@@ -66,20 +76,24 @@ function onSuccess_fetchAnalysis(analysisRes, button) {
 	$("#connexion_msg").html(analysisRes.status);
     }
     $(".update_param").change(
-	{reload:button,
+	{ analysis_id:analysis_id,
+	 fetch_url:fetch_url,
 	 script:"/scripts/db_update.pl"},
 	update_db);
     $(".update_param").click (
-	{reload:button,
+	{analysis_id:analysis_id,
+	 fetch_url:fetch_url,
 	 script:"/scripts/db_update.pl"},
 	update_db);
 }
 
-function onSuccess_fetchJobs(jobsRes) {
+function onSuccess_fetchJobs(jobsRes, analysis_id, fetch_url) {
     if(jobsRes.status == "ok") {
+	// Datepicker format
 	$.datepicker.regional[""].dateFormat = 'dd/mm/yy';
 	$.datepicker.setDefaults($.datepicker.regional['']);
 	$("#jobs").html(jobsRes.out_msg);
+
 	var oTable = $('#jobs_table').dataTable()
 	    .columnFilter( {
 		aoColumns : [ { type : "number" },
@@ -93,8 +107,42 @@ function onSuccess_fetchJobs(jobsRes) {
 			      { type : "number" },
 			      { type : "number" },
 			      { type : "number" }
-			    ]
+			    ],
 	    });
+
+	// attach global updaters. Maybe this can be inserted as datatable's fnInitComplete event
+	$('.update_param_all').change(function() {
+	    column = $(this).attr("data-column");
+	    column_index = $(this).attr("data-column-index");
+
+	    var job_ids = [];
+	    $.each(oTable._('tr', {"filter":"applied"}), function(i,v) { // applied to all visible rows via the _ method
+		job_ids.push(v[0]); // pushed the job_ids (first column). TODO: More portable way?
+	    });
+	    console.log(job_ids);
+
+	    var sel = this
+	    $.ajax({url      : "/scripts/db_update2.pl",
+		    type     : "post",
+		    data     : jQuery.param(buildSendParams(sel)) + "&dbID=" + job_ids.join() + "&value=" + $(sel).val(),
+		    dataType : "json",
+		    async    : false,
+		    cache    : false,
+		    success  : function () {
+			$.each(oTable.$('tr', {"filter":"applied"}), function(i,v) {
+			    var tr = $(v)[0];
+			    var aPos = oTable.fnGetPosition(tr);
+			    oTable.fnUpdate($(sel).val(), aPos, column_index);
+			});
+		    }
+//		    complete : function() {$(button).trigger('click')},
+//		    complete : display(analysis_id, fetch_url, onSuccess_fetchJobs)
+		   });
+		    
+	    // TODO: In principle this is not needed because we re-create the table on column updates (or we should!)
+	    $(this).children('option:selected').removeAttr("selected");
+	    $(this).children('option:first-child').attr("selected","selected");
+	});
 
 	oTable.$("td.editableRetries").each(function() {
 	    var job_id = $(this).attr("data-linkTo");
@@ -149,10 +197,13 @@ function buildSendParams(obj) {
     }
 
     var urlHash = {url      : url,
-		   dbID     : value,
 		   adaptor  : $(obj).attr("data-adaptor"),
 		   method   : $(obj).attr("data-method"),
 		  };
+
+    if (value != "") {
+	urlHash.dbID = value;
+    }
 
     console.log(urlHash);
     return (urlHash);
@@ -160,17 +211,21 @@ function buildSendParams(obj) {
 
 function update_db(obj) {
     var url = obj.data.script;
-    var button = obj.data.reload;
+    var fetch_url = obj.data.fetch_url;
+    var analysis_id = obj.data.analysis_id;
     $.ajax({url        : url,
 	    type       : "post",
 	    data       : buildURL(this),
 	    dataType   : "json",
+	    async      : false,
+	    cache      : false,
 	    success    : function(updateRes) {
 		if(updateRes.status != "ok") {
 		    $("#log").append(updateRes.err_msg); scroll_down();
 		};
 	    },
-	    complete   :  function() {button.trigger('click')},
+//	    complete   :  function() {$(button).trigger('click')},
+	    complete   : display(analysis_id, fetch_url, onSuccess_fetchAnalysis)
 	   });
 }
 			    
@@ -180,7 +235,6 @@ function buildURL(obj) {
 	var ids = $(obj).attr("data-linkTo").split(",");
 	var vals = jQuery.map(ids, function(e,i) {
 	    var elem = $('#'+e);
-	    console.log("ELEM: " + $(elem).text());
 	    if ($(elem).is("span")) {
 		return $(elem).attr("data-value")
 	    } else {
@@ -219,3 +273,4 @@ function onSend(req, settings) {
 function scroll_down() {
     $("#log").scrollTop($("#log").height()+10000000); // TODO: Try to avoid this arbitrary addition
 }
+
