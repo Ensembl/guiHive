@@ -54,10 +54,10 @@ sub formJobsInfo {
     my ($jobs) = @_;
     my @all_jobs;
     my @methods = qw/analysis_id input_id worker_id status retry_count completed runtime_msec query_count semaphore_count semaphored_job_id/;
+    my $adaptor = "AnalysisJob";
     for my $job (@$jobs) {
       my $job_id = $job->dbID();
       my $unique_job_label = "job_" . $job_id;
-      my $adaptor = "AnalysisJob";
       my $job_info = { job_id => $job_id,
 		       unique_job_label => $unique_job_label,
 		       analysis_id => $job->analysis_id(),
@@ -99,8 +99,21 @@ sub formJobsInfo {
 
       push @all_jobs, $job_info;
     }
+
+    my $status_col_edit = {
+			   field => "status",
+			   adaptor => $adaptor,
+			   method => "status",
+			  };
+    my $retry_count_col_edit =  {
+				 field => "retry_count",
+				 adaptor => $adaptor,
+				 method => "retry_count",
+				};
     my $template = HTML::Template->new(filename => $jobs_template);
     $template->param('jobs' => [@all_jobs]);
+    $template->param('STATUS_COL_EDIT' => [$status_col_edit]);
+    $template->param('RETRY_COUNT_COL_EDIT' => [$retry_count_col_edit]);
     return $template->output();
 }
 

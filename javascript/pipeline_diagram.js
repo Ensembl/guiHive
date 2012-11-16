@@ -1,3 +1,5 @@
+
+
 // Compile the analysis_id regexp once
 var analysis_id_regexp = /analysis_(\d+)/;
 
@@ -35,25 +37,10 @@ function monitor_analysis() {
 	    var bbox = gRoot.getBBox();
 	    // Links to the analysis_details
 	    d3.select(gRoot)
-		.attr("data-analysis_id", analysis_id)
-	        .on("click", function(){
-		    var button = $(this);
-		    $.ajax({url        : "/scripts/db_fetch_analysis.pl",
-			    type       : "post",
-			    data       : "url=" + url + "&analysis_id=" + $(this).attr("data-analysis_id"),
-			    dataType   : "json",
-			    success    : function(resp) {onSuccess_fetchAnalysis(resp, button)},
-			   });
-
-		    // TODO: For now, there is a duplicated ajax call (one for analysis details
-		    // and one for jobs) because I still don't know where the jobs should be
-		    // accessible (here? in the pie-charts?)
-		    $.ajax({url        : "/scripts/db_fetch_jobs.pl",
-			    type       : "post",
-			    data       : "url=" + url + "&analysis_id=" + $(this).attr("data-analysis_id"),
-			    dataType   : "json",
-			    success    : function(resp) {onSuccess_fetchJobs(resp)},
-			   })
+		.attr("data-analysis_id", analysis_id) // TODO: I think this can be removed
+		.on("click", function(){
+		    display(analysis_id, "/scripts/db_fetch_analysis.pl", onSuccess_fetchAnalysis);
+		    display(analysis_id, "/scripts/db_fetch_jobs.pl", onSuccess_fetchJobs);
 		});
 
 	    var outerRadius = bbox.height/3;
