@@ -23,13 +23,15 @@
 }
 
 /* Diagram Div */
-.pipeline_diagram {
-    width            : 1560px;
-    height           : 950px;
+#pipeline_diagram {
+    width            : 960px;
+    height           : 450px;
     color            : white;
     background-color : grey;
     border           : double;
     padding          : 5px;
+    resize           : both;
+    overflow         : hidden;
 }
 
 /* Analysis Div */
