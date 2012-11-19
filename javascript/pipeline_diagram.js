@@ -6,6 +6,17 @@ var analysis_id_regexp = /analysis_(\d+)/;
 // TODO: Put this inside the monitor function
 var total_jobs_counts = [];
 
+// jobs_board stores the data of the analysis
+// pipeline_diagram and pipeline_summary should read 
+// from this board
+// TODO: Should this be global?
+// TODO: Should this exist in pipeline_diagram.js or in ajax.js (probably the latter)
+var jobs_board = {};
+
+function create_board() {
+    
+}
+
 function draw_diagram(xmlStr) {
     var DOMParser = new window.DOMParser();
     var xml = DOMParser.parseFromString(xmlStr,'img/svg+xml');

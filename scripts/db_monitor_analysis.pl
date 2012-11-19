@@ -10,6 +10,7 @@ use Data::Dumper;
 
 use lib ("./scripts/lib");  # Only needed for testing the script
 use new_hive_methods;   # needed?
+use analysis;
 use msg;
 
 ## colors encoding the different job status we may have
