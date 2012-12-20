@@ -56,7 +56,7 @@ function hStackedBarChart(raw_data) {
 	    .attr("y", bChart.height()/2 + bChart.fontsize()/2.5)
 	    .attr("fill", "black")
 	    .attr("font-size", fontsize)
-	    .text(raw_data.logic_name);
+	    .text(raw_data.logic_name + " (" + raw_data.analysis_id + ")");
     
     // general counts label
 	g
