@@ -6,9 +6,9 @@
 function hStackedBarChart(raw_data) {
     var barsmargin = 80;
     var stack = d3.layout.stack();
-    var margin = {top: 10, right: 10, bottom: 10, left: 10},
-    width = 460 - margin.left - margin.right,
-    height = 50;
+    var width = 500;
+    var height = 50;
+    var rightmargin = 50;
     var fontsize = 16;
 
     var bChart = function(g){
@@ -132,6 +132,12 @@ function hStackedBarChart(raw_data) {
 	raw_data = value;
 	return bChart;
     };
+
+    bChart.width = function (value) {
+	if (!arguments.length) return width;
+	width = value;
+	return bChart;
+    };
   
     bChart.height = function (value) {
 	if (!arguments.length) return height;
@@ -144,6 +150,13 @@ function hStackedBarChart(raw_data) {
 	barsmargin = value;
 	return bChart;
     };
+
+    bChart.rightmargin = function (value) {
+	if (!arguments.length) return rightmargin;
+	rightmargin = value;
+	return bChart;
+    };
+
  
     bChart.switch_type = function () {
 	var y = bChart.y;
@@ -219,7 +232,7 @@ function hStackedBarChart(raw_data) {
       
     bChart.new_scale = function(svg, layers) {
 	var yStackMax = d3.max(layers, function(layer) { return d3.max(layer, function(d) { return d.y0 + d.y; }); });
-	var width = 440;
+	var width = bChart.width() - bChart.rightmargin();
 	var newy = d3.scale.linear()
 	    .domain([0, yStackMax])
 	    .range([0,width]);

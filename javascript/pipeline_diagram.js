@@ -33,12 +33,12 @@ function initialize_overview() {
 	.append("div")
 	.append("svg:svg")
 	.attr("height", 60)
-	.append("svg:g");
+	.append("svg:g")
 
     var gCharts = [];
     for (var i = 0; i < gs[0].length; i++) {
 	console.log(gs[0][i]);
-	var gChart = hStackedBarChart(analysis_board[i]).height(50).barsmargin(100);
+	var gChart = hStackedBarChart(analysis_board[i]).height(50).width(500).barsmargin(100);
 	gChart(d3.select(gs[0][i]));
 	// transitions can be obtained from gChart directly
 	gCharts.push(gChart);
