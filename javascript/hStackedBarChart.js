@@ -13,17 +13,20 @@ function hStackedBarChart(raw_data) {
 
     var bChart = function(g){
 	var data = bChart.transformData(raw_data);
-	var layers = stack(data);
+	//	var layers = stack(data);
+	bChart.layers = stack(data);
+	console.log("layers: ");
+	console.log(bChart.layers);
 
 	// bChart.y is global to the reusable object
 	// while y is local to this closure
 	// so whenever y is needed outside of the closure, bChart.y is needed
-	bChart.y = bChart.new_scale(g, layers);
+	bChart.y = bChart.new_scale(g, bChart.layers);
 	var y = bChart.y;
 
 	// Only 1 layer
 	var gLayer = g.selectAll(".layer")
-	    .data(layers)
+	    .data(bChart.layers)
 	    .enter().append("svg:g")
 	    .attr("class", "layer")
 	    .style("fill", function(d, i) { return raw_data.jobs_counts.colors[i] })
@@ -79,7 +82,8 @@ function hStackedBarChart(raw_data) {
 	    var delay    = 0;
 
 	    var newT = function (newlayers) {
-//		y = bChart.new_scale(g, newlayers);
+		bChart.y = bChart.new_scale(g, newlayers);
+		var y = bChart.y;
 
 		var layer = g.selectAll(".layer")
 		    .data(newlayers);
@@ -97,8 +101,8 @@ function hStackedBarChart(raw_data) {
 		    .transition()
 		    .delay(function(d,i){return i*100})
 		    .duration(1000)
-		    .attr("x", function(d,i){var l=layers.slice(-1)[0][0]; return(y(l.y0+l.y) + barsmargin + 10)})
-		    .text(function(d,i){var l=layers.slice(-1)[0][0]; return (l.y0 + l.y)});
+		    .attr("x", function(d,i){var l=bChart.layers.slice(-1)[0][0]; return(y(l.y0+l.y) + barsmargin + 10)})
+		    .text(function(d,i){var l=bChart.layers.slice(-1)[0][0]; return (l.y0 + l.y)});
 	    };
       
 	    return newT;
@@ -110,7 +114,7 @@ function hStackedBarChart(raw_data) {
 	    var new_data = bChart.transformData(new_raw_data);
 	    var new_layers = stack(new_data);
 	    trans(new_layers);
-	    layers = new_layers;
+	    bChart.layers = new_layers;
 	    return;
 	};
     

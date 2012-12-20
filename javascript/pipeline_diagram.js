@@ -47,10 +47,6 @@ function initialize_overview() {
 }
 
 function live_overview(gCharts) {
-    console.log("live_overview");
-    console.log(analysis_board);
-    console.log(gCharts);
-    console.log(gCharts);
     for (var i = 0; i < gCharts.length; i++) {
 	var gChart = gCharts[i];
 	var t = gChart.transition();
