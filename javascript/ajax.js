@@ -1,6 +1,16 @@
 // Globally defined
 var url = "";
 
+// analysis_board stores the data of all the analysis.
+// pipeline_diagram and pipeline_summary should read 
+// from this board
+// TODO: Should this be global?
+var analysis_board;
+
+// monitorTimeout is the time that passes before monitoring again
+// It is being used by the analysis_board and its consumers
+var monitorTimeout = 5000; // 5seg. TODO: Allow users to change this
+
 // wait for the DOM to be loaded 
 $(document).ready(function() { 
     //  We are creating a hidden button for showing resources and 
@@ -32,6 +42,26 @@ $(document).ready(function() {
 	       });
     });
 
+    // Function for polling the analysis into the analysis_board
+    $("#update_analysis_board").hide().bind("monitor", function() {
+	var elem = this;
+	$.ajax({url      : "/scripts/db_fetch_all_analysis.pl",
+		type     : "post",
+		data     : "url=" + $("#db_url").val(),
+		async    : false,  // TODO: For now we are doing this sync to avoid a race between the polling of the board and its consumers
+		                   // but we should support async in production, if possible.
+		dataType : "json",
+		success  : function(allAnalysisRes) {
+		    if(allAnalysisRes.status != "ok") {
+			$("#log").append(allAnalysisRes.err_msg); scroll_down();
+		    } else {
+			analysis_board = allAnalysisRes.out_msg;
+		    }
+		},
+		complete : setTimeout(function(){$(elem).trigger("monitor")}, monitorTimeout),
+	       })
+    });
+
     // Default value. Only for testing. TODO: Remove the following line
     $("#db_url").val("mysql://ensadmin:ensembl@127.0.0.1:2912/mp12_long_mult");
     $("#Connect").click(function() {
@@ -45,7 +75,6 @@ $(document).ready(function() {
     });
 }); 
 
-
 // res is the JSON-encoded response from the server in the Ajax call
 function onSuccess_dbConnect(res) {
     $("#connexion_msg").html(res.status);
@@ -54,7 +83,10 @@ function onSuccess_dbConnect(res) {
     $("#log").append(res.err_msg); scroll_down();
     url = $("#db_url").val();
     // Now we start monitoring the analyses:
+    $("#update_analysis_board").trigger("monitor");
+    // This has to disappear?
     monitor_analysis();
+    initialize_overview();
 }
 
 function display(analysis_id, fetch_url, callback) {

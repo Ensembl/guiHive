@@ -4,19 +4,88 @@
 var analysis_id_regexp = /analysis_(\d+)/;
 
 // TODO: Put this inside the monitor function
+// TODO: Now that we have analysis_board this should be removed!
 var total_jobs_counts = [];
 
-// jobs_board stores the data of the analysis
-// pipeline_diagram and pipeline_summary should read 
-// from this board
-// TODO: Should this be global?
-// TODO: Should this exist in pipeline_diagram.js or in ajax.js (probably the latter)
-var jobs_board = {};
+function initialize_overview2() {
+    var height = 350;
+    var width  = 800;
+    var x = d3.scale.linear().domain([0, 100]).range([0, width]);
 
-function create_board() {
-    
+    var vis = d3.select("#pipeline_summary")
+	.append("svg:svg")
+	.attr("width", width + 40)
+	.attr("height", height + 20)
+	.append("svg:g")
+	.attr("transform", "translate(20,0)");
+
+    return vis;
 }
 
+// uses analysis_board -- duplicated with initialize_overview. Fix!
+function initialize_overview() {
+    console.log(analysis_board);
+    var vis = d3.select("#pipeline_summary");
+
+    var gs = vis.selectAll("div")
+	.data(analysis_board)
+	.enter()
+	.append("div")
+	.append("svg:svg")
+	.attr("height", 60)
+	.append("svg:g");
+
+    var gCharts = [];
+    for (var i = 0; i < gs[0].length; i++) {
+	console.log(gs[0][i]);
+	var gChart = hStackedBarChart(analysis_board[i]).height(50).barsmargin(100);
+	gChart(d3.select(gs[0][i]));
+	// transitions can be obtained from gChart directly
+	gCharts.push(gChart);
+    }
+    setTimeout(function() {live_overview(gCharts)}, monitorTimeout);
+}
+
+function live_overview(gCharts) {
+    console.log("live_overview");
+    console.log(analysis_board);
+    console.log(gCharts);
+    console.log(gCharts);
+    for (var i = 0; i < gCharts.length; i++) {
+	var gChart = gCharts[i];
+	var t = gChart.transition();
+	gChart.update(analysis_board[i], t);
+    }
+    setTimeout(function() {live_overview(gCharts)}, monitorTimeout);
+}
+
+function live_overview2() {
+    var height = 350;
+    var width  = 800;
+    var x = d3.scale.linear().domain([0, 100]).range([0, width]);
+
+    var vis = d3.select("#pipeline_summary")
+	.append("svg:svg")
+	.attr("width", width + 40)
+	.attr("height", height + 20)
+	.append("svg:g")
+	.attr("transform", "translate(20,0)");
+
+    console.log(analysis_board);
+
+    vis.selectAll("rect")
+	.data(analysis_board)
+	.enter()
+	.insert("svg:rect")
+	.attr("x", 10)
+	.attr("y", function(d,i) {return i*2})
+	.attr("height", 20)
+	.attr("width", function(d,i) {return x(d.total_job_count)})   
+}
+
+
+// draw_diagram incorporate the pipeline diagram into the DOM
+// and set the "draggability" and "pannability" of the diagram
 function draw_diagram(xmlStr) {
     var DOMParser = new window.DOMParser();
     var xml = DOMParser.parseFromString(xmlStr,'img/svg+xml');
@@ -119,6 +188,7 @@ function worker(event) {
 		     var jobs_counts = jobs_info.counts;
 		     var jobs_colors = jobs_info.colors;
 
+		     // TODO: Shouldn't the scale be .domain([0, total_counts_extent[1]]) ???
 		     var total_counts_extent = d3.extent(total_jobs_counts, function(d){return d});
 		     var pie_size_scale = d3.scale.linear()
 			 .range([bbox.height/5, bbox.height/3])
@@ -137,7 +207,7 @@ function worker(event) {
 		     }); // redraw the arcs
 		 }
 	     },
-//	     complete : setTimeout(function(){$(called_elem).trigger("monitor")}, 25000), // 5seg TODO: Increase in production
+	     complete : setTimeout(function(){$(called_elem).trigger("monitor")}, monitorTimeout),
 	   });
 }
 
