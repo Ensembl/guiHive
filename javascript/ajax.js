@@ -85,6 +85,7 @@ function onSuccess_dbConnect(res) {
     // Now we start monitoring the analyses:
     $("#update_analysis_board").trigger("monitor");
     // This has to disappear?
+    monitor_overview();
     monitor_analysis();
     initialize_overview();
 }

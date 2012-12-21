@@ -7,6 +7,32 @@ var analysis_id_regexp = /analysis_(\d+)/;
 // TODO: Now that we have analysis_board this should be removed!
 var total_jobs_counts = [];
 
+function monitor_overview() {
+    var totals = new Array();
+    for (var k = 0; k<analysis_board[0].jobs_counts.counts.length; k++) {
+	totals[k] = 0;
+    }
+    for (var i = 0; i<analysis_board.length; i++) {
+	for (var j = 0; j<analysis_board[i].jobs_counts.counts.length; j++) {
+	    totals[j] += analysis_board[i].jobs_counts.counts[j]
+	}
+    }
+
+    var vis = d3.select("#summary")
+    .append("svg:svg")
+    .attr("width", 400)
+    .attr("height", 400)
+    .append("svg:g");
+
+    console.log("vis: ");
+    console.log(vis);
+
+    var pChart = pieChart();
+    pChart(vis);
+
+    return;
+}
+
 function initialize_overview2() {
     var height = 350;
     var width  = 800;

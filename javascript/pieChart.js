@@ -10,7 +10,7 @@ function pieChart() {
 
     var pie = d3.layout.pie()
         .sort(null);
-
+    var max_counts = d3.max(data.counts);
     // The size of the pie chart (outerRadius) is dynamic.
     var total_counts_extent = [0, max_counts];
     var pie_size_scale = d3.scale.linear()
