@@ -160,8 +160,6 @@ function hStackedBarChart(raw_data) {
  
     bChart.switch_type = function () {
 	var y = bChart.y;
-	console.log(y);
-	console.log(d3.select(this).attr("to_id"));
 	d3.selectAll("." + d3.select(this).attr("to_id")) // these are g with rects
 	    .each(function(d,i) {
 		if($(this).children("rect")[0]._type=="grouped"){

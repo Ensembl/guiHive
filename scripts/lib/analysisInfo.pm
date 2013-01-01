@@ -31,7 +31,8 @@ sub fetch {
     my ($breakout_label, $total_job_count, $job_counts) = $analysis_stats->job_count_breakout();
 
 ## TODO: status should be only the $status string (not the color), but we need to define this here
-## until issue#17 is solved (job's colors in json and accessible by client code -- javascript)
+## until issue#17 is solved (job's colors in json and accessible by client code -- javascript).
+## same for the names
     my $self = bless( {analysis_id => $analysis->dbID(),
 		       logic_name => $analysis->logic_name(),
 		       status => [$status,$status_colour],
@@ -40,6 +41,7 @@ sub fetch {
 		       jobs_counts => {
 			   counts => [],
 			   colors => [],
+			   names => [],
 		       }
 		      }, $class);
 
@@ -66,6 +68,7 @@ sub add_count {
     my ($self, $status, $count) = @_;
     push @{$self->{jobs_counts}->{counts}}, $count+0; # ensure int context
     push @{$self->{jobs_counts}->{colors}}, $job_colors->{$status};
+    push @{$self->{jobs_counts}->{names}}, $status;
     return;
 }
 

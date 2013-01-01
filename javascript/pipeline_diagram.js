@@ -7,7 +7,7 @@ var analysis_id_regexp = /analysis_(\d+)/;
 // TODO: Now that we have analysis_board this should be removed!
 var total_jobs_counts = [];
 
-function monitor_overview() {
+function get_totals() {
     var totals = new Array();
     for (var k = 0; k<analysis_board[0].jobs_counts.counts.length; k++) {
 	totals[k] = 0;
@@ -18,39 +18,67 @@ function monitor_overview() {
 	}
     }
 
-    var vis = d3.select("#summary")
-    .append("svg:svg")
-    .attr("width", 400)
-    .attr("height", 400)
-    .append("svg:g");
-
-    console.log("vis: ");
-    console.log(vis);
-
-    var pChart = pieChart();
-    pChart(vis);
-
-    return;
+    return totals;
 }
 
-function initialize_overview2() {
-    var height = 350;
-    var width  = 800;
-    var x = d3.scale.linear().domain([0, 100]).range([0, width]);
+function form_data() {
+    var totals = get_totals();
+    // We always have at least 1 value (job),
+    // so we don't need the last "white" value
+    // TODO: Investigate why the "white" color is not here
+    totals.pop();
+    var data = {};
+    data.counts = totals;
+    data.colors = analysis_board[0].jobs_counts.colors;
+    data.names  = analysis_board[0].jobs_counts.names;
+    data.total  = d3.sum(totals);
 
-    var vis = d3.select("#pipeline_summary")
-	.append("svg:svg")
-	.attr("width", width + 40)
-	.attr("height", height + 20)
-	.append("svg:g")
-	.attr("transform", "translate(20,0)");
+    return data;
+}
 
-    return vis;
+function monitor_overview() {
+
+    var data = form_data();
+    var foo = d3.select("#summary")
+    .append("svg:svg")
+    .attr("width", 250)
+    .attr("height", 300)
+    .append("svg:g");
+    var bChart = barChart();
+    bChart(foo);
+    var tt = bChart.transition();
+    setTimeout (function() { bChart.update(data, tt)}, 2000);
+
+
+//// Pie chart instead of bars:
+//     var vis = d3.select("#summary")
+//     .append("svg:svg")
+//     .attr("width", 250)
+//     .attr("height", 300)
+//     .append("svg:g");
+
+//     var data = form_data();
+//     var pChart = pieChart().x(110).y(110).data(data);
+//     pChart(vis);
+//     var l = legend().x(-60).y(100);
+//     l(vis, data.colors, data.names);
+//     setTimeout(function() {live_overview_lite(pChart)}, monitorTimeout);
+}
+
+// TODO: The name of the methods are poorly chosen.
+// We have an general overview (pie chart)
+// and a per-analysis overview
+function live_overview_lite(pChart) {
+    var data = form_data();
+
+    var t = pChart.transition().duration(1000);
+    pChart.max_counts(data.total).update(data, t);
+    
+    setTimeout(function() {live_overview_lite(pChart)}, monitorTimeout);
 }
 
 // uses analysis_board -- duplicated with initialize_overview. Fix!
 function initialize_overview() {
-    console.log(analysis_board);
     var vis = d3.select("#pipeline_summary");
 
     var gs = vis.selectAll("div")
@@ -63,7 +91,6 @@ function initialize_overview() {
 
     var gCharts = [];
     for (var i = 0; i < gs[0].length; i++) {
-	console.log(gs[0][i]);
 	var gChart = hStackedBarChart(analysis_board[i]).height(50).width(500).barsmargin(100);
 	gChart(d3.select(gs[0][i]));
 	// transitions can be obtained from gChart directly
@@ -75,36 +102,11 @@ function initialize_overview() {
 function live_overview(gCharts) {
     for (var i = 0; i < gCharts.length; i++) {
 	var gChart = gCharts[i];
-	var t = gChart.transition();
+	var t = gChart.transition();//.duration(1000); TODO: Include "duration" method
 	gChart.update(analysis_board[i], t);
     }
     setTimeout(function() {live_overview(gCharts)}, monitorTimeout);
 }
-
-function live_overview2() {
-    var height = 350;
-    var width  = 800;
-    var x = d3.scale.linear().domain([0, 100]).range([0, width]);
-
-    var vis = d3.select("#pipeline_summary")
-	.append("svg:svg")
-	.attr("width", width + 40)
-	.attr("height", height + 20)
-	.append("svg:g")
-	.attr("transform", "translate(20,0)");
-
-    console.log(analysis_board);
-
-    vis.selectAll("rect")
-	.data(analysis_board)
-	.enter()
-	.insert("svg:rect")
-	.attr("x", 10)
-	.attr("y", function(d,i) {return i*2})
-	.attr("height", 20)
-	.attr("width", function(d,i) {return x(d.total_job_count)})   
-}
-
 
 // draw_diagram incorporate the pipeline diagram into the DOM
 // and set the "draggability" and "pannability" of the diagram
