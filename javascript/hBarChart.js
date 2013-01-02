@@ -3,14 +3,16 @@ function barChart() {
     var x = 0;
     var y = 0;
     var rx = 0;
-    var width = 10;
-    var height = 10;
-    var total_width = 80;
+    var label_margin = 80;
+    var bar_width = 10;
+    var bar_height = 10;
+    var width = 80;
     var labelspace = 10;
     var xspace = 10;
     var yspace = 10;
     var data = { counts : [2,1,2,8,6],
 		 colors : ["green", "yellow", "red", "blue", "cyan"],
+		 names  : ["tu", "puta", "madre", "en", "calzoncillos"],
 		 total  : 12
 	       };
 
@@ -23,11 +25,16 @@ function barChart() {
 	.attr("class", "baz");
 
 	gs.append("rect")
-	    .attr("x", x + xspace)
-	    .attr("y", function(d,i) { return (y + (height * i) + (yspace * i))})
-	    .attr("height", height)
+	    .attr("x", x + xspace + label_margin)
+	    .attr("y", function(d,i) { return (y + (bar_height * i) + (yspace * i)) })
+	    .attr("height", bar_height)
 	    .attr("width", function(d, i) { return bChart.yscale(data.counts[i]) })
 	    .style("fill", function(d, i) { return data.colors[i] });
+
+	gs.append("text")
+	    .attr("x", 0)
+	    .attr("y", function(d,i) { return (y + (bar_height * i) + (yspace * i)) + bar_height })
+	    .text( function(d,i) { console.log(data); return data.names[i] } );
 
 	bChart.transition = function() {
 	    var duration = 1000;
@@ -45,7 +52,7 @@ function barChart() {
 		    .delay(delay)
 		    .duration(duration)
 		    .style("fill", function(d, i) { return data.colors[i] })
-		    .attr("width", function(d,i) {console.log("THIS: "); console.log(this); return bChart.yscale(data.counts[i]) });
+		    .attr("width", function(d,i) { return bChart.yscale(data.counts[i]) });
 	    };
 	    return newT;
 	};
@@ -67,9 +74,9 @@ function barChart() {
 	return bChart;
     };
 
-    bChart.width = function(value) {
-	if (!arguments.length) return width;
-	width = value;
+    bChart.bar_width = function(value) {
+	if (!arguments.length) return bar_width;
+	bar_width = value;
 	return bChart;
     };
 
@@ -78,7 +85,7 @@ function barChart() {
 	
 	var newy = d3.scale.linear()
 	    .domain([0, maxVal])
-	    .range([0, total_width]);
+	    .range([0, width]);
 
 	return newy;
     };
