@@ -13,6 +13,7 @@
       <th>query_count</th>
       <th>semaphored_count</th>
       <th>semaphored_job_id</th>
+      <th>last_error</th>
     </tr>
   </thead>
   <tbody>
@@ -91,6 +92,8 @@
 	  </td>
 	</TMPL_LOOP>
 
+	<td><TMPL_VAR NAME=msg></td>
+
       </tr>
     </TMPL_LOOP>
   </tbody>
@@ -107,12 +110,13 @@
       <td></td>
       <td></td>
       <td></td>
+      <td></td>
     </tr>
     <tr>
-      <td>1</td>
-      <td>2</td>
-      <td>3</td>
-      <td>4</td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
       <td>
 	<TMPL_LOOP NAME=STATUS_COL_EDIT>
 	  <select size="1"
@@ -142,11 +146,12 @@
 	  </select>
 	</TMPL_LOOP>
       </td>
-      <td>7</td>
-      <td>8</td>
-      <td>9</td>
-      <td>10</td>
-      <td>11</td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
     </tr>
   </tfoot>
 </table>

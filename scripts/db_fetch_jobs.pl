@@ -12,7 +12,7 @@ use lib ("./scripts/lib");
 use new_hive_methods;
 use msg;
 
-my $json_data = shift @ARGV || '{"url":["mysql://ensadmin:ensembl@127.0.0.1:2912/mp12_long_mult"], "analysis_id":["2"], "status":["DONE"]}';
+my $json_data = shift @ARGV || '{"url":["mysql://ensadmin:ensembl@127.0.0.1:2912/mp12_long_mult"], "analysis_id":["1"], "status":["DONE"]}';
 my $jobs_template = $ENV{GUIHIVE_BASEDIR} . "static/jobs.html";
 
 # Input
@@ -56,8 +56,11 @@ sub formJobsInfo {
     my @methods = qw/analysis_id input_id worker_id status retry_count completed runtime_msec query_count semaphore_count semaphored_job_id/;
     my $adaptor = "AnalysisJob";
     for my $job (@$jobs) {
-      my $unique_job_label = unique_job_label($job);
-      my $job_info = { job_id => $job->dbID,
+	my $job_id = $job->dbID();
+	my $msg = $dbConn->get_LogMessageAdaptor()->fetch_job_messages($job_id)->[0];
+
+	my $unique_job_label = unique_job_label($job);
+      my $job_info = { job_id => $job_id,
 		       unique_job_label => $unique_job_label,
 		       analysis_id => $job->analysis_id(),
 		       JOB_INPUT_ID => formInputIDs($job, $unique_job_label, $adaptor),
@@ -95,6 +98,7 @@ sub formJobsInfo {
 						  adaptor => $adaptor,
 						  method => "semaphored_job_id",
 						 }],
+		       msg => $msg,
 		     };
 
       push @all_jobs, $job_info;
@@ -120,8 +124,6 @@ sub formJobsInfo {
 sub formInputIDs {
     my ($job, $unique_job_label, $adaptor) = @_;
     my $input_id_hash = eval $job->input_id();
-    print STDERR $job->input_id(), "\n";
-    print STDERR Dumper $input_id_hash, "\n";
     my $input_ids = [];
     for my $inputKeyID (keys %$input_id_hash) {
 	my $inputPair = {};
