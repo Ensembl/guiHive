@@ -42,9 +42,9 @@ function monitor_overview() {
     var foo = d3.select("#summary")
     .append("svg:svg")
     .attr("width", 250)
-    .attr("height", 300)
+    .attr("height", 150)
     .append("svg:g");
-    var bChart = barChart();
+    var bChart = barChart().data(data);
     bChart(foo);
     var tt = bChart.transition();
     setTimeout (function() { bChart.update(data, tt)}, 2000);
@@ -66,7 +66,7 @@ function monitor_overview() {
 }
 
 // TODO: The name of the methods are poorly chosen.
-// We have an general overview (pie chart)
+// We have a general overview (pie chart)
 // and a per-analysis overview
 function live_overview_lite(pChart) {
     var data = form_data();
