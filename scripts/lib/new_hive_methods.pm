@@ -22,6 +22,20 @@ no warnings "once";
 
 use Bio::EnsEMBL::Hive::Utils qw/stringify destringify/;
 
+
+# add_input_id adds/change a single input_id key/value pair in the AnalysisJob table
+# if no new value is provided, the old one is returned.
+*Bio::EnsEMBL::Hive::AnalysisJob::add_input_id = sub {
+    my ($self, $key, $value) = @_;
+    my $curr_raw_input_id = $self->input_id;
+    my $curr_input_id = Bio::EnsEMBL::Hive::Utils::destringify($curr_raw_input_id);
+    return $curr_input_id->{$key} unless (defined $value);
+    $curr_input_id->{$key} = $value;
+    my $new_raw_input_id = Bio::EnsEMBL::Hive::Utils::stringify($curr_input_id);
+    $self->input_id($new_raw_input_id);
+    return;
+};
+
 # delete_param deletes a single param in the param table by key
 # It is injected in the Analysis object directly so it works as a 
 # native method of the object

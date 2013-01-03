@@ -22,14 +22,31 @@
 
 	<td><TMPL_VAR NAME=analysis_id></td>
 
-	<TMPL_LOOP NAME=JOB_INPUT_ID>
-	  <td class="editable"
-	      data-linkTo="<TMPL_VAR NAME=job_label>"
-	      data-adaptor="<TMPL_VAR NAME=adaptor>"
-	      data-method="<TMPL_VAR NAME=method>">
-	    <TMPL_VAR NAME=input_id>
-	  </td>
-	</TMPL_LOOP>
+	<td>
+	  <table border=1>
+	    <TMPL_LOOP NAME=JOB_INPUT_ID>
+	      <tr>
+		<td>
+		  <TMPL_VAR NAME=inputKeyID>
+		</td>
+		<td class="editableInputID"
+		    data-linkTo="<TMPL_VAR NAME=job_label>"
+		    data-adaptor="<TMPL_VAR NAME=adaptor>"
+		    data-key="<TMPL_VAR NAME=key>"
+		    data-method="<TMPL_VAR NAME=method>"><TMPL_VAR NAME=inputValID></td>
+	      </tr>
+	    </TMPL_LOOP>
+	  </table>
+
+	</td>
+<!-- 	<TMPL_LOOP NAME=JOB_INPUT_ID> -->
+<!-- 	  <td class="editable" -->
+<!-- 	      data-linkTo="<TMPL_VAR NAME=job_label>" -->
+<!-- 	      data-adaptor="<TMPL_VAR NAME=adaptor>" -->
+<!-- 	      data-method="<TMPL_VAR NAME=method>"> -->
+<!-- 	    <TMPL_VAR NAME=input_id> -->
+<!-- 	  </td> -->
+<!-- 	</TMPL_LOOP> -->
 
 	<td><TMPL_VAR NAME=worker_id></td>
 

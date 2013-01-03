@@ -12,7 +12,7 @@ use lib ("./scripts/lib");
 use new_hive_methods;
 use msg;
 
-my $json_data = shift @ARGV || '{"url":["mysql://ensadmin:ensembl@127.0.0.1:2912/mp12_compara_nctrees_69d"], "analysis_id":["22"], "status":["DONE"]}';
+my $json_data = shift @ARGV || '{"url":["mysql://ensadmin:ensembl@127.0.0.1:2912/mp12_long_mult"], "analysis_id":["2"], "status":["DONE"]}';
 my $jobs_template = $ENV{GUIHIVE_BASEDIR} . "static/jobs.html";
 
 # Input
@@ -56,17 +56,17 @@ sub formJobsInfo {
     my @methods = qw/analysis_id input_id worker_id status retry_count completed runtime_msec query_count semaphore_count semaphored_job_id/;
     my $adaptor = "AnalysisJob";
     for my $job (@$jobs) {
-      my $job_id = $job->dbID();
-      my $unique_job_label = "job_" . $job_id;
-      my $job_info = { job_id => $job_id,
+      my $unique_job_label = unique_job_label($job);
+      my $job_info = { job_id => $job->dbID,
 		       unique_job_label => $unique_job_label,
 		       analysis_id => $job->analysis_id(),
-		       JOB_INPUT_ID => [{
-					 input_id => $job->input_id(),
-					 job_label => $unique_job_label,
-					 adaptor => $adaptor,
-					 method => "input_id",
-					}],
+		       JOB_INPUT_ID => formInputIDs($job, $unique_job_label, $adaptor),
+#                                       [{
+# 					 input_id => $job->input_id(),
+# 					 job_label => $unique_job_label,
+# 					 adaptor => $adaptor,
+# 					 method => "input_id",
+#					}],
 		       worker_id => $job->worker_id(),
 		       JOB_STATUS => [{
 				       status => $job->status(),
@@ -117,6 +117,28 @@ sub formJobsInfo {
     return $template->output();
 }
 
+sub formInputIDs {
+    my ($job, $unique_job_label, $adaptor) = @_;
+    my $input_id_hash = eval $job->input_id();
+    print STDERR $job->input_id(), "\n";
+    print STDERR Dumper $input_id_hash, "\n";
+    my $input_ids = [];
+    for my $inputKeyID (keys %$input_id_hash) {
+	my $inputPair = {};
+	$inputPair->{inputKeyID} = $inputKeyID; # TODO: We may need stringify_if_needed here that is currently defined in db_fetch_analysis.pl
+	$inputPair->{job_label}  = $unique_job_label;
+	$inputPair->{adaptor}    = $adaptor;
+	$inputPair->{method}     = "add_input_id";
+	$inputPair->{key}        = $inputKeyID;
+	$inputPair->{inputValID} = $input_id_hash->{$inputKeyID};
+	push @$input_ids, $inputPair;
+    }
+    return $input_ids;
+}
 
-
-
+sub unique_job_label {
+    my ($job) = @_;
+    my $job_id = $job->dbID();
+    my $unique_job_label = "job_" . $job_id;
+    return $unique_job_label;
+}

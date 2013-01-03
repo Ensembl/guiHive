@@ -9,7 +9,7 @@ var analysis_board;
 
 // monitorTimeout is the time that passes before monitoring again
 // It is being used by the analysis_board and its consumers
-var monitorTimeout = 5000; // 5seg. TODO: Allow users to change this
+var monitorTimeout = 50000; // 5seg. TODO: Allow users to change this
 
 // wait for the DOM to be loaded 
 $(document).ready(function() { 
@@ -91,7 +91,6 @@ function onSuccess_dbConnect(res) {
 }
 
 function display(analysis_id, fetch_url, callback) {
-    console.log("DISPLAY: " + analysis_id + ", " + fetch_url);
     $.ajax({url        : fetch_url,
 	    type       : "post",
 	    data       : "url=" + url + "&analysis_id=" + analysis_id,
@@ -108,6 +107,11 @@ function onSuccess_fetchAnalysis(analysisRes, analysis_id, fetch_url) {
 	$("#log").append(analysisRes.err_msg); scroll_down();
 	$("#connexion_msg").html(analysisRes.status);
     }
+
+    // We have db_update.pl and db_update2.pl
+    // TODO: use a generic version (db_update.pl or db_update2.pl)
+    // that can deal with both cases
+    // It this is not possible, give better names
     $(".update_param").change(
 	{ analysis_id:analysis_id,
 	 fetch_url:fetch_url,
@@ -127,6 +131,7 @@ function onSuccess_fetchJobs(jobsRes, analysis_id, fetch_url) {
 	$.datepicker.setDefaults($.datepicker.regional['']);
 	$("#jobs").html(jobsRes.out_msg);
 
+	// We convert the whole job table in a dataTable
 	var oTable = $('#jobs_table').dataTable()
 	    .columnFilter( {
 		aoColumns : [ { type : "number" },
@@ -143,7 +148,8 @@ function onSuccess_fetchJobs(jobsRes, analysis_id, fetch_url) {
 			    ],
 	    });
 
-	// attach global updaters. Maybe this can be inserted as datatable's fnInitComplete event
+	// We attach global updaters. Maybe this can be inserted as datatable's fnInitComplete event
+	// Global updaters work on all the visible fields of the dataTable.
 	$('.update_param_all').change(function() {
 	    column = $(this).attr("data-column");
 	    column_index = $(this).attr("data-column-index");
@@ -177,6 +183,7 @@ function onSuccess_fetchJobs(jobsRes, analysis_id, fetch_url) {
 	    $(this).children('option:first-child').attr("selected","selected");
 	});
 
+	// We have individual jeditable fields specialized by columns
 	oTable.$("td.editableRetries").each(function() {
 	    var job_id = $(this).attr("data-linkTo");
 	    $(this).editable("/scripts/db_update2.pl", {
@@ -191,6 +198,14 @@ function onSuccess_fetchJobs(jobsRes, analysis_id, fetch_url) {
 	    });
 	});
 
+	oTable.$("td.editableInputID").editable("/scripts/db_update2.pl", {
+	    indicator  : "Saving...",
+	    tooltip    : "Click to edit...",
+	    event      : "dblclick",
+	    callback   : function(response) {innerEditableCallback.call(this, response, oTable)},
+	    submitdata : function() { return (buildSendParams(this)) }
+	});
+
 	oTable.$("td.editableStatus").editable("/scripts/db_update2.pl", {
 	    indicator  : "Saving...",
 	    tooltip    : "Click to edit...",
@@ -202,6 +217,8 @@ function onSuccess_fetchJobs(jobsRes, analysis_id, fetch_url) {
 	    submitdata : function() { return (buildSendParams(this)) }
 	});
 
+	// TODO: I think this action over td.editable is not needed because we have
+	// to have specialised sections above (not sure though -- double-check)
 	oTable.$("td.editable").editable("/scripts/db_update2.pl", {
 	    indicator  : 'Saving...',
 	    tooltip    : 'Click to edit...',
@@ -214,6 +231,11 @@ function onSuccess_fetchJobs(jobsRes, analysis_id, fetch_url) {
 	$("#log").append(jobsRes.err_msg); scroll_down();
 	$("#connexion_msg").html(jobsRes.status);
     }
+}
+
+function innerEditableCallback(response) {
+    var value = jQuery.parseJSON(response);
+    $(this).html(value.out_msg);
 }
 
 function editableCallback(response, oTable) {
@@ -236,6 +258,11 @@ function buildSendParams(obj) {
 
     if (value != "") {
 	urlHash.dbID = value;
+    }
+
+    // If the update is associated with a key/value pair
+    if ($(obj).attr("data-key")) {
+	urlHash.key = $(obj).attr("data-key");
     }
 
     console.log(urlHash);
