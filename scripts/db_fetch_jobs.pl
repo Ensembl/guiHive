@@ -9,7 +9,6 @@ use HTML::Template;
 use Data::Dumper;
 
 use lib ("./scripts/lib");
-use new_hive_methods;
 use msg;
 
 my $json_data = shift @ARGV || '{"url":["mysql://ensadmin:ensembl@127.0.0.1:2912/mp12_long_mult"], "analysis_id":["1"], "status":["DONE"]}';
@@ -57,7 +56,9 @@ sub formJobsInfo {
     my $adaptor = "AnalysisJob";
     for my $job (@$jobs) {
 	my $job_id = $job->dbID();
-	my $msg = $dbConn->get_LogMessageAdaptor()->fetch_job_messages($job_id)->[0];
+#       LogMessageAdaptor inherits from 
+	my $msg = fetch_last_error_for_jobid($job_id);
+#	my $msg = $dbConn->get_LogMessageAdaptor()->fetch_job_messages($job_id)->[0];
 
 	my $unique_job_label = unique_job_label($job);
       my $job_info = { job_id => $job_id,
@@ -144,3 +145,17 @@ sub unique_job_label {
     my $unique_job_label = "job_" . $job_id;
     return $unique_job_label;
 }
+
+
+sub fetch_last_error_for_jobid {
+    my ($job_id) = @_;
+
+    # LogMessageAdaptor inherits from BaseAdaptor that has a special AUTOLOAD method that is able to return hashes with specific data
+    my $all_msgs = $dbConn->get_LogMessageAdaptor()->fetch_by_job_id_HASHED_FROM_log_message_id_and_is_error_TO_msg($job_id);
+    my @all_key_errors = grep {$all_msgs->{$_}->{1}} keys %$all_msgs;
+    my ($msg_key) = sort {$b<=>$a} @all_key_errors;
+    
+    my $errmsg = defined ($msg_key)? $all_msgs->{$msg_key}->{1} : "";
+    return $errmsg;
+}
+

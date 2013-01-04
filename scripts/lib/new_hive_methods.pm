@@ -134,23 +134,5 @@ use Bio::EnsEMBL::Hive::Utils qw/stringify destringify/;
   }
 };
 
-## fetch_job_messages returns the log_messages of a job.
-## Only if is_error is true (>0)
-## It would be better to have a proper object
-*Bio::EnsEMBL::Hive::DBSQL::LogMessageAdaptor::fetch_job_messages = sub {
-    my ($self, $job_id) = @_;
-    my $table_name = $self->table_name();
-    my $sql = qq {SELECT msg FROM $table_name WHERE job_id = ? AND is_error > 0};
-    my $sth = $self->prepare($sql);
-    $sth->execute($job_id);
-
-    my $msgs = [];
-     while (my ($v) = $sth->fetchrow_array) {
- 	push @$msgs, $v;
-     }
-
-    return $msgs;
-};
-
 1;
 
