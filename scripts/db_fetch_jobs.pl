@@ -11,7 +11,7 @@ use Data::Dumper;
 use lib ("./scripts/lib");
 use msg;
 
-my $json_data = shift @ARGV || '{"url":["mysql://ensadmin:ensembl@127.0.0.1:2912/mp12_long_mult"], "analysis_id":["1"], "status":["DONE"]}';
+my $json_data = shift @ARGV || '{"url":["mysql://ensadmin:ensembl@127.0.0.1:2912/mp12_long_mult"], "analysis_id":["2"], "status":["DONE"]}';
 my $jobs_template = $ENV{GUIHIVE_BASEDIR} . "static/jobs.html";
 
 # Input
@@ -47,7 +47,6 @@ if (defined $dbConn) {
 
 print $response->toJSON;
 
-
 sub formJobsInfo {
 # There is no method for prev_job_id. Should we include it?
     my ($jobs) = @_;
@@ -65,12 +64,6 @@ sub formJobsInfo {
 		       unique_job_label => $unique_job_label,
 		       analysis_id => $job->analysis_id(),
 		       JOB_INPUT_ID => formInputIDs($job, $unique_job_label, $adaptor),
-#                                       [{
-# 					 input_id => $job->input_id(),
-# 					 job_label => $unique_job_label,
-# 					 adaptor => $adaptor,
-# 					 method => "input_id",
-#					}],
 		       worker_id => $job->worker_id(),
 		       JOB_STATUS => [{
 				       status => $job->status(),
@@ -125,18 +118,27 @@ sub formJobsInfo {
 sub formInputIDs {
     my ($job, $unique_job_label, $adaptor) = @_;
     my $input_id_hash = eval $job->input_id();
-    my $input_ids = [];
+    my $existing_ids = [];
     for my $inputKeyID (keys %$input_id_hash) {
 	my $inputPair = {};
 	$inputPair->{inputKeyID} = $inputKeyID; # TODO: We may need stringify_if_needed here that is currently defined in db_fetch_analysis.pl
-	$inputPair->{job_label}  = $unique_job_label;
-	$inputPair->{adaptor}    = $adaptor;
-	$inputPair->{method}     = "add_input_id";
-	$inputPair->{key}        = $inputKeyID;
-	$inputPair->{inputValID} = $input_id_hash->{$inputKeyID};
-	push @$input_ids, $inputPair;
+	$inputPair->{job_label}        = $unique_job_label;
+	$inputPair->{adaptor}          = $adaptor;
+	$inputPair->{method}           = "add_input_id";
+	$inputPair->{key}              = $inputKeyID;
+	$inputPair->{inputValID}       = $input_id_hash->{$inputKeyID};
+	$inputPair->{del_input_id_method} = "delete_input_id";
+#	$inputPair->{add_input_id_key_method} = "add_input_id_key";
+	push @$existing_ids, $inputPair;
     }
-    return $input_ids;
+    my $input_ids = [{
+	job_label               => $unique_job_label,
+	adaptor                 => $adaptor,
+	add_input_id_key_method => "add_input_id_key",
+	JOB_EXISTING_INPUT_ID   => $existing_ids,
+    }];
+ 
+   return $input_ids;
 }
 
 sub unique_job_label {
@@ -145,7 +147,6 @@ sub unique_job_label {
     my $unique_job_label = "job_" . $job_id;
     return $unique_job_label;
 }
-
 
 sub fetch_last_error_for_jobid {
     my ($job_id) = @_;

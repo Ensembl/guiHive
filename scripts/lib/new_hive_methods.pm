@@ -23,16 +23,36 @@ no warnings "once";
 use Bio::EnsEMBL::Hive::Utils qw/stringify destringify/;
 
 
+# add_input_id_key adds a new key with empty value
+*Bio::EnsEMBL::Hive::AnalysisJob::add_input_id_key = sub {
+    my ($self, $key) = @_;
+    my $value = "";
+    $self->add_input_id($key, $value);
+    return $key;
+};
+
 # add_input_id adds/change a single input_id key/value pair in the AnalysisJob table
-# if no new value is provided, the old one is returned.
+# if no new value is provided, the current value is returned
 *Bio::EnsEMBL::Hive::AnalysisJob::add_input_id = sub {
     my ($self, $key, $value) = @_;
     my $curr_raw_input_id = $self->input_id;
+    $curr_raw_input_id = '{}' unless ($curr_raw_input_id);
     my $curr_input_id = Bio::EnsEMBL::Hive::Utils::destringify($curr_raw_input_id);
     return $curr_input_id->{$key} unless (defined $value);
     $curr_input_id->{$key} = $value;
     my $new_raw_input_id = Bio::EnsEMBL::Hive::Utils::stringify($curr_input_id);
     $self->input_id($new_raw_input_id);
+    return $value;
+};
+
+# delete_input_id deletes a single input_id key/value pair in the AnalysisJob table
+*Bio::EnsEMBL::Hive::AnalysisJob::delete_input_id = sub {
+    my ($self, $key) = @_;
+    my $curr_raw_input_id = $self->input_id;
+    my $curr_input_id = Bio::EnsEMBL::Hive::Utils::destringify($curr_raw_input_id);
+    delete $curr_input_id->{$key};
+    my $new_raw_parameters = Bio::EnsEMBL::Hive::Utils::stringify($curr_input_id);
+    $self->input_id($new_raw_parameters);
     return;
 };
 

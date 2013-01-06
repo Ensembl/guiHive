@@ -9,7 +9,7 @@ var analysis_board;
 
 // monitorTimeout is the time that passes before monitoring again
 // It is being used by the analysis_board and its consumers
-var monitorTimeout = 50000; // 5seg. TODO: Allow users to change this
+var monitorTimeout = 50000; // 50seg. TODO: Allow users to change this
 
 // wait for the DOM to be loaded 
 $(document).ready(function() { 
@@ -112,24 +112,41 @@ function onSuccess_fetchAnalysis(analysisRes, analysis_id, fetch_url) {
     // TODO: use a generic version (db_update.pl or db_update2.pl)
     // that can deal with both cases
     // It this is not possible, give better names
+    // TODO2: Shouldn't this code be moved to the "ok" condition above?
     $(".update_param").change(
 	{ analysis_id:analysis_id,
 	 fetch_url:fetch_url,
 	 script:"/scripts/db_update.pl"},
 	update_db);
-    $(".update_param").click (
+    $(".update_param").click(
 	{analysis_id:analysis_id,
 	 fetch_url:fetch_url,
 	 script:"/scripts/db_update.pl"},
 	update_db);
 }
 
+// TODO: Currently, analysis_id and fetch_url are not being used
 function onSuccess_fetchJobs(jobsRes, analysis_id, fetch_url) {
     if(jobsRes.status == "ok") {
 	// Datepicker format
-	$.datepicker.regional[""].dateFormat = 'dd/mm/yy';
+	$.datepicker.regional[""].dateFormat = 'dd/mmo/yy';
 	$.datepicker.setDefaults($.datepicker.regional['']);
 	$("#jobs").html(jobsRes.out_msg);
+
+	// Listener to delete_input_id button:
+	$(".delete_input_id").click(function(){console.log("THIS(click)::"); console.log(this);
+					       var sel = this;
+					       $.ajax({url       : "/scripts/db_update2.pl",
+						       type      : "post",
+						       data      : jQuery.param(buildSendParams(sel)),
+						       dataType  : "json",
+						       async     : false,
+						       cache     : false,
+						       success   : function() {display(analysis_id, "/scripts/db_fetch_jobs.pl", onSuccess_fetchJobs)}
+						      });
+					      }
+				   );
+
 
 	// We convert the whole job table in a dataTable
 	var oTable = $('#jobs_table').dataTable()
@@ -160,7 +177,7 @@ function onSuccess_fetchJobs(jobsRes, analysis_id, fetch_url) {
 	    });
 	    console.log(job_ids);
 
-	    var sel = this
+	    var sel = this;
 	    $.ajax({url      : "/scripts/db_update2.pl",
 		    type     : "post",
 		    data     : jQuery.param(buildSendParams(sel)) + "&dbID=" + job_ids.join() + "&value=" + $(sel).val(),
@@ -202,7 +219,15 @@ function onSuccess_fetchJobs(jobsRes, analysis_id, fetch_url) {
 	    indicator  : "Saving...",
 	    tooltip    : "Click to edit...",
 	    event      : "dblclick",
-	    callback   : function(response) {innerEditableCallback.call(this, response, oTable)},
+	    //		callback   : function(response) {innerEditableCallback.call(this, response, job_id)},
+	    callback   : function(response) {
+		console.log("RESPONSE:");
+		console.log(response);
+		var needsReload = $(this).attr("data-needsReload");
+		if (needsReload == 1) {
+		    display(analysis_id, "/scripts/db_fetch_jobs.pl", onSuccess_fetchJobs);
+		} else {innerEditableCallback.call(this, response)}
+	    },
 	    submitdata : function() { return (buildSendParams(this)) }
 	});
 
@@ -234,8 +259,24 @@ function onSuccess_fetchJobs(jobsRes, analysis_id, fetch_url) {
 }
 
 function innerEditableCallback(response) {
+    console.log("INNER CALLED");
     var value = jQuery.parseJSON(response);
+    console.log(value)
     $(this).html(value.out_msg);
+
+    // If there exist a sibling with data-newvalueID then we activate it
+    var val_sibling_id = $(this).attr("data-newValueID");
+    if (val_sibling_id != undefined) {
+	var val_sibling = $("#" + val_sibling_id);
+	var key = $(this).html();
+	console.log("VAL_SIBLING: " + val_sibling_id);	
+	console.log(val_sibling);
+	console.log("KEY:");
+	console.log(key);
+	val_sibling.addClass("editableInputID");
+	val_sibling.attr("data-key", key);
+	doEditableInputID();
+    }
 }
 
 function editableCallback(response, oTable) {
