@@ -9,19 +9,38 @@ use JSON::XS;
 
 use lib "./scripts/lib";
 use new_hive_methods;
+# TODO: I am not returning the msg because the inner tables (input_id in jobs table and parameters
+# in analysis table) can't be reached by dataTables. This makes difficult to parse the msg message
+# and put the corresponding field in the inner cell
 use msg;
 
-my $json_data = shift @ARGV || '{"adaptor":["AnalysisJob"],"id":[""],"method":["status"],"url":["mysql://ensadmin:ensembl@127.0.0.1:2912/mp12_long_mult"],"value":["DONE"],"dbID":["8"]}'; #'{"analysis_id":["2"],"adaptor":["ResourceDescription"],"method":["parameters"],"args":["-C0 -M8000000  -R\"select[mem>8000]  rusage[mem=8000]\""],"url":["mysql://ensadmin:ensembl@127.0.0.1:2912/mp12_compara_nctrees_69a2"]}'; #'{"url":["mysql://ensro@127.0.0.1:2912/mp12_compara_nctrees_69b"], "column_name":["parameters"], "analysis_id":["27"], "newval":["cmalign_exe"]}';
+my $json_data = shift @ARGV || '{"adaptor":["AnalysisJob"],"method":["add_input_id_key"],"url":["mysql://ensadmin:ensembl@127.0.0.1:2912/mp12_long_mult"],"dbID":["7"],"value":["pkpp"]}'; #'{"analysis_id":["2"],"adaptor":["ResourceDescription"],"method":["parameters"],"args":["-C0 -M8000000  -R\"select[mem>8000]  rusage[mem=8000]\""],"url":["mysql://ensadmin:ensembl@127.0.0.1:2912/mp12_compara_nctrees_69a2"]}'; #'{"url":["mysql://ensro@127.0.0.1:2912/mp12_compara_nctrees_69b"], "column_name":["parameters"], "analysis_id":["27"], "newval":["cmalign_exe"]}';
+
+print STDERR "$json_data\n";
 
 my $var          = decode_json($json_data);
 my $url          = $var->{url}->[0];
 my $args         = $var->{value}->[0];
+my $addArg       = $var->{key}->[0];
 my $dbIDs        = $var->{dbID}->[0];
 my $adaptor_name = $var->{adaptor}->[0];
 my $method       = $var->{method}->[0];
 
 my @dbIDs = split(/,/,$dbIDs);
-my @args  = split(/,/,$args);
+my @args  = split(/,/,$args); ### TODO: JEditable only gives one value, so it is not possible to
+                              ### pass extra contents here (separated with commas)
+                              ### This is why I am using a new addArg parameter.
+                              ### So I think we can treat @args as a single $arg
+                              ### But we need to double-check that everything works
+                              ### and no comma-separated values are passed to this script
+
+## TODO: Maybe we should think about a better way to handle key/value pairs
+## for example by having 2 classes with polymorphic methods dependent on the number of arguments
+## or have 2 independent scripts, because we have to deal with the 2 cases differently in many 
+## places here.
+
+## If the update is associated with a key we need to insert it before the new value
+unshift (@args, $addArg) if (defined $addArg);
 
 my $response = msg->new();
 my $dbConn = Bio::EnsEMBL::Hive::URLFactory->fetch($url);
@@ -40,6 +59,7 @@ if (defined $dbConn) {
 
   for my $obj (@$objs) {
     eval {
+	print STDERR "$obj->$method(@args)\n";
       $obj->$method(@args);
       $obj->adaptor->update($obj);
     };
@@ -47,7 +67,17 @@ if (defined $dbConn) {
       $response->err_msg($@);
       $response->status("FAILED");
     } else {
-      $response->out_msg($obj->$method());
+	if (defined $addArg) { # We need to provide the extra parameter here to get the value of the given key
+	    $response->out_msg($obj->$method($addArg));
+	} else {
+	    # If the method doesn't return anything, the first passed arg is returned
+	    # TODO: This is not ideal because break the intention of the code
+	    # that is to return what is stored in the db
+	    # but we need this here because when adding a new input_id_key
+	    # we don't have an addArg and the method without arguments
+	    # can't return the correct key
+	    $response->out_msg($obj->$method()||$args[0]);
+	}
     }
   }
 

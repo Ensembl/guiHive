@@ -4,17 +4,11 @@ function barChart() {
     var y = 0;
     var rx = 0;
     var label_margin = 80;
-    var bar_width = 10;
-    var bar_height = 10;
+    var bar_height = 20;
     var width = 80;
     var labelspace = 10;
     var xspace = 10;
-    var yspace = 10;
-    var data = { counts : [2,1,2,8,6],
-		 colors : ["green", "yellow", "red", "blue", "cyan"],
-		 names  : ["tu", "puta", "madre", "en", "calzoncillos"],
-		 total  : 12
-	       };
+    var yspace = 5;
 
     var bChart = function(g) {
 	bChart.yscale = bChart.new_scale(g, data);
@@ -24,6 +18,7 @@ function barChart() {
 	.enter().append("g")
 	.attr("class", "baz");
 
+	// The bars
 	gs.append("rect")
 	    .attr("x", x + xspace + label_margin)
 	    .attr("y", function(d,i) { return (y + (bar_height * i) + (yspace * i)) })
@@ -31,28 +26,45 @@ function barChart() {
 	    .attr("width", function(d, i) { return bChart.yscale(data.counts[i]) })
 	    .style("fill", function(d, i) { return data.colors[i] });
 
+	// The labels
 	gs.append("text")
 	    .attr("x", 0)
-	    .attr("y", function(d,i) { return (y + (bar_height * i) + (yspace * i)) + bar_height })
-	    .text( function(d,i) { console.log(data); return data.names[i] } );
+	    .attr("y", function(d,i) { return (y + (bar_height * i) + (yspace * i) + bar_height/2 + fontsize/2) })
+	    .text( function(d,i) { console.log(data); return data.names[i] } )
+	    .style("font-size", fontsize);
 
+	// The counts
+	gs.append("text")
+	    .attr("x", function(d, i) { return (x + 2*xspace + label_margin + bChart.yscale(data.counts[i])) })
+	    .attr("y", function(d, i) { return (y + (bar_height * i) + (yspace * i) + bar_height/2 + fontsize/2) })
+	    .attr("class", "overview_counts")
+	    .text(function(d, i) {return data.counts[i]})
+	    .style("font-size", fontsize);
+
+	// Transition for bars and counts
 	bChart.transition = function() {
 	    var duration = 1000;
 	    var delay    = 0;
 	    var newT = function(data) {
-		console.log("transitioning...");
 		var data  = bChart.data();
-		console.log("new_data: ");
-		console.log(data);
 		bChart.yscale = bChart.new_scale(g, data);
-		var rects = g.selectAll("rect");
 
+		var rects = g.selectAll("rect");
 		rects
 		    .transition()
 		    .delay(delay)
 		    .duration(duration)
 		    .style("fill", function(d, i) { return data.colors[i] })
 		    .attr("width", function(d,i) { return bChart.yscale(data.counts[i]) });
+
+		var counts = g.selectAll(".overview_counts");
+		counts
+		    .transition()
+		    .delay(delay)
+		    .duration(duration)
+		    .attr("x", function(d, i) { return (x + 2*xspace + label_margin + bChart.yscale(data.counts[i])) })
+		    .text(function(d, i) { return data.counts[i] });
+		
 	    };
 	    return newT;
 	};
@@ -74,9 +86,9 @@ function barChart() {
 	return bChart;
     };
 
-    bChart.bar_width = function(value) {
-	if (!arguments.length) return bar_width;
-	bar_width = value;
+    bChart.fontsize = function(value) {
+	if (!arguments.length) return fontsize;
+	fontsize = value;
 	return bChart;
     };
 

@@ -13,6 +13,7 @@
       <th>query_count</th>
       <th>semaphored_count</th>
       <th>semaphored_job_id</th>
+      <th>last_error</th>
     </tr>
   </thead>
   <tbody>
@@ -22,14 +23,36 @@
 
 	<td><TMPL_VAR NAME=analysis_id></td>
 
-	<TMPL_LOOP NAME=JOB_INPUT_ID>
-	  <td class="editable"
-	      data-linkTo="<TMPL_VAR NAME=job_label>"
-	      data-adaptor="<TMPL_VAR NAME=adaptor>"
-	      data-method="<TMPL_VAR NAME=method>">
-	    <TMPL_VAR NAME=input_id>
-	  </td>
-	</TMPL_LOOP>
+	<td><table border=1>
+	    <TMPL_LOOP NAME=JOB_INPUT_ID>
+	      <TMPL_LOOP NAME=JOB_EXISTING_INPUT_ID>
+		<tr>
+		  <td><TMPL_VAR NAME=inputKeyID></td>
+		  <td class="editableInputID"
+		      data-linkTo="<TMPL_VAR NAME=job_label>"
+		      data-adaptor="<TMPL_VAR NAME=adaptor>"
+		      data-key="<TMPL_VAR NAME=key>"
+		      data-method="<TMPL_VAR NAME=method>"><TMPL_VAR NAME=inputValID></td>
+		  <td><button class="delete_input_id"
+			      data-linkTo="<TMPL_VAR NAME=job_label>"
+			      data-adaptor="<TMPL_VAR NAME=adaptor>"
+			      data-method="<TMPL_VAR NAME=del_input_id_method>"
+			      data-key="<TMPL_VAR NAME=key>">-</button></td>
+		</tr>
+	      </TMPL_LOOP>
+
+	      <tr>
+		<td class="editableInputID"
+		    data-linkTo="<TMPL_VAR NAME=job_label>"
+		    data-adaptor="<TMPL_VAR NAME=adaptor>"
+		    data-needsReload="1"
+		    data-method="<TMPL_VAR NAME=add_input_id_key_method>"></td>
+		<td></td>
+		<td></td>
+	      </tr>
+	    </TMPL_LOOP>
+
+	  </table></td>
 
 	<td><TMPL_VAR NAME=worker_id></td>
 
@@ -74,6 +97,8 @@
 	  </td>
 	</TMPL_LOOP>
 
+	<td><TMPL_VAR NAME=msg></td>
+
       </tr>
     </TMPL_LOOP>
   </tbody>
@@ -90,12 +115,13 @@
       <td></td>
       <td></td>
       <td></td>
+      <td></td>
     </tr>
     <tr>
-      <td>1</td>
-      <td>2</td>
-      <td>3</td>
-      <td>4</td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
       <td>
 	<TMPL_LOOP NAME=STATUS_COL_EDIT>
 	  <select size="1"
@@ -125,11 +151,12 @@
 	  </select>
 	</TMPL_LOOP>
       </td>
-      <td>7</td>
-      <td>8</td>
-      <td>9</td>
-      <td>10</td>
-      <td>11</td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
     </tr>
   </tfoot>
 </table>
