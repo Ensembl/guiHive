@@ -177,6 +177,7 @@ sub template_mappings_SELECT {
   for (my $i=0; $i<scalar(@$vals); $i++) {
       push @final_vals, [$vals->[$i], $displays->[$i]];
   }
+  print STDERR "$obj->$method => ", $obj->$method, "\n";
   my $curr_val = $obj->$method;
   return [{"id"       => $obj->can("analysis_id") ? $obj->analysis_id : $obj->dbID,
 	   "adaptor"  => $adaptor,

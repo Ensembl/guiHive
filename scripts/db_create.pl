@@ -2,6 +2,7 @@
 
 use strict;
 use warnings;
+use Data::Dumper;
 
 use Bio::EnsEMBL::Hive::URLFactory;
 
@@ -11,7 +12,7 @@ use lib "./scripts/lib";
 use new_hive_methods;
 use msg;
 
-my $json_data = shift @ARGV || '{"adaptor":["ResourceClass"],"args":[""],"method":["create_full_description"],"url":["mysql://ensadmin:ensembl@127.0.0.1:2912/mp12_compara_nctrees_69a2"]}';
+my $json_data = shift @ARGV || '{"adaptor":["ResourceClass"],"args":["new_resource_class", "LSF", "-q ok"],"method":["create_full_description"],"url":["mysql://ensadmin:ensembl@127.0.0.1:2912/mp12_compara_nctrees_69a2"]}';
 
 my $var = decode_json($json_data);
 my $url          = $var->{url}->[0];
@@ -31,7 +32,6 @@ if (defined $dbConn) {
     my $adaptor = $dbConn->$adaptor_name;
 
     eval {
-      print STDERR "$adaptor->$method(@args)\n";
       $adaptor->$method(@args);
 #      $adaptor->update($obj);
     };

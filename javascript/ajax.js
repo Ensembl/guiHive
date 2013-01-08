@@ -19,27 +19,7 @@ $(document).ready(function() {
     //  they are changed (without having to reload the analysis too or re-connect to the db)
     //  TODO: We may try to find a better solution for this
     $("#show_resources").hide().click(function() {
-	$.ajax({url        : "/scripts/db_fetch_resource.pl",
-		type       : "post",
-		data       : "url=" + $("#db_url").val(),
-		dataType   : "json",
-		beforeSend : function() {showProcessing($("#resource_details"))},
-		success    : function(resourcesRes) {
-		    if(resourcesRes.status != "ok") {
-			$("#log").append(updateRes.err_msg); scroll_down();
-		    } else {
-			$("#resource_details").html(resourcesRes.out_msg);
-			$(".update_resource").click(
-			    { reload:$("#show_resources"),
-			      script:"/scripts/db_update.pl"},
-			    update_db);
-			$(".create_resource").click(
-			    { reload:$("#show_resources"),
-			      script:"/scripts/db_create.pl"},
-			    update_db);
-		    }
-		},
-	       });
+	fetch_resources();
     });
 
     // Function for polling the analysis into the analysis_board
@@ -75,6 +55,35 @@ $(document).ready(function() {
     });
 }); 
 
+function fetch_resources() {
+    var fetch_url = "/scripts/db_fetch_resource.pl";
+    $.ajax({url        : fetch_url,
+	    type       : "post",
+	    data       : "url=" + url,
+	    dataType   : "json",
+	    beforeSend : function() {showProcessing($("#resource_details"))},
+	    success    : function() {display("", fetch_url, onSuccess_fetchResources)}
+// 	    success    : function(resourcesRes) {
+// 		if(resourcesRes.status != "ok") {
+// 		    $("#log").append(resourcesRes.err_msg); scroll_down();
+// 		} else {
+// 		    $("#resource_details").html(resourcesRes.out_msg);
+// 		    $(".update_resource").click(
+// 			{ reload:$("#show_resources"),
+// 			  fetch_url:fetch_url, 
+// 			  script:"/scripts/db_update.pl"},
+// 			update_db);
+// 		    $(".create_resource").click(
+// 			{ reload:$("#show_resources"),
+// 			  fetch_url:fetch_url,
+// 			  script:"/scripts/db_create.pl"},
+// 			update_db);
+// 		}
+// 	    },
+	   });
+}
+
+
 // res is the JSON-encoded response from the server in the Ajax call
 function onSuccess_dbConnect(res) {
     $("#connexion_msg").html(res.status);
@@ -99,6 +108,32 @@ function display(analysis_id, fetch_url, callback) {
 	   });
 }
 
+// TODO: analysis_id is not going to be used, so maybe we should move it
+// to the last position (and avoid the 'undef' in the calling code)
+function onSuccess_fetchResources(resourcesRes, analysis_id, fetch_url) {
+    if (resourcesRes.status != "ok") {
+	$("#log").append(resourcesRes.err_msg); scroll_down();
+    } else {
+	$("#resource_details").html(resourcesRes.out_msg);
+    }
+    listen_Resources(fetch_url);
+}
+
+function listen_Resources(fetch_url) {
+    $(".update_resource").click(
+	{ //reload:$("#show_resources"),
+	  fetch_url:fetch_url, 
+	  script:"/scripts/db_update.pl",
+	  callback:onSuccess_fetchResources},
+	update_db);
+    $(".create_resource").click(
+	{ //reload:$("#show_resources"),
+	  fetch_url:fetch_url,
+	  script:"/scripts/db_create.pl",
+	  callback:onSuccess_fetchResources},
+	update_db);
+}
+
 // res is the JSON-encoded response from the server in the Ajax call
 function onSuccess_fetchAnalysis(analysisRes, analysis_id, fetch_url) {
     if(analysisRes.status == "ok") {
@@ -107,22 +142,31 @@ function onSuccess_fetchAnalysis(analysisRes, analysis_id, fetch_url) {
 	$("#log").append(analysisRes.err_msg); scroll_down();
 	$("#connexion_msg").html(analysisRes.status);
     }
+    listen_Analysis(analysis_id, fetch_url);
+}
 
+function listen_Analysis(analysis_id, fetch_url) {
     // We have db_update.pl and db_update2.pl
     // TODO: use a generic version (db_update.pl or db_update2.pl)
     // that can deal with both cases
     // It this is not possible, give better names
     // TODO2: Shouldn't this code be moved to the "ok" condition above?
+    // TODO3: analysis_id should be named only dbID or something similar
+    // to make it more clear that also resources calls update_db --
+    // even if it doesn't use the dbID field
     $(".update_param").change(
-	{ analysis_id:analysis_id,
-	 fetch_url:fetch_url,
-	 script:"/scripts/db_update.pl"},
-	update_db);
+	    { analysis_id:analysis_id,
+	      fetch_url:fetch_url,
+	      script:"/scripts/db_update.pl",
+	      callback:onSuccess_fetchAnalysis},
+	    update_db);
+
     $(".update_param").click(
 	{analysis_id:analysis_id,
 	 fetch_url:fetch_url,
-	 script:"/scripts/db_update.pl"},
-	update_db);
+	 script:"/scripts/db_update.pl",
+	 callback:onSuccess_fetchAnalysis},
+	update_db);  // This is recursive!
 }
 
 // TODO: Currently, analysis_id and fetch_url are not being used
@@ -134,8 +178,7 @@ function onSuccess_fetchJobs(jobsRes, analysis_id, fetch_url) {
 	$("#jobs").html(jobsRes.out_msg);
 
 	// Listener to delete_input_id button:
-	$(".delete_input_id").click(function(){console.log("THIS(click)::"); console.log(this);
-					       var sel = this;
+	$(".delete_input_id").click(function(){var sel = this;
 					       $.ajax({url       : "/scripts/db_update2.pl",
 						       type      : "post",
 						       data      : jQuery.param(buildSendParams(sel)),
@@ -175,7 +218,6 @@ function onSuccess_fetchJobs(jobsRes, analysis_id, fetch_url) {
 	    $.each(oTable._('tr', {"filter":"applied"}), function(i,v) { // applied to all visible rows via the _ method
 		job_ids.push(v[0]); // pushed the job_ids (first column). TODO: More portable way?
 	    });
-	    console.log(job_ids);
 
 	    var sel = this;
 	    $.ajax({url      : "/scripts/db_update2.pl",
@@ -221,8 +263,6 @@ function onSuccess_fetchJobs(jobsRes, analysis_id, fetch_url) {
 	    event      : "dblclick",
 	    //		callback   : function(response) {innerEditableCallback.call(this, response, job_id)},
 	    callback   : function(response) {
-		console.log("RESPONSE:");
-		console.log(response);
 		var needsReload = $(this).attr("data-needsReload");
 		if (needsReload == 1) {
 		    display(analysis_id, "/scripts/db_fetch_jobs.pl", onSuccess_fetchJobs);
@@ -259,9 +299,7 @@ function onSuccess_fetchJobs(jobsRes, analysis_id, fetch_url) {
 }
 
 function innerEditableCallback(response) {
-    console.log("INNER CALLED");
     var value = jQuery.parseJSON(response);
-    console.log(value)
     $(this).html(value.out_msg);
 
     // If there exist a sibling with data-newvalueID then we activate it
@@ -269,10 +307,6 @@ function innerEditableCallback(response) {
     if (val_sibling_id != undefined) {
 	var val_sibling = $("#" + val_sibling_id);
 	var key = $(this).html();
-	console.log("VAL_SIBLING: " + val_sibling_id);	
-	console.log(val_sibling);
-	console.log("KEY:");
-	console.log(key);
 	val_sibling.addClass("editableInputID");
 	val_sibling.attr("data-key", key);
 	doEditableInputID();
@@ -311,6 +345,7 @@ function buildSendParams(obj) {
 }
 
 function update_db(obj) {
+    var callback = obj.data.callback;
     var url = obj.data.script;
     var fetch_url = obj.data.fetch_url;
     var analysis_id = obj.data.analysis_id;
@@ -326,7 +361,9 @@ function update_db(obj) {
 		};
 	    },
 //	    complete   :  function() {$(button).trigger('click')},
-	    complete   : display(analysis_id, fetch_url, onSuccess_fetchAnalysis)
+	    // TODO: I think the log is populated twice... One in the success callback and one in the
+	    // onSuccess_fetchAnalysis callback. Check!
+	    complete   : function() { display(analysis_id, fetch_url, callback)}
 	   });
 }
 			    

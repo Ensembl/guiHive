@@ -50,3 +50,15 @@
 .ui-widget-content {
     background-color : white;
 }
+
+input {
+    empty-cells : hide;
+    font-size   : 12px;
+    text-align  : center;
+    text-overflow : active; /* is active a valid value? */
+    border      : none;
+}
+
+font {
+    font-size : 12px;
+}
