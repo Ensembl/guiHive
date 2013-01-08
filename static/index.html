@@ -46,15 +46,20 @@ A Graphic User Interface for the eHive Production System
 </header>
 
 <div class="db_connexion">
-<!--  <form action="" id="db_connect" method="post"> -->
-   URL: <input type="text" id="db_url" name="db_url" size="80"/><br />
-   <input type="button" value="Connect" id="Connect"/>
-<!--  </form> -->
+  <!--  <form action="" id="db_connect" method="post"> -->
+  URL: <input type="text" id="db_url" name="db_url" size="80"/><br />
+  <input type="button" value="Connect" id="Connect"/>
+  <!--  </form> -->
 </div>
 
-</div>
-<div id="connexion_msg">
-  <p>Connexion details</p>
+<div class="row">
+  <div id="connexion_msg" class="span4">
+    <p>Connexion details</p>
+  </div>
+
+  <div id="summary" class="span2">
+    <p>Summary</p>
+  </div>
 </div>
 
 <!-- TODO: This has to be done better once the layout is being defined -->
@@ -68,10 +73,6 @@ A Graphic User Interface for the eHive Production System
 
 <div id="resource_details" class="resource_details">
   <p>Resources available</p>
-</div>
-
-<div id="summary" class="summary">
-  <p>Summary</p>
 </div>
 
 <div id="pipeline_summary" class="pipeline_summary">

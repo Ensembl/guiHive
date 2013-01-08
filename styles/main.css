@@ -6,9 +6,10 @@
 
 #connexion_msg {
     width            : 960px;
+    height           : 150px;
     color            : black;
     background-color : white;
-    border           : 2px solid darkblue;
+/*    border           : 2px solid darkblue;*/
     padding          : 5px;
 }
 
@@ -62,3 +63,4 @@ input {
 font {
     font-size : 12px;
 }
+
