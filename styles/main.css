@@ -1,3 +1,6 @@
+@import url("bootstrap/css/bootstrap.css");
+
+
 /* Connexion Div */
 
 .db_connexion {
@@ -60,7 +63,8 @@ input {
     border      : none;
 }
 
-font {
-    font-size : 12px;
-}
 
+body {
+    font-size : 12px;
+    color     : grey;
+}
