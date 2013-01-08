@@ -13,7 +13,7 @@ use lib ("./scripts/lib");
 use msg;
 
 # Input data
-my $json_url = shift @ARGV || '{"url":["mysql://ensro@127.0.0.1:2912/mp12_compara_nctrees_69d"]}';
+my $json_url = shift @ARGV || '{"url":["mysql://ensro@127.0.0.1:2912/mp12_long_mult"]}';
 my $url = decode_json($json_url)->{url}->[0];
 
 # Initialization
@@ -59,24 +59,7 @@ sub formAnalyses {
     my $graph = Bio::EnsEMBL::Hive::Utils::Graph->new($dbConn);
     my $graphviz = $graph->build();
 
-    # my $graphviz = GraphViz->new();
-
-    # $graphviz->add_node('London');
-    # $graphviz->add_node('Paris', label => 'City of Louvre');
-    # $graphviz->add_node('New York');
-
-    # $graphviz->add_edge('London' => 'Paris');
-    # $graphviz->add_edge('London' => 'New York', label => 'Far');
-    # $graphviz->add_edge('Paris'  => 'London');
-
     return $graphviz->as_svg;
 }
-
-# sub formAnalyses {
-#     my ($all_analyses) = @_;
-#     my $template = HTML::Template->new(filename => $analyses_template);
-#     $template->param(analyses => [ map{ {logic_name => $_->logic_name, id => $_->dbID} } @$all_analyses] );
-#     return $template->output();
-# }
 
 

@@ -1,18 +1,38 @@
+
+/* IMPORTS */
 @import url("bootstrap/css/bootstrap.css");
+@import url(http://fonts.googleapis.com/css?family=Rambla|Dosis|Armata|Duru+Sans|Ropa+Sans|Istok+Web|Oxygen+Mono|Monda|Fjalla+One|Montserrat|Cinzel+Decorative|Gafata|Galdeano|Nunito|Coda);
+
+/* ELEMENTS */
+body {
+/*    font-size : 12px;*/
+    font-family : "Arial", sans-serif;
+}
+
+input {
+    empty-cells : hide;
+    font-size   : 12px;
+    text-align  : center;
+    text-overflow : active; /* is active a valid value? */
+    border      : none;
+}
 
 
+/* DIVs */
 /* Connexion Div */
-
-.db_connexion {
+#db_connexion {
     width            : 960px
 }
 
+#db_url {
+    width : 600px; 
+    text-align : left;
+}
+
 #connexion_msg {
-    width            : 960px;
+/*    width            : 960px;*/
     height           : 150px;
-    color            : black;
     background-color : white;
-/*    border           : 2px solid darkblue;*/
     padding          : 5px;
 }
 
@@ -30,8 +50,8 @@
 #pipeline_diagram {
     width            : 960px;
     height           : 450px;
-    color            : white;
-    background-color : grey;
+    color            : black;
+    background-color : white;
     border           : double;
     padding          : 5px;
     resize           : both;
@@ -39,12 +59,19 @@
 }
 
 /* Analysis Div */
-.analysis_details {
+#analysis_details {
     width            : 960px;
     color            : black;
     background-color : white;
     border           : groove;
     padding          : active;
+}
+
+/* Specific non-container elements */
+#Connect {
+    vertical-align : top;
+    height         : 30px;
+    box-shadow: 1px 1px 0;
 }
 
 /* date-range */
@@ -55,16 +82,4 @@
     background-color : white;
 }
 
-input {
-    empty-cells : hide;
-    font-size   : 12px;
-    text-align  : center;
-    text-overflow : active; /* is active a valid value? */
-    border      : none;
-}
 
-
-body {
-    font-size : 12px;
-    color     : grey;
-}

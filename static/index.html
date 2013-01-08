@@ -38,24 +38,23 @@
 </head>
 <body>
 
-<header>
-A Graphic User Interface for the eHive Production System
-</header>
+<div class"page-header">
+  <h1>
+    A Graphic User Interface for the eHive Production System
+  </h1>
+</div>
 
-<div class="db_connexion">
-  <!--  <form action="" id="db_connect" method="post"> -->
-  URL: <input type="text" id="db_url" name="db_url" size="80"/><br />
-  <input type="button" value="Connect" id="Connect"/>
-  <!--  </form> -->
+<div id="db_connexion">
+  <h4>Connect to your database</h4>
+  <p>URL: <input type="text" id="db_url" name="db_url" size="80"/>
+    <input type="button" value="Connect" id="Connect" class="btn"/></p>
 </div>
 
 <div class="row">
   <div id="connexion_msg" class="span4">
-    <p>Connexion details</p>
   </div>
 
-  <div id="summary" class="span2">
-    <p>Summary</p>
+  <div id="summary" class="span4 offset3">
   </div>
 </div>
 
@@ -68,29 +67,38 @@ A Graphic User Interface for the eHive Production System
   <p>Log</p>
 </div>
 
-<div id="resource_details" class="resource_details">
-  <p>Resources available</p>
-</div>
+<!-- TABBING -->
+<ul class="nav nav-tabs">
+  <li><a href="#main" data-toggle="tab">Main</a></li>
+  <li><a href="#pipeline_summary" data-toggle="tab">Analysis Summary</a></li>
+  <li><a href="#resource_details" data-toggle="tab">Resources</a></li>
+  <li><a href="#views" data-toggle="tab">Stat Views</a></li>
+  <li><a href="#configuration" data-toggle="tab">Configuration</a></li>
+</ul>
 
-<div id="pipeline_summary" class="pipeline_summary">
-  <p>Summary of the pipeline</p>
-</div>
+<div class="tab-content">
 
-<div id="pipeline_diagram" class="pipeline_diagram">
-  <p>The diagram of the pipeline</p>
-</div>
+  <div id="resource_details" class="tab-pane"></div>
 
-<div id="analysis_details" class="analysis_details">
-  <p>The details of an analysis</p>
-</div>
+  <div id="pipeline_summary" class="tab-pane"></div>
 
-<div id="jobs" class="jobs">
-  <p>The jobs of an analysis</p>
-</div>
+  <div id="main" class="tab-pane active">
+    <div id="pipeline_diagram"></div>
+    <div id="analysis_details"></div>
+    <div id="jobs"></div>
+  </div>
 
+  <div id="views" class="tab-pane">
+    <p>Other Views is empty for now</p>
+  </div>
+
+  <div id="configuration" class="tab-pane">
+    <p>Configuration is empty for now</p>
+  </div>
+</div>
 
 <footer>
-Development version. Send comments to mp@ebi.ac.uk
+    Development version. Send comments to mp@ebi.ac.uk
 </footer>
 </body>
 

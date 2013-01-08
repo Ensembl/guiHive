@@ -1,11 +1,11 @@
 function barChart() {
-    var fontsize = 16;
+    var fontsize = 14;
     var x = 0;
     var y = 0;
     var rx = 0;
     var label_margin = 80;
     var bar_height = 20;
-    var width = 80;
+    var width = 240;
     var labelspace = 10;
     var xspace = 10;
     var yspace = 5;

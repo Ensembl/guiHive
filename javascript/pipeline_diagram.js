@@ -37,17 +37,18 @@ function form_data() {
 }
 
 function monitor_overview() {
-
+    var summary_header = "<h4>Pipeline progress</h4>";
+    $("#summary").html(summary_header);
     var data = form_data();
     var foo = d3.select("#summary")
-    .append("svg:svg")
-    .attr("width", 250)
-    .attr("height", 150)
-    .append("svg:g");
+	.append("svg:svg")
+	.attr("width", 550)
+	.attr("height", 150)
+	.append("svg:g");
     var bChart = barChart().data(data);
     bChart(foo);
     var tt = bChart.transition();
-    setTimeout (function() { bChart.update(data, tt)}, 2000);
+    setTimeout (function() { bChart.update(data, tt)}, monitorTimeout);
 
 
 //// Pie chart instead of bars:
@@ -66,7 +67,7 @@ function monitor_overview() {
 }
 
 // TODO: The name of the methods are poorly chosen.
-// We have a general overview (pie chart)
+// We have a general overview (pieChart / hBarChart)
 // and a per-analysis overview
 function live_overview_lite(pChart) {
     var data = form_data();
@@ -137,8 +138,12 @@ function monitor_analysis() {
 	var matches = analysis_id_regexp.exec(titleText);
 	if (matches != null &&  matches.length > 1) {
 	    var analysis_id = matches[1];
-	    var gRoot = $(v).parent()[0]; 
+	    var gRoot = $(v).parent()[0];
+	    console.log("GROOT:");
+	    console.log(gRoot);
 	    var bbox = gRoot.getBBox();
+	    console.log("BBOX:");
+	    console.log(bbox);
 	    // Links to the analysis_details
 	    d3.select(gRoot)
 		.attr("data-analysis_id", analysis_id) // TODO: I think this can be removed
@@ -157,13 +162,17 @@ function monitor_analysis() {
 	    var gpie = d3.select(gRoot)
 		.append("g")
 		.attr("transform", "translate(" + (bbox.x+bbox.width) + "," + bbox.y + ")");
-
+	    console.log("GPIE:");
+	    console.log(gpie);
 	    var path = gpie.selectAll("path").data(pie([1,1,1,1,1,1]))
 		.enter().append("path")
 		.attr("fill", "white")
 		.attr("stroke", "black")
 		.attr("d", arc)
 		.each(function(d) { this._current = d; }); // store initial values
+
+	    console.log("PATH:");
+	    console.log(path);
 
 	    $(v).bind("monitor", {analysis_id:analysis_id, path:path, arc:arc, pie:pie}, worker);
 	    $(v).trigger("monitor");

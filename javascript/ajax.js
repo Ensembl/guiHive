@@ -63,30 +63,14 @@ function fetch_resources() {
 	    dataType   : "json",
 	    beforeSend : function() {showProcessing($("#resource_details"))},
 	    success    : function() {display("", fetch_url, onSuccess_fetchResources)}
-// 	    success    : function(resourcesRes) {
-// 		if(resourcesRes.status != "ok") {
-// 		    $("#log").append(resourcesRes.err_msg); scroll_down();
-// 		} else {
-// 		    $("#resource_details").html(resourcesRes.out_msg);
-// 		    $(".update_resource").click(
-// 			{ reload:$("#show_resources"),
-// 			  fetch_url:fetch_url, 
-// 			  script:"/scripts/db_update.pl"},
-// 			update_db);
-// 		    $(".create_resource").click(
-// 			{ reload:$("#show_resources"),
-// 			  fetch_url:fetch_url,
-// 			  script:"/scripts/db_create.pl"},
-// 			update_db);
-// 		}
-// 	    },
 	   });
 }
 
 
 // res is the JSON-encoded response from the server in the Ajax call
 function onSuccess_dbConnect(res) {
-    $("#connexion_msg").html(res.status);
+    var connextion_header = "<h4>Connexion Details</h4>";
+    $("#connexion_msg").html(connextion_header + res.status);
     draw_diagram(res.out_msg);
     $("#show_resources").trigger('click');  // TODO: Best way to handle?
     $("#log").append(res.err_msg); scroll_down();
