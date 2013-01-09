@@ -39,9 +39,8 @@
 <body>
 
 <div class"page-header">
-  <h1>
-    A Graphic User Interface for the eHive Production System
-  </h1>
+  <h1>guiHive</h1>
+  <h3>A Graphic User Interface for the eHive Production System</h3>
 </div>
 
 <div id="db_connexion">
@@ -83,8 +82,10 @@
   <div id="pipeline_summary" class="tab-pane"></div>
 
   <div id="main" class="tab-pane active">
-    <div id="pipeline_diagram"></div>
-    <div id="analysis_details"></div>
+    <div class="row">
+      <div id="pipeline_diagram" class="span12"></div>
+      <div id="analysis_details" class="span4"></div>
+    </div>
     <div id="jobs"></div>
   </div>
 
@@ -93,7 +94,14 @@
   </div>
 
   <div id="configuration" class="tab-pane">
-    <p>Configuration is empty for now</p>
+    <!-- setTimeout -->
+    <p>Time to refresh data:<select id="refresh_time">
+	<option value="5000">5 seg</option>
+	<option value="30000">30 seg</option>
+	<option value="60000" selected=1>1 min</option>
+	<option value="120000">2 min</option>
+      </select>
+    </p>
   </div>
 </div>
 

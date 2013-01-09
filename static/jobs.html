@@ -1,5 +1,5 @@
 <!-- TODO: Eliminate formatting code (borders, sizes, etc...) -->
-<table border=1 id="jobs_table">
+<table id="jobs_table" class="table table-striped table-condensed table-hover table-bordered">
   <thead>
     <tr>
       <th>job_id</th>
@@ -23,7 +23,7 @@
 
 	<td><TMPL_VAR NAME=analysis_id></td>
 
-	<td><table border=1>
+	<td><table class="inner_table">
 	    <TMPL_LOOP NAME=JOB_INPUT_ID>
 	      <TMPL_LOOP NAME=JOB_EXISTING_INPUT_ID>
 		<tr>

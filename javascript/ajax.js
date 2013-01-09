@@ -9,7 +9,8 @@ var analysis_board;
 
 // monitorTimeout is the time that passes before monitoring again
 // It is being used by the analysis_board and its consumers
-var monitorTimeout = 50000; // 50seg. TODO: Allow users to change this
+var monitorTimeout = 5000; // 5seg. TODO: Allow users to change this
+
 
 // wait for the DOM to be loaded 
 $(document).ready(function() { 
@@ -25,11 +26,13 @@ $(document).ready(function() {
     // Function for polling the analysis into the analysis_board
     $("#update_analysis_board").hide().bind("monitor", function() {
 	var elem = this;
+	// We can't run this asynchronously if analysis_board is undefined
+	// So, we check first and run in async/sync mode
+	var async = analysis_board != undefined;
 	$.ajax({url      : "/scripts/db_fetch_all_analysis.pl",
 		type     : "post",
 		data     : "url=" + $("#db_url").val(),
-		async    : false,  // TODO: For now we are doing this sync to avoid a race between the polling of the board and its consumers
-		                   // but we should support async in production, if possible.
+		async    : async,
 		dataType : "json",
 		success  : function(allAnalysisRes) {
 		    if(allAnalysisRes.status != "ok") {
@@ -69,12 +72,19 @@ function fetch_resources() {
 
 // res is the JSON-encoded response from the server in the Ajax call
 function onSuccess_dbConnect(res) {
-    var connextion_header = "<h4>Connexion Details</h4>";
-    $("#connexion_msg").html(connextion_header + res.status);
+    var connexion_header = "<h4>Connexion Details</h4>";
+    $("#connexion_msg").html(connexion_header + res.status);
     draw_diagram(res.out_msg);
-    $("#show_resources").trigger('click');  // TODO: Best way to handle?
+
     $("#log").append(res.err_msg); scroll_down();
     url = $("#db_url").val();
+
+    // Showing the resources
+    $("#show_resources").trigger('click');  // TODO: Best way to handle?
+
+    // Listening changes to configuration options
+    listen_config();
+
     // Now we start monitoring the analyses:
     $("#update_analysis_board").trigger("monitor");
     // This has to disappear?
@@ -103,6 +113,14 @@ function onSuccess_fetchResources(resourcesRes, analysis_id, fetch_url) {
     listen_Resources(fetch_url);
 }
 
+function change_refresh_time() {
+    monitorTimeout = this.value
+}
+
+function listen_config() {
+    $("#refresh_time").change(change_refresh_time);
+}
+
 function listen_Resources(fetch_url) {
     $(".update_resource").click(
 	{ //reload:$("#show_resources"),
@@ -121,7 +139,8 @@ function listen_Resources(fetch_url) {
 // res is the JSON-encoded response from the server in the Ajax call
 function onSuccess_fetchAnalysis(analysisRes, analysis_id, fetch_url) {
     if(analysisRes.status == "ok") {
-	$("#analysis_details").html(analysisRes.out_msg);
+	var analysis_header = "<h4>Analysis Details</h4>";
+	$("#analysis_details").html(analysis_header + analysisRes.out_msg);
     } else {
 	$("#log").append(analysisRes.err_msg); scroll_down();
 	$("#connexion_msg").html(analysisRes.status);
@@ -130,6 +149,7 @@ function onSuccess_fetchAnalysis(analysisRes, analysis_id, fetch_url) {
 }
 
 function listen_Analysis(analysis_id, fetch_url) {
+    jobs_chart("#analysis_details", analysis_id);
     // We have db_update.pl and db_update2.pl
     // TODO: use a generic version (db_update.pl or db_update2.pl)
     // that can deal with both cases
@@ -159,7 +179,9 @@ function onSuccess_fetchJobs(jobsRes, analysis_id, fetch_url) {
 	// Datepicker format
 	$.datepicker.regional[""].dateFormat = 'dd/mmo/yy';
 	$.datepicker.setDefaults($.datepicker.regional['']);
-	$("#jobs").html(jobsRes.out_msg);
+
+	var jobs_header = "<h4>Jobs</h4>";
+	$("#jobs").html(jobs_header + jobsRes.out_msg);
 
 	// Listener to delete_input_id button:
 	$(".delete_input_id").click(function(){var sel = this;
@@ -200,7 +222,13 @@ function onSuccess_fetchJobs(jobsRes, analysis_id, fetch_url) {
 
 	    var job_ids = [];
 	    $.each(oTable._('tr', {"filter":"applied"}), function(i,v) { // applied to all visible rows via the _ method
-		job_ids.push(v[0]); // pushed the job_ids (first column). TODO: More portable way?
+		// TODO: There seems to be a bug here
+		// Now we have 1 extra row that is null
+		// I think this happens since we have introduced the tables in the input_id field.
+		// Take a look to debug!
+		if (v != null) {
+		    job_ids.push(v[0]); // pushed the job_ids (first column). TODO: More portable way?
+		}
 	    });
 
 	    var sel = this;
@@ -212,6 +240,8 @@ function onSuccess_fetchJobs(jobsRes, analysis_id, fetch_url) {
 		    cache    : false,
 		    success  : function () {
 			$.each(oTable.$('tr', {"filter":"applied"}), function(i,v) {
+			    // TODO: There seems to be a bug here
+			    // Now we have 1 extra row that is null (see above)
 			    var tr = $(v)[0];
 			    var aPos = oTable.fnGetPosition(tr);
 			    oTable.fnUpdate($(sel).val(), aPos, column_index);

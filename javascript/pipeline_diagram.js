@@ -78,6 +78,29 @@ function live_overview_lite(pChart) {
     setTimeout(function() {live_overview_lite(pChart)}, monitorTimeout);
 }
 
+function jobs_chart(div, analysis_id) {
+    // We assume that the analysis_board can be indexed by analysis_id
+    analysis_data = analysis_board[analysis_id-1];
+    console.log("ANALYSIS_DATA:");
+    console.log(analysis_data);
+    var g = d3.select(div)
+	.append("div")
+	.append("svg:svg")
+	.attr("height", 60)
+	.append("svg:g");
+    var gChart = hStackedBarChart(analysis_board[analysis_id-1]).height(50).width(500).barsmargin(100);
+    gChart(g);
+    setTimeout(function() {live_analysis_chart(gChart, analysis_id)}, 2000); // We update fast from the zero values
+}
+
+function live_analysis_chart(gChart, analysis_id) {
+    var t = gChart.transition();
+//    console.log("NEW DATA COMING --FULL BOARD--:");
+//    console.log(analysis_board);
+    gChart.update(analysis_board[analysis_id - 1], t);
+    setTimeout(function() {live_analysis_chart(gChart, analysis_id)}, monitorTimeout);
+}
+
 // uses analysis_board -- duplicated with initialize_overview. Fix!
 function initialize_overview() {
     var vis = d3.select("#pipeline_summary");
@@ -97,10 +120,13 @@ function initialize_overview() {
 	// transitions can be obtained from gChart directly
 	gCharts.push(gChart);
     }
-    setTimeout(function() {live_overview(gCharts)}, monitorTimeout);
+    setTimeout(function() {live_overview(gCharts)}, 2000); // We update fast from the zero values
 }
 
 function live_overview(gCharts) {
+    console.log("NEW DATA COMING --FULL BOARD ALL--:");
+    console.log(analysis_board);
+
     for (var i = 0; i < gCharts.length; i++) {
 	var gChart = gCharts[i];
 	var t = gChart.transition();//.duration(1000); TODO: Include "duration" method
@@ -139,11 +165,7 @@ function monitor_analysis() {
 	if (matches != null &&  matches.length > 1) {
 	    var analysis_id = matches[1];
 	    var gRoot = $(v).parent()[0];
-	    console.log("GROOT:");
-	    console.log(gRoot);
 	    var bbox = gRoot.getBBox();
-	    console.log("BBOX:");
-	    console.log(bbox);
 	    // Links to the analysis_details
 	    d3.select(gRoot)
 		.attr("data-analysis_id", analysis_id) // TODO: I think this can be removed
@@ -162,17 +184,12 @@ function monitor_analysis() {
 	    var gpie = d3.select(gRoot)
 		.append("g")
 		.attr("transform", "translate(" + (bbox.x+bbox.width) + "," + bbox.y + ")");
-	    console.log("GPIE:");
-	    console.log(gpie);
 	    var path = gpie.selectAll("path").data(pie([1,1,1,1,1,1]))
 		.enter().append("path")
 		.attr("fill", "white")
 		.attr("stroke", "black")
 		.attr("d", arc)
 		.each(function(d) { this._current = d; }); // store initial values
-
-	    console.log("PATH:");
-	    console.log(path);
 
 	    $(v).bind("monitor", {analysis_id:analysis_id, path:path, arc:arc, pie:pie}, worker);
 	    $(v).trigger("monitor");
