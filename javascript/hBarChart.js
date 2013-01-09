@@ -73,8 +73,6 @@ function barChart() {
     };
 
     bChart.update = function(new_data, trans) {
-	console.log("new_data:");
-	console.log(new_data);
 	bChart.data(new_data);
 	trans(new_data);
 	return;
