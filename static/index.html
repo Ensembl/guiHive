@@ -64,6 +64,9 @@
   <p>Log</p>
 </div>
 
+<!-- Time to refresh the data -->
+<div id="refresh_time"></div>
+
 <!-- TABBING -->
 <ul class="nav nav-tabs">
   <li><a href="#main" data-toggle="tab">Main</a></li>
@@ -92,14 +95,12 @@
   </div>
 
   <div id="configuration" class="tab-pane">
-    <!-- setTimeout -->
-    <p>Time to refresh data:<select id="refresh_time">
+    <p>Time to refresh data:<select id="select_refresh_time">
 	<option value="5000">5 seg</option>
 	<option value="30000">30 seg</option>
 	<option value="60000" selected=1>1 min</option>
 	<option value="120000">2 min</option>
-      </select>
-    </p>
+      </select></p>
   </div>
 </div>
 

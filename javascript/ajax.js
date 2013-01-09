@@ -9,7 +9,7 @@ var analysis_board;
 
 // monitorTimeout is the time that passes before monitoring again
 // It is being used by the analysis_board and its consumers
-var monitorTimeout = 5000; // 5seg by default. This can be changed dynamically by the app
+var monitorTimeout = 30000; // 30seg by default. This can be changed dynamically by the app
 
 
 // wait for the DOM to be loaded 
@@ -47,6 +47,11 @@ function fetch_resources() {
 	   });
 }
 
+function show_refresh_time(secs_to_refresh) {
+    if (secs_to_refresh < 1) return;
+    $("#refresh_time").html("Time to refresh: " + secs_to_refresh);
+    setTimeout(function() {show_refresh_time(secs_to_refresh - 1)}, 1000);
+}
 
 function update_analysis_board() {
     // We can't run this asynchronously if analysis_board is undefined
@@ -63,7 +68,7 @@ function update_analysis_board() {
 		    analysis_board = allAnalysisRes.out_msg;
 		}
 	    },
-	    complete : setTimeout(update_analysis_board, monitorTimeout),
+	    complete : function() {show_refresh_time(monitorTimeout/1000); setTimeout(update_analysis_board, monitorTimeout)},
 	   });
 }
 
@@ -80,6 +85,8 @@ function onSuccess_dbConnect(res) {
     $("#show_resources").trigger('click');  // TODO: Best way to handle?
 
     // Listening changes to configuration options
+    // TODO: This can be done via a config file (json?)
+    // that is read and process to make these options
     listen_config();
 
     // Now we start monitoring the analyses:
@@ -113,11 +120,11 @@ function onSuccess_fetchResources(resourcesRes, analysis_id, fetch_url) {
 }
 
 function change_refresh_time() {
-    monitorTimeout = this.value
+    monitorTimeout = $(this).val()
 }
 
 function listen_config() {
-    $("#refresh_time").change(change_refresh_time);
+    $("#select_refresh_time").change(change_refresh_time);
 }
 
 function listen_Resources(fetch_url) {
