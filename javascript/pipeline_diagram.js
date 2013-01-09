@@ -40,6 +40,8 @@ function monitor_overview() {
     var summary_header = "<h4>Pipeline progress</h4>";
     $("#summary").html(summary_header);
     var data = form_data();
+    console.log("DATA:");
+    console.log(data);
     var foo = d3.select("#summary")
 	.append("svg:svg")
 	.attr("width", 550)
@@ -47,8 +49,8 @@ function monitor_overview() {
 	.append("svg:g");
     var bChart = barChart().data(data);
     bChart(foo);
-    var tt = bChart.transition();
-    setTimeout (function() { bChart.update(data, tt)}, monitorTimeout);
+//    var tt = bChart.transition();
+    setTimeout (function() { live_overview_lite(bChart)}, 2000);
 
 
 //// Pie chart instead of bars:
@@ -71,9 +73,11 @@ function monitor_overview() {
 // and a per-analysis overview
 function live_overview_lite(pChart) {
     var data = form_data();
-
-    var t = pChart.transition().duration(1000);
-    pChart.max_counts(data.total).update(data, t);
+    console.log("DATA:::::");
+    console.log(data);
+    var t = pChart.transition();
+//    pChart.max_counts(data.total).update(data, t);
+    pChart.update(data,t);
     
     setTimeout(function() {live_overview_lite(pChart)}, monitorTimeout);
 }

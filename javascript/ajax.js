@@ -9,7 +9,7 @@ var analysis_board;
 
 // monitorTimeout is the time that passes before monitoring again
 // It is being used by the analysis_board and its consumers
-var monitorTimeout = 60000; // 60seg by default. This can be changed dynamically by the app
+var monitorTimeout = 5000; // 5seg by default. This can be changed dynamically by the app
 
 
 // wait for the DOM to be loaded 
