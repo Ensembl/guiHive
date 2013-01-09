@@ -40,8 +40,6 @@ function monitor_overview() {
     var summary_header = "<h4>Pipeline progress</h4>";
     $("#summary").html(summary_header);
     var data = form_data();
-    console.log("DATA:");
-    console.log(data);
     var foo = d3.select("#summary")
 	.append("svg:svg")
 	.attr("width", 550)
@@ -73,8 +71,6 @@ function monitor_overview() {
 // and a per-analysis overview
 function live_overview_lite(pChart) {
     var data = form_data();
-    console.log("DATA:::::");
-    console.log(data);
     var t = pChart.transition();
 //    pChart.max_counts(data.total).update(data, t);
     pChart.update(data,t);
@@ -228,7 +224,7 @@ function worker(event) {
 		     d3.select(node_shape).transition().duration(1500).delay(0).style('fill',color);
 
 		     // We update the labels in the nodes
-		     var breakdown_label = monitorRes.out_msg.breakdown_label;
+		     var breakdown_label = monitorRes.out_msg.breakout_label;
 		     var label = $(gRoot).children("text")[1];
 		     $(label).text(breakdown_label);
 
