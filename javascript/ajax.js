@@ -9,7 +9,7 @@ var analysis_board;
 
 // monitorTimeout is the time that passes before monitoring again
 // It is being used by the analysis_board and its consumers
-var monitorTimeout = 5000; // 5seg. TODO: Allow users to change this
+var monitorTimeout = 60000; // 60seg by default. This can be changed dynamically by the app
 
 
 // wait for the DOM to be loaded 
@@ -21,28 +21,6 @@ $(document).ready(function() {
     //  TODO: We may try to find a better solution for this
     $("#show_resources").hide().click(function() {
 	fetch_resources();
-    });
-
-    // Function for polling the analysis into the analysis_board
-    $("#update_analysis_board").hide().bind("monitor", function() {
-	var elem = this;
-	// We can't run this asynchronously if analysis_board is undefined
-	// So, we check first and run in async/sync mode
-	var async = analysis_board != undefined;
-	$.ajax({url      : "/scripts/db_fetch_all_analysis.pl",
-		type     : "post",
-		data     : "url=" + $("#db_url").val(),
-		async    : async,
-		dataType : "json",
-		success  : function(allAnalysisRes) {
-		    if(allAnalysisRes.status != "ok") {
-			$("#log").append(allAnalysisRes.err_msg); scroll_down();
-		    } else {
-			analysis_board = allAnalysisRes.out_msg;
-		    }
-		},
-		complete : setTimeout(function(){$(elem).trigger("monitor")}, monitorTimeout),
-	       })
     });
 
     // Default value. Only for testing. TODO: Remove the following line
@@ -70,6 +48,25 @@ function fetch_resources() {
 }
 
 
+function update_analysis_board() {
+    // We can't run this asynchronously if analysis_board is undefined
+    // So, we check first and run in async/sync mode (see the async parameter)
+    $.ajax({url      : "/scripts/db_fetch_all_analysis.pl",
+	    type     : "post",
+	    data     : "url=" + $("#db_url").val(),
+	    async    : analysis_board != undefined,
+	    dataType : "json",
+	    success  : function(allAnalysisRes) {
+		if(allAnalysisRes.status != "ok") {
+		    $("#log").append(allAnalysisRes.err_msg); scroll_down();
+		} else {
+		    analysis_board = allAnalysisRes.out_msg;
+		}
+	    },
+	    complete : setTimeout(update_analysis_board, monitorTimeout),
+	   });
+}
+
 // res is the JSON-encoded response from the server in the Ajax call
 function onSuccess_dbConnect(res) {
     var connexion_header = "<h4>Connexion Details</h4>";
@@ -86,8 +83,10 @@ function onSuccess_dbConnect(res) {
     listen_config();
 
     // Now we start monitoring the analyses:
-    $("#update_analysis_board").trigger("monitor");
-    // This has to disappear?
+    update_analysis_board();
+//    $("#update_analysis_board").trigger("monitor");
+
+    // TODO: This has to be cleaned up?
     monitor_overview();
     monitor_analysis();
     initialize_overview();

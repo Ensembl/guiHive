@@ -4,7 +4,7 @@
 var analysis_id_regexp = /analysis_(\d+)/;
 
 // TODO: Put this inside the monitor function
-// TODO: Now that we have analysis_board this should be removed!
+// TODO: Now that we have analysis_board this should be removed! -- but pieCharts still use this
 var total_jobs_counts = [];
 
 function get_totals() {
@@ -80,23 +80,20 @@ function live_overview_lite(pChart) {
 
 function jobs_chart(div, analysis_id) {
     // We assume that the analysis_board can be indexed by analysis_id
-    analysis_data = analysis_board[analysis_id-1];
-    console.log("ANALYSIS_DATA:");
-    console.log(analysis_data);
     var g = d3.select(div)
 	.append("div")
 	.append("svg:svg")
 	.attr("height", 60)
+	.attr("width", 700)
 	.append("svg:g");
-    var gChart = hStackedBarChart(analysis_board[analysis_id-1]).height(50).width(500).barsmargin(100);
+    var gChart = hStackedBarChart(analysis_board[analysis_id-1]).height(50).width(400).barsmargin(120).id(1);
     gChart(g);
     setTimeout(function() {live_analysis_chart(gChart, analysis_id)}, 2000); // We update fast from the zero values
 }
 
 function live_analysis_chart(gChart, analysis_id) {
     var t = gChart.transition();
-//    console.log("NEW DATA COMING --FULL BOARD--:");
-//    console.log(analysis_board);
+
     gChart.update(analysis_board[analysis_id - 1], t);
     setTimeout(function() {live_analysis_chart(gChart, analysis_id)}, monitorTimeout);
 }
@@ -115,7 +112,8 @@ function initialize_overview() {
 
     var gCharts = [];
     for (var i = 0; i < gs[0].length; i++) {
-	var gChart = hStackedBarChart(analysis_board[i]).height(50).width(500).barsmargin(100);
+
+	var gChart = hStackedBarChart(analysis_board[i]).height(50).width(500).barsmargin(220).id(2);
 	gChart(d3.select(gs[0][i]));
 	// transitions can be obtained from gChart directly
 	gCharts.push(gChart);
@@ -124,9 +122,6 @@ function initialize_overview() {
 }
 
 function live_overview(gCharts) {
-    console.log("NEW DATA COMING --FULL BOARD ALL--:");
-    console.log(analysis_board);
-
     for (var i = 0; i < gCharts.length; i++) {
 	var gChart = gCharts[i];
 	var t = gChart.transition();//.duration(1000); TODO: Include "duration" method

@@ -11,12 +11,15 @@ function hStackedBarChart(raw_data) {
     var rightmargin = 50;
     var fontsize = 16;
 
+    // id is there to prevent clashes in switch_type because there, the rects are select by "to_id"
+    // and 2 charts having the same underlying data (i.e. the same analysis_id) would clash
+    var id = 0;
+
     var bChart = function(g){
 	var data = bChart.transformData(raw_data);
+
 	//	var layers = stack(data);
 	bChart.layers = stack(data);
-	console.log("layers: ");
-	console.log(bChart.layers);
 
 	// bChart.y is global to the reusable object
 	// while y is local to this closure
@@ -34,7 +37,7 @@ function hStackedBarChart(raw_data) {
 	var gRects = gLayer.selectAll("g")
 	    .data(function(d) {return d})
 	    .enter().append("g")
-	    .attr("class", raw_data.logic_name)
+	    .attr("class", raw_data.logic_name + "__" + id)
 	    .classed("bar", true);
 
 	gRects.append("svg:rect")
@@ -44,12 +47,12 @@ function hStackedBarChart(raw_data) {
 	    .attr("width", function(d) {return y(d.y)})
 //	      .attr("width", 0)
 	      .each(function(d,i){this._type = "stacked"});
-    
+
 	// analysis label
 	g
 	    .append("svg:g")
 	    .attr("class", "analysis_label")
-	    .attr("to_id", raw_data.logic_name)
+	    .attr("to_id", raw_data.logic_name + "__" + id)
 	    .on("click", bChart.switch_type)
 	    .append("svg:text")
 	    .attr("x", 0)
@@ -58,12 +61,12 @@ function hStackedBarChart(raw_data) {
 	    .attr("font-size", fontsize)
 	    .text(raw_data.logic_name + " (" + raw_data.analysis_id + ")");
     
+
     // general counts label
 	g
 	    .append("svg:text")
 	    .attr("class", "count_label")
 	    .attr("x", barsmargin + y.range()[1]+10)
-//	    .attr("x", barsmargin + 10)
 	    .attr("y", bChart.height()/2 + bChart.fontsize()/2.5)
 	    .attr("fill", "black")
 	    .attr("font-size", fontsize)
@@ -73,7 +76,7 @@ function hStackedBarChart(raw_data) {
 	    .attr("x", barsmargin)
 	    .attr("y", 0)
 	    .attr("font-size", 10)
-	    .attr("fill", "red")
+	    .attr("fill", "blue")
 	    .text(0)
 	    .each(function(d,i){this._type = "stacked"});
     
@@ -117,7 +120,7 @@ function hStackedBarChart(raw_data) {
 	    bChart.layers = new_layers;
 	    return;
 	};
-    
+ 
 	return gRects;
     };
   
@@ -157,6 +160,12 @@ function hStackedBarChart(raw_data) {
 	return bChart;
     };
 
+    bChart.id = function (value) {
+	if (!arguments.length) return id;
+	id = value;
+	return bChart;
+    }
+
  
     bChart.switch_type = function () {
 	var y = bChart.y;
@@ -183,7 +192,6 @@ function hStackedBarChart(raw_data) {
 	var barsmargin = bChart.barsmargin();
     
 	var rect = bar.selectAll("rect");
-    
 	rect
 	    .transition()
 	    .delay(function(d,i) {return i*delay})
@@ -212,16 +220,17 @@ function hStackedBarChart(raw_data) {
 	// TODO: We may want to rewrite this.
 	// Maybe it is better to add these new values in the pie-chart code
 	// For now, we get rid of the last artificial elements
-	data.jobs_counts.counts.pop();
-	data.jobs_counts.colors.pop();
+//	data.jobs_counts.counts.pop(); // Don't pop!!!!!! it is poping the objects that are shared throughout the app!
+//	data.jobs_counts.colors.pop();
+	// Let's just assume that we want values with name associated... so loop through all the names
 
 	var transfData = [];
 	
-	for (var i=0; i<data.jobs_counts.counts.length; i++) {
+	for (var i=0; i<data.jobs_counts.names.length; i++) {
 	    transfData[i] = [];
 	}
     
-	for (var j=0; j<data.jobs_counts.counts.length; j++) {
+	for (var j=0; j<data.jobs_counts.names.length; j++) {
 	    transfData[j].push({x:0, y:data.jobs_counts.counts[j]})
 	}
     
