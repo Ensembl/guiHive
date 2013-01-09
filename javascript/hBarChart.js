@@ -30,7 +30,7 @@ function barChart() {
 	gs.append("text")
 	    .attr("x", 0)
 	    .attr("y", function(d,i) { return (y + (bar_height * i) + (yspace * i) + bar_height/2 + fontsize/2) })
-	    .text( function(d,i) { console.log(data); return data.names[i] } )
+	    .text( function(d,i) { return data.names[i] } )
 	    .style("font-size", fontsize);
 
 	// The counts

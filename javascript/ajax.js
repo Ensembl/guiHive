@@ -47,11 +47,11 @@ function fetch_resources() {
 	   });
 }
 
-function show_refresh_time(secs_to_refresh) {
-    if (secs_to_refresh < 1) return;
-    $("#refresh_time").html("Time to refresh: " + secs_to_refresh);
-    setTimeout(function() {show_refresh_time(secs_to_refresh - 1)}, 1000);
-}
+// function show_refresh_time(secs_to_refresh) {
+//     if (secs_to_refresh < 1) return;
+//     $("#refresh_time").html("Time to refresh: " + secs_to_refresh);
+//     setTimeout(function() {show_refresh_time(secs_to_refresh - 1)}, 1000);
+// }
 
 function update_analysis_board() {
     // We can't run this asynchronously if analysis_board is undefined

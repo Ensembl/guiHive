@@ -91,6 +91,7 @@ function pieChart() {
       // call the transition closure
       trans(paths);
 
+	// TODO: What is "path" here?
       paths = path;
       return;
     }

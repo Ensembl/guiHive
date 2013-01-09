@@ -7,6 +7,28 @@ var analysis_id_regexp = /analysis_(\d+)/;
 // TODO: Now that we have analysis_board this should be removed! -- but pieCharts still use this
 var total_jobs_counts = [];
 
+function show_refresh_time() {
+    $("#refresh_time").html("<p>Time to refresh: </p>");
+    var vis = d3.select("#refresh_time")
+	.append("svg:svg")
+	.attr("width", 50)
+	.attr("height", 50)
+	.append("svg:g");
+
+    var timeChart = timeRefresh();
+    timeChart(vis);
+    var t = timeChart.transition()
+    update_refresh_time(timeChart,t,monitorTimeout/1000,0); 
+}
+
+function update_refresh_time(tChart, trans, tOrig, tCurr) {
+    var countsDone = tCurr/tOrig;
+    var countsAhead = 1 - countsDone;
+    var newcounts = [countsAhead,countsDone];
+    tChart.update(newcounts, trans);
+    setTimeout(function() {update_refresh_time(tChart, trans, tOrig, tCurr + 1)}, 1000);
+}
+
 function get_totals() {
     var totals = new Array();
     for (var k = 0; k<analysis_board[0].jobs_counts.counts.length; k++) {
