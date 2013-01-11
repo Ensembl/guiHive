@@ -14,6 +14,12 @@ var monitorTimeout = 30000; // 30seg by default. This can be changed dynamically
 
 // wait for the DOM to be loaded 
 $(document).ready(function() { 
+
+    // Listening changes to configuration options
+    // TODO: This can be done via a config file (json?)
+    // that is read and process to make these options
+    listen_config();
+
     //  We are creating a hidden button for showing resources and 
     //  firing it once the analysis are displayed
     //  we are doing this to allow re-load of the resources when
@@ -78,11 +84,6 @@ function onSuccess_dbConnect(res) {
 
     // Showing the resources
     $("#show_resources").trigger('click');  // TODO: Best way to handle?
-
-    // Listening changes to configuration options
-    // TODO: This can be done via a config file (json?)
-    // that is read and process to make these options
-    listen_config();
 
     // Now we start monitoring the analyses:
     update_analysis_board();
