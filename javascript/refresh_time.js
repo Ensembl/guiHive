@@ -11,10 +11,10 @@ function timeRefresh() {
 	.outerRadius(radius);
 
     var r = function(g) {
+
 	g.attr("transform", "translate(" + radius + "," + radius + ")");
 	var paths = g.selectAll("path").data(pie(counts))
 	    .enter().append("path")
-	    .attr("fill", "white")
 	    .attr("d", arc)
 	    .each(function(d) { this._current = d; });
 
@@ -22,11 +22,25 @@ function timeRefresh() {
 	    .attr("fill", function(d,i) {return colors[i]});
 
 	r.transition = function() {
+	    var delay = 0;
 	    var duration = 1000;
-	    var delay    = 0;
 	    var newR = function(path) {
+		path.attr("fill", function(d,i) { return colors[i] });
 		path.transition().delay(delay).duration(duration).attrTween("d", r.arcTween);
-	    }
+	    };
+
+	    newR.delay = function(value) {
+		if (!arguments.length) return delay;
+		delay = value;
+		return r;
+	    };
+
+	    newR.duration = function(value) {
+		if (!arguments.length) return duration;
+		duration = value;
+		return r;
+	    };
+
 	    return newR;
 	};
 

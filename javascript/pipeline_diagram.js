@@ -23,8 +23,14 @@ function refresh_data() {
 }
 
 function update_refresh_time(tChart, trans, tOrig, tCurr) {
-    if (tCurr == tOrig) {
+    if (tCurr > tOrig) {
+	// We show a red signal while updating (takes 1 second)
+	tChart.colors(["grey","red"]);
+	tChart.update([1,0], trans);
+	trans.duration(0);
 	update_analysis_board();
+	trans.delay(1000);
+	tChart.update([0,1], trans);
 	return
     }
     var countsDone = tCurr/tOrig;
