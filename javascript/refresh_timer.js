@@ -1,4 +1,4 @@
-function timeRefresh() {
+function refreshTimer() {
     var radius = 20;
     var counts = [1,0];
     var colors = ["grey", "white"];

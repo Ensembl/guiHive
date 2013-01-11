@@ -11,9 +11,12 @@ var analysis_board;
 // It is being used by the analysis_board and its consumers
 var monitorTimeout = 30000; // 30seg by default. This can be changed dynamically by the app
 
-
 // wait for the DOM to be loaded 
 $(document).ready(function() { 
+    // There are elements that have to be hidden by default
+    // and only show after connection
+    // TODO: Maybe there is a better way to handle this
+    $(".hide_by_default").hide();
 
     // Listening changes to configuration options
     // TODO: This can be done via a config file (json?)
@@ -75,6 +78,9 @@ function update_analysis_board() {
 
 // res is the JSON-encoded response from the server in the Ajax call
 function onSuccess_dbConnect(res) {
+    // Hidden elements are now displayed
+    $(".hide_by_default").show();
+
     var connexion_header = "<h4>Connexion Details</h4>";
     $("#connexion_msg").html(connexion_header + res.status);
     draw_diagram(res.out_msg);

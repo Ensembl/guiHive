@@ -8,7 +8,7 @@ var analysis_id_regexp = /analysis_(\d+)/;
 var total_jobs_counts = [];
 
 function refresh_data() {
-//function show_refresh_time() {
+    // Refresh
     $("#refresh_time").html("<p>Time to refresh: </p>");
     var vis = d3.select("#refresh_time")
 	.append("svg:svg")
@@ -16,18 +16,27 @@ function refresh_data() {
 	.attr("height", 50)
 	.append("svg:g");
 
-    var timeChart = timeRefresh();
+    var timeChart = refreshTimer();
     timeChart(vis);
-    var t = timeChart.transition()
-    update_refresh_time(timeChart,t,monitorTimeout/1000,0); 
+    var t = timeChart.transition();
+    update_refresh_timer(timeChart,t,monitorTimeout/1000,0); 
 }
 
-function update_refresh_time(tChart, trans, tOrig, tCurr) {
+function update_refresh_timer(tChart, trans, tOrig, tCurr) {
+    // Listener to refresh now
+    // We make sure that we have the condition to refresh the data
+    // There may be a race condition here, but since setTimeout below executes only
+    // after the delay (1000ms), I think we are fine assuming that the refresh will
+    // take place at least after the next iteration (1seg)
+    // TODO: Is it ok to register the same event every time the timer is refreshed
+    // without overriding the previous?
+    $("#refresh_now").click(function() {tCurr = tOrig+1})
+    
     if (tCurr > tOrig) {
 	// We show a red signal while updating (takes 1 second)
+	trans.duration(0);
 	tChart.colors(["grey","red"]);
 	tChart.update([1,0], trans);
-	trans.duration(0);
 	update_analysis_board();
 	trans.delay(1000);
 	tChart.update([0,1], trans);
@@ -37,7 +46,7 @@ function update_refresh_time(tChart, trans, tOrig, tCurr) {
     var countsAhead = 1 - countsDone;
     var newcounts = [countsAhead,countsDone];
     tChart.update(newcounts, trans);
-    setTimeout(function() {update_refresh_time(tChart, trans, tOrig, tCurr + 1)}, 1000);
+    setTimeout(function() {update_refresh_timer(tChart, trans, tOrig, tCurr + 1)}, 1000);
 }
 
 function get_totals() {

@@ -28,7 +28,7 @@
 <script src="http://jquery-datatables-column-filter.googlecode.com/svn/trunk/media/js/jquery.dataTables.columnFilter.js"></script>
 
 <!-- Local javascripts -->
-<script src="/javascript/refresh_time.js"></script>
+<script src="/javascript/refresh_timer.js"></script>
 <script src="/javascript/hBarChart.js"></script>
 <script src="/javascript/legend.js"></script>
 <script src="/javascript/pipeline_diagram.js"></script>
@@ -66,7 +66,10 @@
 </div>
 
 <!-- Time to refresh the data -->
-<div id="refresh_time"></div>
+<div id="refresh_control">
+  <div id="refresh_time"></div>
+  <button type="button" id="refresh_now" class="btn hide_by_default">Refresh now</button> 
+</div>
 
 <!-- TABBING -->
 <ul class="nav nav-tabs">
