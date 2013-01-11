@@ -80,6 +80,10 @@ function create_new_timer() {
 
 function start_refreshing(views, timeChart) {
     var t = timeChart.transition().duration(1000);
+
+    // We have to inactive the start_refreshing button --
+    // TODO: Or create a new button everytime the timer is initialized.
+    $("#start_refreshing").attr("disabled", true);
     update_refresh_timer(timeChart,t,monitorTimeout/1000,0, views, false); 
 }
 
@@ -99,14 +103,25 @@ function update_refresh_timer(tChart, trans, tOrig, tCurr, views, stop) {
 	setTimeout(function() {start_refreshing(views, tChart)}, 1000);
 	return;
     }
+
+    // update the chart
     var countsDone = tCurr/tOrig;
     var countsAhead = 1 - countsDone;
     var newcounts = [countsAhead,countsDone];
     tChart.update(newcounts, trans);
+
+    // Update the value in the connexion panel
+    var secs_to_refresh = tOrig - tCurr;
+    $("#secs_to_refresh").html(secs_to_refresh);
+
     var timeout_id = setTimeout(function() {update_refresh_timer(tChart, trans, tOrig, tCurr + 1, views, stop)}, 1000);
     if(stop) {
+	$("#secs_to_refresh").html("");
 	clearTimeout(timeout_id);
 	tChart.update([1,0], trans.duration(500));
+
+	// re-enable the start_refreshing button
+	$("#start_refreshing").attr("disabled", false);
 	return;
     }
 }

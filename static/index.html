@@ -65,13 +65,6 @@
   <p>Log</p>
 </div>
 
-<!-- Time to refresh the data -->
-<div id="refresh_control">
-  <div id="refresh_time"></div>
-  <button type="button" id="refresh_now" class="btn hidden_by_default">Refresh now</button> 
-  <button type="button" id="start_refreshing" class="btn hidden_by_default">Start refreshing</button>
-  <button type="button" id="stop_refreshing" class="btn hidden_by_default">Stop refreshing</button>
-</div>
 
 <!-- TABBING -->
 <ul class="nav nav-tabs">
@@ -79,6 +72,7 @@
   <li><a href="#analysis_summary" data-toggle="tab">Analysis Summary</a></li>
   <li><a href="#resource_details" data-toggle="tab">Resources</a></li>
   <li><a href="#views" data-toggle="tab">Stat Views</a></li>
+  <li><a href="#refresh_control" data-toggle="tab">Refreshing</a></li>
   <li><a href="#configuration" data-toggle="tab">Configuration</a></li>
 </ul>
 
@@ -97,17 +91,27 @@
   <div id="resource_details" class="tab-pane"></div>
 
   <div id="views" class="tab-pane">
-    <p>Other Views is empty for now</p>
+    <p>Empty for now</p>
   </div>
 
-  <div id="configuration" class="tab-pane">
-    <p>Time to refresh data:<select id="select_refresh_time">
+  <!-- Time to refresh the data -->
+  <div id="refresh_control" class="tab-pane">
+    <div id="refresh_time"></div>
+    <button type="button" id="refresh_now" class="btn hidden_by_default">Refresh now</button> 
+    <button type="button" id="start_refreshing" class="btn hidden_by_default">Start refreshing</button>
+    <button type="button" id="stop_refreshing" class="btn hidden_by_default">Stop refreshing</button>
+
+    <p>Set time to refresh data:<select id="select_refresh_time">
 	<option value="5000">5 seg</option>
 	<option value="30000" selected=1>30 seg</option>
 	<option value="60000">1 min</option>
 	<option value="120000">2 min</option>
       </select></p>
+
   </div>
+
+
+  <div id="configuration" class="tab-pane"> </div>
 </div>
 
 <footer>

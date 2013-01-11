@@ -50,6 +50,7 @@ sub formResponse {
   $resp .= "Port: ". $dbConn->dbc->port. "<br />";
   $resp .= "Driver: ". $dbConn->dbc->driver. "<br />";
   $resp .= "Username: ". $dbConn->dbc->username. "<br />";
+  $resp .= "Time to next refresh: <span id=\"secs_to_refresh\"></span>";
   $resp .= "</p>";
   return $resp;
 }
