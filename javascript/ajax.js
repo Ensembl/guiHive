@@ -56,9 +56,13 @@ function fetch_resources() {
 	   });
 }
 
-function update_analysis_board() {
-    // We can't run this asynchronously if analysis_board is undefined
+// refresh_data_and_views retrieves the information for all the analysis
+// and post them in the analysis_board
+// callback is executed after a successful update of the analysis_info
+function refresh_data_and_views(callback) {
+    // We can't run this asynchronously if analysis_board is undefined (first run of the method)
     // So, we check first and run in async/sync mode (see the async parameter)
+    console.log("UPDATING DATA AND VIEWS");
     $.ajax({url      : "/scripts/db_fetch_all_analysis.pl",
 	    type     : "post",
 	    data     : "url=" + $("#db_url").val(),
@@ -69,36 +73,41 @@ function update_analysis_board() {
 		    $("#log").append(allAnalysisRes.err_msg); scroll_down();
 		} else {
 		    analysis_board = allAnalysisRes.out_msg;
+		    // We only update the views once the data has been updated
+		    callback();
+		    console.log("OK");
 		}
 	    },
-//	    complete : function() {show_refresh_time(monitorTimeout/1000); setTimeout(update_analysis_board, monitorTimeout)},
-	    complete : function() {refresh_data(monitorTimeout/1000)}
 	   });
 }
 
 // res is the JSON-encoded response from the server in the Ajax call
 function onSuccess_dbConnect(res) {
     // Hidden elements are now displayed
-    $(".hide_by_default").show();
+    $(".hidden_by_default").show();
 
+    // Connexion message is displayed
     var connexion_header = "<h4>Connexion Details</h4>";
     $("#connexion_msg").html(connexion_header + res.status);
+
+    // We draw the pipeline diagram
     draw_diagram(res.out_msg);
 
+    // If there has been an error, it is reported in the "log" div
     $("#log").append(res.err_msg); scroll_down();
+
+    // the url for the rest of the queries is set (url var is global)
     url = $("#db_url").val();
 
     // Showing the resources
     $("#show_resources").trigger('click');  // TODO: Best way to handle?
 
-    // Now we start monitoring the analyses:
-    update_analysis_board();
-//    $("#update_analysis_board").trigger("monitor");
+    // Now we start monitoring the analyses.
+    initialize_views_and_refresh();
 
     // TODO: This has to be cleaned up?
-    monitor_overview();
-    monitor_analysis();
-    initialize_overview();
+//    monitor_overview();
+    monitor_pipeline_diagram();
 }
 
 function display(analysis_id, fetch_url, callback) {

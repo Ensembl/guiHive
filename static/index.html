@@ -68,23 +68,21 @@
 <!-- Time to refresh the data -->
 <div id="refresh_control">
   <div id="refresh_time"></div>
-  <button type="button" id="refresh_now" class="btn hide_by_default">Refresh now</button> 
+  <button type="button" id="refresh_now" class="btn hidden_by_default">Refresh now</button> 
+  <button type="button" id="start_refreshing" class="btn hidden_by_default">Start refreshing</button>
+  <button type="button" id="stop_refreshing" class="btn hidden_by_default">Stop refreshing</button>
 </div>
 
 <!-- TABBING -->
 <ul class="nav nav-tabs">
   <li><a href="#main" data-toggle="tab">Main</a></li>
-  <li><a href="#pipeline_summary" data-toggle="tab">Analysis Summary</a></li>
+  <li><a href="#analysis_summary" data-toggle="tab">Analysis Summary</a></li>
   <li><a href="#resource_details" data-toggle="tab">Resources</a></li>
   <li><a href="#views" data-toggle="tab">Stat Views</a></li>
   <li><a href="#configuration" data-toggle="tab">Configuration</a></li>
 </ul>
 
 <div class="tab-content">
-
-  <div id="resource_details" class="tab-pane"></div>
-
-  <div id="pipeline_summary" class="tab-pane"></div>
 
   <div id="main" class="tab-pane active">
     <div class="row">
@@ -93,6 +91,10 @@
     </div>
     <div id="jobs"></div>
   </div>
+
+  <div id="analysis_summary" class="tab-pane"></div>
+
+  <div id="resource_details" class="tab-pane"></div>
 
   <div id="views" class="tab-pane">
     <p>Other Views is empty for now</p>

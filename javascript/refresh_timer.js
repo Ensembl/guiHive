@@ -1,7 +1,8 @@
 function refreshTimer() {
     var radius = 20;
     var counts = [1,0];
-    var colors = ["grey", "white"];
+    var default_colors = ["grey", "white"];
+    var colors = default_colors; // by ref??
 
     var pie = d3.layout.pie()
 	.sort(null);
@@ -24,9 +25,10 @@ function refreshTimer() {
 	r.transition = function() {
 	    var delay = 0;
 	    var duration = 1000;
+	    var ease = "linear";
 	    var newR = function(path) {
 		path.attr("fill", function(d,i) { return colors[i] });
-		path.transition().delay(delay).duration(duration).attrTween("d", r.arcTween);
+		path.transition().ease(ease).delay(delay).duration(duration).attrTween("d", r.arcTween);
 	    };
 
 	    newR.delay = function(value) {
@@ -64,6 +66,11 @@ function refreshTimer() {
 	colors = value;
 	return r;
     };
+
+    r.set_default_colors = function() {
+	colors = default_colors;
+	return r;
+    }
 
     r.arcTween = function(a) {
 	var i = d3.interpolate(this._current, a);

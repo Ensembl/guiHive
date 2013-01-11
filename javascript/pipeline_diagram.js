@@ -7,8 +7,61 @@ var analysis_id_regexp = /analysis_(\d+)/;
 // TODO: Now that we have analysis_board this should be removed! -- but pieCharts still use this
 var total_jobs_counts = [];
 
-function refresh_data() {
-    // Refresh
+// We need to have all the views centralized to make it possible to
+// orchestrate the refreshes
+var basicViews = function() {
+    // TODO: we can convert this into an array
+    // so the update method, calls all the update submethods
+    var overviewChart = {};
+    overviewChart.chart = pipeline_overview();
+    overviewChart.update = pipeline_overview_update; // a closure;
+
+    var allAnalysisCharts = {};
+    allAnalysisCharts.chart = initialize_analysis_summary();
+    allAnalysisCharts.update = analysis_summary_update; // a closure;
+    // more...
+
+    var views = function() {
+    };
+
+    views.update = function() {
+	// New data is already in the board
+	overviewChart.update(overviewChart.chart);
+	allAnalysisCharts.update(allAnalysisCharts.chart);
+    }
+
+    return views;
+}
+
+function initialize_views_and_refresh() {
+    // We need some initial data, so we first call update_analysis_board with an empty callback
+    // At this point, the board is empty, so
+    // update_analysis_board will run in "sync" mode
+    // and the views will not be updated (they are not created yet)
+    // TODO: We are retrieving data twice (see below in this function). But this is
+    // not easy to avoid because for some of the views we need to have initial values to work with
+    // so we are in a loop here.
+    refresh_data_and_views(function(){});
+
+    $("#refresh_now").click(function() {refresh_data_and_views(views.update)});
+
+    // We initialize the views
+    var views = basicViews();
+
+    // We now refresh data and views
+    refresh_data_and_views(views.update);
+
+    // When start_refreshing is clicked, we refresh_data_and_views with a callback to update the views and start the timer
+    $("#start_refreshing").click(function() {refresh_data_and_views(function(){views.update(); start_refreshing(views)})});
+    
+}
+
+function delete_timer() {
+    $("#refresh_time").html("");
+}
+
+function create_new_timer() {
+    // Create the new refresh timer
     $("#refresh_time").html("<p>Time to refresh: </p>");
     var vis = d3.select("#refresh_time")
 	.append("svg:svg")
@@ -18,35 +71,53 @@ function refresh_data() {
 
     var timeChart = refreshTimer();
     timeChart(vis);
-    var t = timeChart.transition();
-    update_refresh_timer(timeChart,t,monitorTimeout/1000,0); 
+    return timeChart;
 }
 
-function update_refresh_timer(tChart, trans, tOrig, tCurr) {
-    // Listener to refresh now
-    // We make sure that we have the condition to refresh the data
-    // There may be a race condition here, but since setTimeout below executes only
-    // after the delay (1000ms), I think we are fine assuming that the refresh will
-    // take place at least after the next iteration (1seg)
-    // TODO: Is it ok to register the same event every time the timer is refreshed
-    // without overriding the previous?
-    $("#refresh_now").click(function() {tCurr = tOrig+1})
-    
+function start_refreshing(views) {
+    var timeChart = create_new_timer()
+    var t = timeChart.transition();
+    update_refresh_timer(timeChart,t,monitorTimeout/1000,0, views, false); 
+}
+
+function update_refresh_timer(tChart, trans, tOrig, tCurr, views, stop) {
+    // listener to stop_refreshing
+    // because update_refresh_timer is a recursive function, everytime it is executed, a new event is attached
+    // we remove the previous one and attach the new one.
+    // 'stop' is a namespace here and it is used to avoid unbinding other events attached elsewhere
+    // TODO: Another option is to create a global variable and move the listener to initialize_views_and_refresh
+    $("#stop_refreshing").unbind('click.stop');
+    $("#stop_refreshing").bind('click.stop', function(){stop = true});
+
+    // Condition to update data and views
     if (tCurr > tOrig) {
 	// We show a red signal while updating (takes 1 second)
 	trans.duration(0);
 	tChart.colors(["grey","red"]);
 	tChart.update([1,0], trans);
-	update_analysis_board();
+
+	// We update the analysis_board
+	// and tell all the consumers to update (update the views)
+	refresh_data_and_views(views.update);
+
+	// and update the counter back
 	trans.delay(1000);
 	tChart.update([0,1], trans);
-	return
+	trans.delay(0);
+	setTimeout(function() {start_refreshing(views)}, 1000);
+	return;
     }
     var countsDone = tCurr/tOrig;
     var countsAhead = 1 - countsDone;
     var newcounts = [countsAhead,countsDone];
     tChart.update(newcounts, trans);
-    setTimeout(function() {update_refresh_timer(tChart, trans, tOrig, tCurr + 1)}, 1000);
+    var timeout_id = setTimeout(function() {update_refresh_timer(tChart, trans, tOrig, tCurr + 1, views, stop)}, 1000);
+    if(stop) {
+	console.log("STOPING");
+	clearTimeout(timeout_id);
+	delete_timer();
+	return;
+    }
 }
 
 function get_totals() {
@@ -78,7 +149,7 @@ function form_data() {
     return data;
 }
 
-function monitor_overview() {
+function pipeline_overview() {
     var summary_header = "<h4>Pipeline progress</h4>";
     $("#summary").html(summary_header);
     var data = form_data();
@@ -89,8 +160,9 @@ function monitor_overview() {
 	.append("svg:g");
     var bChart = barChart().data(data);
     bChart(foo);
+    return bChart;
 //    var tt = bChart.transition();
-    setTimeout (function() { live_overview_lite(bChart)}, 2000);
+//    setTimeout (function() { live_overview_lite(bChart)}, 2000);
 
 
 //// Pie chart instead of bars:
@@ -108,18 +180,16 @@ function monitor_overview() {
 //     setTimeout(function() {live_overview_lite(pChart)}, monitorTimeout);
 }
 
-// TODO: The name of the methods are poorly chosen.
-// We have a general overview (pieChart / hBarChart)
-// and a per-analysis overview
-function live_overview_lite(pChart) {
+function pipeline_overview_update(pChart) {
     var data = form_data();
     var t = pChart.transition();
 //    pChart.max_counts(data.total).update(data, t);
     pChart.update(data,t);
     
-    setTimeout(function() {live_overview_lite(pChart)}, monitorTimeout);
+//    setTimeout(function() {live_overview_lite(pChart)}, monitorTimeout);
 }
 
+// hStackedBarChart for a given analysis
 function jobs_chart(div, analysis_id) {
     // We assume that the analysis_board can be indexed by analysis_id
     var g = d3.select(div)
@@ -141,8 +211,8 @@ function live_analysis_chart(gChart, analysis_id) {
 }
 
 // uses analysis_board -- duplicated with initialize_overview. Fix!
-function initialize_overview() {
-    var vis = d3.select("#pipeline_summary");
+function initialize_analysis_summary() {
+    var vis = d3.select("#analysis_summary");
 
     var gs = vis.selectAll("div")
 	.data(analysis_board)
@@ -160,17 +230,19 @@ function initialize_overview() {
 	// transitions can be obtained from gChart directly
 	gCharts.push(gChart);
     }
-    setTimeout(function() {live_overview(gCharts)}, 2000); // We update fast from the zero values
+    return gCharts;
+//    setTimeout(function() {live_overview(gCharts)}, 2000); // We update fast from the zero values
 }
 
-function live_overview(gCharts) {
+function analysis_summary_update(gCharts) {
     for (var i = 0; i < gCharts.length; i++) {
 	var gChart = gCharts[i];
 	var t = gChart.transition();//.duration(1000); TODO: Include "duration" method
 	gChart.update(analysis_board[i], t);
     }
-    setTimeout(function() {live_overview(gCharts)}, monitorTimeout);
+    setTimeout(function() {analysis_summary_update(gCharts)}, monitorTimeout);
 }
+
 
 // draw_diagram incorporate the pipeline diagram into the DOM
 // and set the "draggability" and "pannability" of the diagram
@@ -191,8 +263,9 @@ function draw_diagram(xmlStr) {
     g.node().appendChild(importedNode);
 }
 
-
-function monitor_analysis() {
+// This is creating the pie charts in the pipeline diagram
+// TODO: This is not using the analysis_board yet.
+function monitor_pipeline_diagram() {
     var pie = d3.layout.pie()
 	.sort(null)
 
@@ -235,6 +308,7 @@ function monitor_analysis() {
 }
 
 // One monitor per analysis
+// TODO: This is not using the analysis_board yet. Fix!
 function worker(event) {
     var gRoot = $(this).parent()[0]; 
     var bbox = gRoot.getBBox();
