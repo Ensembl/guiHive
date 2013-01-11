@@ -21,6 +21,11 @@ function hStackedBarChart(raw_data) {
 	//	var layers = stack(data);
 	bChart.layers = stack(data);
 
+	console.log("TRANSFORM_DATA:");
+	console.log(data);
+	console.log("LAYERS:");
+	console.log(bChart.layers);
+
 	// bChart.y is global to the reusable object
 	// while y is local to this closure
 	// so whenever y is needed outside of the closure, bChart.y is needed
@@ -41,10 +46,10 @@ function hStackedBarChart(raw_data) {
 	    .classed("bar", true);
 
 	gRects.append("svg:rect")
-	      .attr("x", barsmargin)
+	      .attr("x", function(d) {return barsmargin + y(d.y0)})
               .attr("y", 0) // at the top
 	      .attr("height", height)
-	    .attr("width", function(d) {return y(d.y)})
+	    .attr("width", function(d) {console.log("VAL:"); console.log(d); console.log("WIDTH:" + y(d.y)); return y(d.y)})
 //	      .attr("width", 0)
 	      .each(function(d,i){this._type = "stacked"});
 
