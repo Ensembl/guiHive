@@ -34,6 +34,9 @@ var basicViews = function() {
 }
 
 function initialize_views_and_refresh() {
+    // we set up the timer/status (with white)
+    var gTimer = create_new_timer();
+
     // We need some initial data, so we first call update_analysis_board with an empty callback
     // At this point, the board is empty, so
     // update_analysis_board will run in "sync" mode
@@ -52,7 +55,8 @@ function initialize_views_and_refresh() {
     refresh_data_and_views(views.update);
 
     // When start_refreshing is clicked, we refresh_data_and_views with a callback to update the views and start the timer
-    $("#start_refreshing").click(function() {refresh_data_and_views(function(){views.update(); start_refreshing(views)})});
+    $("#start_refreshing").click(function() {
+	refresh_data_and_views(function(){views.update();start_refreshing(views, gTimer)})});
     
 }
 
@@ -74,9 +78,8 @@ function create_new_timer() {
     return timeChart;
 }
 
-function start_refreshing(views) {
-    var timeChart = create_new_timer()
-    var t = timeChart.transition();
+function start_refreshing(views, timeChart) {
+    var t = timeChart.transition().duration(1000);
     update_refresh_timer(timeChart,t,monitorTimeout/1000,0, views, false); 
 }
 
@@ -91,20 +94,9 @@ function update_refresh_timer(tChart, trans, tOrig, tCurr, views, stop) {
 
     // Condition to update data and views
     if (tCurr > tOrig) {
-	// We show a red signal while updating (takes 1 second)
-	trans.duration(0);
-	tChart.colors(["grey","red"]);
-	tChart.update([1,0], trans);
-
-	// We update the analysis_board
-	// and tell all the consumers to update (update the views)
+	tChart.update([1,0], trans.duration(500));
 	refresh_data_and_views(views.update);
-
-	// and update the counter back
-	trans.delay(1000);
-	tChart.update([0,1], trans);
-	trans.delay(0);
-	setTimeout(function() {start_refreshing(views)}, 1000);
+	setTimeout(function() {start_refreshing(views, tChart)}, 1000);
 	return;
     }
     var countsDone = tCurr/tOrig;
@@ -113,9 +105,8 @@ function update_refresh_timer(tChart, trans, tOrig, tCurr, views, stop) {
     tChart.update(newcounts, trans);
     var timeout_id = setTimeout(function() {update_refresh_timer(tChart, trans, tOrig, tCurr + 1, views, stop)}, 1000);
     if(stop) {
-	console.log("STOPING");
 	clearTimeout(timeout_id);
-	delete_timer();
+	tChart.update([1,0], trans.duration(500));
 	return;
     }
 }

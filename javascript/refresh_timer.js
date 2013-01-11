@@ -12,7 +12,6 @@ function refreshTimer() {
 	.outerRadius(radius);
 
     var r = function(g) {
-
 	g.attr("transform", "translate(" + radius + "," + radius + ")");
 	var paths = g.selectAll("path").data(pie(counts))
 	    .enter().append("path")
@@ -34,13 +33,13 @@ function refreshTimer() {
 	    newR.delay = function(value) {
 		if (!arguments.length) return delay;
 		delay = value;
-		return r;
+		return newR;
 	    };
 
 	    newR.duration = function(value) {
 		if (!arguments.length) return duration;
 		duration = value;
-		return r;
+		return newR;
 	    };
 
 	    return newR;
