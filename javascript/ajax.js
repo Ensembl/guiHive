@@ -47,12 +47,6 @@ function fetch_resources() {
 	   });
 }
 
-// function show_refresh_time(secs_to_refresh) {
-//     if (secs_to_refresh < 1) return;
-//     $("#refresh_time").html("Time to refresh: " + secs_to_refresh);
-//     setTimeout(function() {show_refresh_time(secs_to_refresh - 1)}, 1000);
-// }
-
 function update_analysis_board() {
     // We can't run this asynchronously if analysis_board is undefined
     // So, we check first and run in async/sync mode (see the async parameter)
@@ -68,7 +62,8 @@ function update_analysis_board() {
 		    analysis_board = allAnalysisRes.out_msg;
 		}
 	    },
-	    complete : function() {show_refresh_time(monitorTimeout/1000); setTimeout(update_analysis_board, monitorTimeout)},
+//	    complete : function() {show_refresh_time(monitorTimeout/1000); setTimeout(update_analysis_board, monitorTimeout)},
+	    complete : function() {refresh_data(monitorTimeout/1000)}
 	   });
 }
 
