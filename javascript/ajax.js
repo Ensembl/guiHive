@@ -103,6 +103,10 @@ function onSuccess_dbConnect(res) {
     // We draw the pipeline diagram
     draw_diagram(res.out_msg);
 
+    // We activate tooltips and popups
+    $("[rel=tooltip-it]").tooltip({animation:true});
+    $("[rel=popup-it]").popover({animation:true, content:"kk", title:"kk doble"});
+
     // If there has been an error, it is reported in the "log" div
     $("#log").append(res.err_msg); scroll_down();
 
@@ -166,8 +170,9 @@ function listen_Resources(fetch_url) {
 // res is the JSON-encoded response from the server in the Ajax call
 function onSuccess_fetchAnalysis(analysisRes, analysis_id, fetch_url) {
     if(analysisRes.status == "ok") {
-	var analysis_header = "<h4>Analysis Details</h4>";
-	$("#analysis_details").html(analysis_header + analysisRes.out_msg);
+	$("#analysis_details").html(analysisRes.out_msg);
+	// The details can be closed
+	$("#close_analysis_details").click(function(){$("#analysis_details").empty()});
     } else {
 	$("#log").append(analysisRes.err_msg); scroll_down();
 	$("#connexion_msg").html(analysisRes.status);

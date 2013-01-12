@@ -61,7 +61,7 @@ function initialize_views_and_refresh() {
 }
 
 function delete_timer() {
-    $("#refresh_time").html("");
+    $("#refresh_time").empty();
 }
 
 function create_new_timer() {
@@ -290,7 +290,7 @@ function monitor_pipeline_diagram() {
 	    var bbox = gRoot.getBBox();
 	    // Links to the analysis_details
 	    d3.select(gRoot)
-		.attr("data-analysis_id", analysis_id) // TODO: I think this can be removed
+		.attr("data-analysis_id", analysis_id)
 		.on("click", function(){
 		    display(analysis_id, "/scripts/db_fetch_analysis.pl", onSuccess_fetchAnalysis);
 		    display(analysis_id, "/scripts/db_fetch_jobs.pl", onSuccess_fetchJobs);
