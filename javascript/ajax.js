@@ -35,6 +35,8 @@ $(document).ready(function() {
     // Default value. Only for testing. TODO: Remove the following line
     $("#db_url").val("mysql://ensadmin:ensembl@127.0.0.1:2912/mp12_long_mult");
     $("#Connect").click(function() {
+	// We first remove the analysis_board
+	analysis_board = undefined;
 	$.ajax({url        : "/scripts/db_connect.pl",
 		type       : "post",
 		data       : "url=" + $("#db_url").val(),
@@ -82,7 +84,7 @@ function refresh_data_and_views(callback) {
 		    console.log("OK");
 		}
 	    },
-	    complete : reset_time_to_refresh,
+//	    complete : reset_time_to_refresh,
 	   });
 }
 
@@ -94,6 +96,9 @@ function onSuccess_dbConnect(res) {
     // Connexion message is displayed
     var connexion_header = "<h4>Connexion Details</h4>";
     $("#connexion_msg").html(connexion_header + res.status);
+
+    // The number of seconds to refresh is exposed
+    reset_time_to_refresh();
 
     // We draw the pipeline diagram
     draw_diagram(res.out_msg);

@@ -217,6 +217,10 @@ function live_analysis_chart(gChart, analysis_id) {
 
 // uses analysis_board -- duplicated with initialize_overview. Fix!
 function initialize_analysis_summary() {
+    // We first remove previous diagrams;
+    $("#analysis_summary").empty();
+    console.log("ANALYSIS_BOARD:");
+    console.log(analysis_board);
     var vis = d3.select("#analysis_summary");
 
     var gs = vis.selectAll("div")
@@ -252,6 +256,9 @@ function analysis_summary_update(gCharts) {
 // draw_diagram incorporate the pipeline diagram into the DOM
 // and set the "draggability" and "pannability" of the diagram
 function draw_diagram(xmlStr) {
+    // we first remove previous diagrams
+    $("#pipeline_diagram").empty();
+
     var DOMParser = new window.DOMParser();
     var xml = DOMParser.parseFromString(xmlStr,'img/svg+xml');
     var importedNode = document.importNode(xml.documentElement,true);
