@@ -12,12 +12,13 @@ use HTML::Template;
 use lib ("./scripts/lib");
 use msg;
 
-# Input data
 my $json_url = shift @ARGV || '{"url":["mysql://ensro@127.0.0.1:2912/mp12_long_mult"]}';
+my $connexion_template = $ENV{GUIHIVE_BASEDIR} . "static/connexion_details.html";
+
+# Input data
 my $url = decode_json($json_url)->{url}->[0];
 
 # Initialization
-my $analyses_template = $ENV{GUIHIVE_BASEDIR} . 'static/pipeline_diagram.html';
 my $dbConn = Bio::EnsEMBL::Hive::URLFactory->fetch($url);
 my $response = msg->new();
 
@@ -42,17 +43,18 @@ if (defined $dbConn) {
 print $response->toJSON();
 
 sub formResponse {
-  my ($dbConn) = @_;
-  my $resp;
-  $resp .= "<p>";
-  $resp .= "DB name: ". $dbConn->dbc->dbname. "<br />";
-  $resp .= "Host: ". $dbConn->dbc->host. "<br />";
-  $resp .= "Port: ". $dbConn->dbc->port. "<br />";
-  $resp .= "Driver: ". $dbConn->dbc->driver. "<br />";
-  $resp .= "Username: ". $dbConn->dbc->username. "<br />";
-  $resp .= "Time to next refresh: <span id=\"secs_to_refresh\"></span>";
-  $resp .= "</p>";
-  return $resp;
+    my ($dbConn) = @_;
+    my $info;
+
+    $info->{db_name}  = $dbConn->dbc->dbname;
+    $info->{host}     = $dbConn->dbc->host;
+    $info->{port}     = $dbConn->dbc->port;
+    $info->{driver}   = $dbConn->dbc->driver;
+    $info->{username} = $dbConn->dbc->username;
+
+    my $template = HTML::Template->new(filename => $connexion_template);
+    $template->param(%$info);
+    return $template->output();
 }
 
 sub formAnalyses {
