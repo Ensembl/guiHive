@@ -12,7 +12,7 @@ var analysis_board;
 var monitorTimeout = 30000; // 30seg by default. This can be changed dynamically by the app
 
 // wait for the DOM to be loaded 
-$(document).ready(function() { 
+$(document).ready(function() {
     // There are elements that have to be hidden by default
     // and only show after connection
     // TODO: Maybe there is a better way to handle this
@@ -56,6 +56,10 @@ function fetch_resources() {
 	   });
 }
 
+function reset_time_to_refresh() {
+    $("#secs_to_refresh").html(monitorTimeout/1000)
+}
+
 // refresh_data_and_views retrieves the information for all the analysis
 // and post them in the analysis_board
 // callback is executed after a successful update of the analysis_info
@@ -78,6 +82,7 @@ function refresh_data_and_views(callback) {
 		    console.log("OK");
 		}
 	    },
+	    complete : reset_time_to_refresh,
 	   });
 }
 
@@ -85,7 +90,7 @@ function refresh_data_and_views(callback) {
 function onSuccess_dbConnect(res) {
     // Hidden elements are now displayed
     $(".hidden_by_default").show();
-
+    
     // Connexion message is displayed
     var connexion_header = "<h4>Connexion Details</h4>";
     $("#connexion_msg").html(connexion_header + res.status);

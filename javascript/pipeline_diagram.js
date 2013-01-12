@@ -46,7 +46,7 @@ function initialize_views_and_refresh() {
     // so we are in a loop here.
     refresh_data_and_views(function(){});
 
-    $("#refresh_now").click(function() {refresh_data_and_views(views.update)});
+    $(".refresh_now").click(function() {refresh_data_and_views(views.update)});
 
     // We initialize the views
     var views = basicViews();
@@ -55,7 +55,7 @@ function initialize_views_and_refresh() {
     refresh_data_and_views(views.update);
 
     // When start_refreshing is clicked, we refresh_data_and_views with a callback to update the views and start the timer
-    $("#start_refreshing").click(function() {
+    $(".start_refreshing").click(function() {
 	refresh_data_and_views(function(){views.update();start_refreshing(views, gTimer)})});
     
 }
@@ -83,7 +83,7 @@ function start_refreshing(views, timeChart) {
 
     // We have to inactive the start_refreshing button --
     // TODO: Or create a new button everytime the timer is initialized.
-    $("#start_refreshing").attr("disabled", true);
+    $(".start_refreshing").attr("disabled", true);
     update_refresh_timer(timeChart,t,monitorTimeout/1000,0, views, false); 
 }
 
@@ -93,8 +93,8 @@ function update_refresh_timer(tChart, trans, tOrig, tCurr, views, stop) {
     // we remove the previous one and attach the new one.
     // 'stop' is a namespace here and it is used to avoid unbinding other events attached elsewhere
     // TODO: Another option is to create a global variable and move the listener to initialize_views_and_refresh
-    $("#stop_refreshing").unbind('click.stop');
-    $("#stop_refreshing").bind('click.stop', function(){stop = true});
+    $(".stop_refreshing").unbind('click.stop');
+    $(".stop_refreshing").bind('click.stop', function(){stop = true});
 
     // Condition to update data and views
     if (tCurr > tOrig) {
@@ -116,12 +116,11 @@ function update_refresh_timer(tChart, trans, tOrig, tCurr, views, stop) {
 
     var timeout_id = setTimeout(function() {update_refresh_timer(tChart, trans, tOrig, tCurr + 1, views, stop)}, 1000);
     if(stop) {
-	$("#secs_to_refresh").html("");
+	reset_time_to_refresh();  // sets the secs_to_refresh div to monitorTimeout/1000
 	clearTimeout(timeout_id);
 	tChart.update([1,0], trans.duration(500));
-
 	// re-enable the start_refreshing button
-	$("#start_refreshing").attr("disabled", false);
+	$(".start_refreshing").attr("disabled", false);
 	return;
     }
 }
