@@ -67,6 +67,7 @@ function setup_timer() {
     tf.div = function(elem) {
 	if (!arguments.length) return div;
 	div = elem;
+	div.html(tf.time_to_refresh());
 	return tf;
     };
 
