@@ -61,7 +61,7 @@ function initialize_views_and_refresh() {
 }
 
 function delete_timer() {
-    $("#refresh_time").html("");
+    $("#refresh_time").empty();
 }
 
 function create_new_timer() {
@@ -201,9 +201,9 @@ function jobs_chart(div, analysis_id) {
 	.append("div")
 	.append("svg:svg")
 	.attr("height", 60)
-	.attr("width", 700)
+	.attr("width", 500)
 	.append("svg:g");
-    var gChart = hStackedBarChart(analysis_board[analysis_id-1]).height(50).width(400).barsmargin(120).id(1);
+    var gChart = hStackedBarChart(analysis_board[analysis_id-1]).height(50).width(300).barsmargin(120).fontsize(12).id(1);
     gChart(g);
     setTimeout(function() {live_analysis_chart(gChart, analysis_id)}, 2000); // We update fast from the zero values
 }
@@ -290,7 +290,7 @@ function monitor_pipeline_diagram() {
 	    var bbox = gRoot.getBBox();
 	    // Links to the analysis_details
 	    d3.select(gRoot)
-		.attr("data-analysis_id", analysis_id) // TODO: I think this can be removed
+		.attr("data-analysis_id", analysis_id)
 		.on("click", function(){
 		    display(analysis_id, "/scripts/db_fetch_analysis.pl", onSuccess_fetchAnalysis);
 		    display(analysis_id, "/scripts/db_fetch_jobs.pl", onSuccess_fetchJobs);

@@ -49,7 +49,8 @@ input {
 /* Diagram Div */
 #pipeline_diagram {
 /*    width            : 960px;*/
-    height           : 450px;
+    width            : 100%;
+    height           : 650px;
     color            : black;
     background-color : white;
     padding          : 5px;
@@ -59,11 +60,60 @@ input {
 
 /* Analysis Div */
 #analysis_details {
+    
+    font-size        : 12px;
 /*    width            : 960px;*/
+    width            : 450px;
     color            : black;
-    background-color : white;
+    background-color : #E6EBF0;
     padding          : active;
+
+    position         : absolute;
+    z-index          : 24;
+    overflow         : scroll;
+    right            : 5px;
 }
+
+/* .update_param button { */
+/*     width            : 60px; */
+/*     overflow         : visible; */
+/* } */
+
+/* .update_param button { */
+/*     width            : 10px; */
+/*     overflow         : visible; */
+/* } */
+
+
+.module_table td {
+    border           : solid;
+    width            : 100%
+    overflow         : hidden;
+}
+
+.input-field {
+    background-color : cyan;
+    width            : 40px;
+    overflow         : hidden;
+}
+
+.button-cell {
+    Background-color : pink;
+    width            : 20px;
+}
+
+.parameters_table {
+    width               : 120%;
+}
+
+/* .parameters_table td { */
+/*     Background-color : red; */
+/*     width            : 120px; */
+/*     border           : solid; */
+/*     overflow         : hidden; */
+/*     display          : inline-block; */
+/*     white-space      : nowrap; */
+/* } */
 
 /* Specific non-container elements */
 #Connect {
@@ -80,6 +130,10 @@ input {
     background-color : white;
 }
 
+.td-right {
+    text-align     : right; /*This is not working*/
+/*     vertical-align : top; */
+}
 
 /* None of this seems to work */
 #jobs_table {
@@ -95,3 +149,4 @@ input {
     margin : 0;
     
 }
+
