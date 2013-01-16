@@ -38,7 +38,7 @@ function setup_timer() {
 
     tf.now = function() {
 	cback();
-	tCurr = 0;
+	tf.reset();
     };
 
     tf.reset = function() {
