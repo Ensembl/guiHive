@@ -74,37 +74,23 @@ input {
     right            : 5px;
 }
 
-/* .update_param button { */
-/*     width            : 60px; */
-/*     overflow         : visible; */
+
+/* Tables located in table fields */
+.field-table {
+    border           : 1px solid black;
+    width            : 100%;
+}
+
+.field-table > tbody > tr > td {
+    width            : 50%;
+}
+
+/* .input-field { */
+/*     background-color : cyan; */
+/*     width            : 40px; */
+/*     overflow         : hidden; */
 /* } */
 
-/* .update_param button { */
-/*     width            : 10px; */
-/*     overflow         : visible; */
-/* } */
-
-
-.module_table td {
-    border           : solid;
-    width            : 100%
-    overflow         : hidden;
-}
-
-.input-field {
-    background-color : cyan;
-    width            : 40px;
-    overflow         : hidden;
-}
-
-.button-cell {
-    Background-color : pink;
-    width            : 20px;
-}
-
-.parameters_table {
-    width               : 120%;
-}
 
 /* .parameters_table td { */
 /*     Background-color : red; */
@@ -132,7 +118,6 @@ input {
 
 .td-right {
     text-align     : right; /*This is not working*/
-/*     vertical-align : top; */
 }
 
 /* None of this seems to work */

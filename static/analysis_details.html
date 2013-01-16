@@ -1,11 +1,11 @@
-<table>
+<table class="field-table">
   <tr>
     <td><h4>Analysis Details</h4></td>
     <td class="td-right"><a id="close_analysis_details" class="btn"><i class="icon-remove"></i></a></td>
   </tr>
 </table>
 
-<table id="analysis_table" class="table table-hover table-condensed">
+<table id="analysis_table"> <!-- class="table table-hover table-condensed">-->
   <tr>
     <td> Analysis ID:</td><td><TMPL_VAR NAME=id> </td>
   </tr>
@@ -15,7 +15,7 @@
   <tr>
     <td> Module:</td>
     <td>
-      <table class="module_table">
+      <table class="field-table">
 	<TMPL_LOOP NAME=module>
 	  <tr>
 	    <td><input type="text"
@@ -37,7 +37,7 @@
   <tr>
     <td> Parameters:</td>
     <td>
-      <table class="parameters_table">
+      <table class="field-table">
 	<TMPL_LOOP NAME=parameters>
 	  <TMPL_LOOP NAME=existing_parameters>
 	    <tr>
