@@ -6,10 +6,10 @@
 function hStackedBarChart(raw_data) {
     var barsmargin = 80;
     var stack = d3.layout.stack();
-    var width = 500;
+    var width = 300;
     var height = 50;
     var rightmargin = 50;
-    var fontsize = 16;
+    var fontsize = 14;
 
     // id is there to prevent clashes in switch_type because there, the rects are select by "to_id"
     // and 2 charts having the same underlying data (i.e. the same analysis_id) would clash
@@ -45,7 +45,6 @@ function hStackedBarChart(raw_data) {
               .attr("y", 0) // at the top
 	      .attr("height", height)
 	    .attr("width", function(d) {return y(d.y)})
-//	      .attr("width", 0)
 	      .each(function(d,i){this._type = "stacked"});
 
 	// analysis label
