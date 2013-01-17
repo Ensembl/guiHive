@@ -6,13 +6,15 @@
 </table>
 
 <table id="analysis_table"> <!-- class="table table-hover table-condensed">-->
-  <tr>
+  <tr> <!-- ANALYSIS ID -->
     <td> Analysis ID:</td><td><TMPL_VAR NAME=id> </td>
   </tr>
-  <tr>
+
+  <tr> <!-- ANALYSIS NAME -->
     <td> Analysis name:</td><td><TMPL_VAR NAME=logic_name> </td>
   </tr>
-  <tr>
+
+  <tr> <!-- MODULE -->
     <td> Module:</td>
     <td>
       <table class="field-table">
@@ -33,7 +35,8 @@
       </table>
     </td>
   </tr>
-  <tr>
+
+  <tr> <!-- PARAMETERS -->
     <td> Parameters:</td>
     <td>
       <table class="field-table">
@@ -84,6 +87,22 @@
     </td>
   </tr>
 
+  <tr> <!-- RESOURCE CLASS ID -->
+    <td> Resource class ID:</td>
+    <td>
+      <TMPL_LOOP NAME=resource_class_id>
+	<select size="1"
+		class="update_param"
+		data-analysisID="<TMPL_VAR NAME=id>"
+		data-adaptor="<TMPL_VAR NAME=adaptor>"
+		data-method="<TMPL_VAR NAME=method>">
+	  <TMPL_LOOP NAME=values>
+	    <option <TMPL_IF NAME=is_current>selected </TMPL_IF>value="<TMPL_VAR NAME=resource_class_id_value>"><TMPL_VAR NAME=resource_class_id_display></option>
+	  </TMPL_LOOP>
+      </TMPL_LOOP>
+    </td>
+  </tr>
+
   <tr> <!-- ANALISYS CAPACITY -->
     <td> Analysis capacity: </td>
     <td><TMPL_LOOP NAME=analysis_capacity>
@@ -98,7 +117,10 @@
 	</select>
     </TMPL_LOOP></td>
   </tr>
+</table>
 
+<div id="analysis_advanced_options">
+<table>
   <tr> <!-- FAILED JOB TOLERANCE -->
     <td> Failed job tolerance: </td>
     <td><TMPL_LOOP NAME=failed_job_tolerance>
@@ -164,7 +186,8 @@
       </TMPL_LOOP>
     </td>
   </tr>
-  <tr>
+
+  <tr> <!-- BATCH SIZE -->
     <td> Batch size:</td>
     <td>
       <TMPL_LOOP NAME=batch_size>
@@ -214,20 +237,6 @@
       </TMPL_LOOP>
     </td>
   </tr>
-
-  <tr> <!-- RESOURCE CLASS ID -->
-    <td> Resource class ID:</td>
-    <td>
-      <TMPL_LOOP NAME=resource_class_id>
-	<select size="1"
-		class="update_param"
-		data-analysisID="<TMPL_VAR NAME=id>"
-		data-adaptor="<TMPL_VAR NAME=adaptor>"
-		data-method="<TMPL_VAR NAME=method>">
-	  <TMPL_LOOP NAME=values>
-	    <option <TMPL_IF NAME=is_current>selected </TMPL_IF>value="<TMPL_VAR NAME=resource_class_id_value>"><TMPL_VAR NAME=resource_class_id_display></option>
-	  </TMPL_LOOP>
-      </TMPL_LOOP>
-    </td>
-  </tr>
+  
 </table>
+</div>
