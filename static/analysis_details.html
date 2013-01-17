@@ -1,6 +1,6 @@
-<table class="field-table">
+<table class="header-table">
   <tr>
-    <td><h4>Analysis Details</h4></td>
+    <td id="analysis-header"><h4>Analysis Details</h4></td>
     <td class="td-right"><a id="close_analysis_details" class="btn"><i class="icon-remove"></i></a></td>
   </tr>
 </table>
@@ -19,15 +19,14 @@
 	<TMPL_LOOP NAME=module>
 	  <tr>
 	    <td><input type="text"
-		     size=87
-		     id="moduleName"
-		     value="<TMPL_VAR NAME=module>"
-		     data-value="<TMPL_VAR NAME=module>"></td>
-	    <td class="button-cell"><button class="update_param btn btn-mini"
-			data-analysisID="<TMPL_VAR NAME=id>"
-			data-adaptor="<TMPL_VAR NAME=adaptor>"
-			data-method="<TMPL_VAR NAME=method>"
-			data-linkTo="moduleName">+</button>
+		       id="moduleName"
+		       value="<TMPL_VAR NAME=module>"
+		       data-value="<TMPL_VAR NAME=module>"></td>
+	    <td class="button-cell"><a class="update_param btn btn-mini"
+				       data-analysisID="<TMPL_VAR NAME=id>"
+				       data-adaptor="<TMPL_VAR NAME=adaptor>"
+				       data-method="<TMPL_VAR NAME=method>"
+				       data-linkTo="moduleName"><i class="icon-plus-sign"></i></a>
 	    </td>
 	  </tr>
 	</TMPL_LOOP>
@@ -40,45 +39,43 @@
       <table class="field-table">
 	<TMPL_LOOP NAME=parameters>
 	  <TMPL_LOOP NAME=existing_parameters>
-	    <tr>
-	      <td><span id="<TMPL_VAR NAME=parameterKeyID>"
-		      size=30
+	    <tr class="input-row">
+	      <td class="td-input-key"><span id="<TMPL_VAR NAME=parameterKeyID>"
 		      data-value="<TMPL_VAR NAME=key>">
 		  <TMPL_VAR NAME=key>
 		</span></td>
-	      <td><input id="<TMPL_VAR NAME=parameterValueID>"
+	      <td class="td-input-value"><input class="input-value" id="<TMPL_VAR NAME=parameterValueID>"
 			 type="text" 
-			 size=60
 			 data-value="<TMPL_VAR NAME=value>"
 			 value="<TMPL_VAR NAME=value>">
 	      </td>
 	      <TMPL_LOOP NAME=change_parameter>
-		<td class="button-cell"><button class="update_param btn btn-mini"
+		<td class="button-cell"><a class="update_param btn btn-mini"
 			    data-analysisID="<TMPL_VAR NAME=id>"
 			    data-adaptor="<TMPL_VAR NAME=adaptor>"
 			    data-method="<TMPL_VAR NAME=method>"
-			    data-linkTo="<TMPL_VAR NAME=parameterKeyID>,<TMPL_VAR NAME=parameterValueID>">+</button>
+			    data-linkTo="<TMPL_VAR NAME=parameterKeyID>,<TMPL_VAR NAME=parameterValueID>"><i class="icon-plus-sign"></i></a>
 		</td>
 	      </TMPL_LOOP> <!-- change_paramter -->
 	      <TMPL_LOOP NAME=delete_parameter>
-		<td class="button-cell"><button class="update_param btn btn-mini"
+		<td class="button-cell"><a class="update_param btn btn-mini"
 			    data-analysisID="<TMPL_VAR NAME=id>"
 			    data-adaptor="<TMPL_VAR NAME=adaptor>"
 			    data-method="<TMPL_VAR NAME=method>"
-			    data-linkTo="<TMPL_VAR NAME=parameterKeyID>">-</button>
+			    data-linkTo="<TMPL_VAR NAME=parameterKeyID>"><i class="icon-minus-sign"></i></a>
 		</td>
 	      </TMPL_LOOP> <!-- delete_parameter -->
 	    </tr>
 	  </TMPL_LOOP> <!-- existing_parameters -->
 	  <TMPL_LOOP NAME=new_parameter>
-	    <tr>
-	      <td class="input-field"><input type="text" id="p_new_key"></td>
-	      <td class="input-field"><input type="text" id="p_new_value"></td>
-	      <td class="button-cell"><button class="update_param btn btn-mini"
+	    <tr class="input-row">
+	      <td class="td-input-key"><input class="input-key" type="text" id="p_new_key"></td>
+	      <td class="td-input-value"><input class="input-value" type="text" id="p_new_value"></td>
+	      <td class="button-cell"><a class="update_param btn btn-mini"
 			  data-analysisID="<TMPL_VAR NAME=id>"
 			  data-adaptor="<TMPL_VAR NAME=adaptor>"
 			  data-method="<TMPL_VAR NAME=method>"
-			  data-linkTo="p_new_key,p_new_value">+</button>
+			  data-linkTo="p_new_key,p_new_value"><i class="icon-plus-sign"></i></a>
 	      </td>
 	    </tr>
 	  </TMPL_LOOP> <!-- new parameter -->

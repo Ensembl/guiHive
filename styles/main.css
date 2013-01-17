@@ -9,15 +9,6 @@ body {
     font-family : "Arial", sans-serif;
 }
 
-input {
-    empty-cells : hide;
-    font-size   : 12px;
-    text-align  : center;
-    text-overflow : active; /* is active a valid value? */
-    border      : none;
-}
-
-
 /* DIVs */
 /* Connexion Div */
 #db_connexion {
@@ -62,7 +53,6 @@ input {
 #analysis_details {
     
     font-size        : 12px;
-/*    width            : 960px;*/
     width            : 450px;
     color            : black;
     background-color : #E6EBF0;
@@ -70,19 +60,48 @@ input {
 
     position         : absolute;
     z-index          : 24;
-    overflow         : scroll;
+    overflow         : hidden;
     right            : 5px;
 }
 
 
 /* Tables located in table fields */
-.field-table {
-    border           : 1px solid black;
-    width            : 100%;
+
+#moduleName {
+    width            : 276px;
 }
 
-.field-table > tbody > tr > td {
-    width            : 50%;
+.input-row, .input-key {
+    margin           : 0;
+    padding          : 0;
+}
+
+input[type="text"], select {
+    margin           : 0;
+    padding          : 0;
+    font-size        : 12px;
+}
+
+.td-input-key {
+    width            : 120px;
+    overflow         : hidden;
+    display          : inline-block;
+    margin           : 0;
+    padding          : 0;
+}
+
+.td-input-value {
+    width            : 160px;
+    overflow         : hidden;
+    display          : inline-block;
+    margin           : 0;
+    padding          : 0;
+}
+
+.button-cell {
+    background-color : gray;
+    width            : 20px;
+    text-align       : center;
 }
 
 /* .input-field { */
@@ -116,8 +135,12 @@ input {
     background-color : white;
 }
 
+.header-table {
+    width           : 100%;
+}
+
 .td-right {
-    text-align     : right; /*This is not working*/
+    text-align     : right;
 }
 
 /* None of this seems to work */
