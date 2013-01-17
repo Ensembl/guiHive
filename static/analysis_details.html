@@ -83,7 +83,23 @@
       </table>
     </td>
   </tr>
-  <tr>
+
+  <tr> <!-- ANALISYS CAPACITY -->
+    <td> Analysis capacity: </td>
+    <td><TMPL_LOOP NAME=analysis_capacity>
+	<select size="1"
+		class="update_param"
+		data-analysisID="<TMPL_VAR NAME=id>"
+		data-adaptor="<TMPL_VAR NAME=adaptor>"
+		data-method="<TMPL_VAR NAME=method>">
+	  <TMPL_LOOP NAME=values>
+	    <option <TMPL_IF NAME=is_current>selected</TMPL_IF> value="<TMPL_VAR NAME=analysis_capacity_value>"> <TMPL_VAR NAME=analysis_capacity_display> </option>
+	  </TMPL_LOOP>
+	</select>
+    </TMPL_LOOP></td>
+  </tr>
+
+  <tr> <!-- HIVE CAPACITY -->
     <td> Hive capacity:</td>
     <td>
       <TMPL_LOOP NAME=hive_capacity>

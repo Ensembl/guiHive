@@ -65,25 +65,42 @@ sub formAnalysisInfo {
 							"parameters",
 							$analysis->dbID);
 
+  $info->{analysis_capacity} = template_mappings_SELECT("Analysis",
+							$analysis,
+							"analysis_capacity",
+							build_values({0=>["NULL"],
+								      1=>[-1,9],
+								      10=>[10,90],
+								      100=>[100,1000]}),
+						       );
+
   $info->{hive_capacity}     = template_mappings_SELECT("AnalysisStats",
 							$analysis_stats,
 							"hive_capacity",
-							build_values({1=>[-1,9],10=>[10,90],100=>[100,1000]}));
+							build_values({1=>[-1,9],
+								      10=>[10,90],
+								      100=>[100,1000]})
+						       );
 
   $info->{priority}          = template_mappings_SELECT("Analysis",
 							$analysis,
 							"priority",
-							build_values({1=>[0,20]}));
+							build_values({1=>[0,20]}),
+						       );
 
   $info->{batch_size}        = template_mappings_SELECT("AnalysisStats",
 							$analysis_stats,
 							"batch_size",
-							build_values({1=>[0,9],10=>[10,90],100=>[100,1000]}));
+							build_values({1=>[0,9],
+								      10=>[10,90],
+								      100=>[100,1000]}),
+						       );
 
   $info->{can_be_empty}      = template_mappings_SELECT("Analysis",
 							$analysis,
 							"can_be_empty",
-							build_values({1=>[0,1]}));
+							build_values({1=>[0,1]}),
+						       );
 
   $info->{resource_class_id} = template_mappings_SELECT("Analysis",
 							$analysis,
@@ -155,13 +172,17 @@ sub stringify_if_needed {
   return $scalar;
 }
 
-
-### TODO: I think there is a bug here. We have to be sure that the current value is present
-# build_values may get an extra parameter (the current value) and insert it in the
-# list (in the correct place)
+## build_values creates a range of values given its input
+## The input is a hashref where the keys are the steps
+## and the values are arrayrefs with the first and final values of that range
+## Return value is an arrayref with all the generated values
+## This method doesn't make sure that the current value is in the range. That
+## is a job for the generator of the "selects" elements
 sub build_values {
   my ($ranges) = @_;
   my @vals;
+  @vals = @{$ranges->{0}} if (defined $ranges->{0});
+  delete $ranges->{0};
   for my $step (keys %$ranges) {
     for (my $i = $ranges->{$step}->[0]; $i <= $ranges->{$step}->[1]; $i+=$step) {
       push @vals, $i;
@@ -172,17 +193,27 @@ sub build_values {
 
 sub template_mappings_SELECT {
   my ($adaptor, $obj, $method, $vals, $displays) = @_;
+
+  # We have to make sure that the current value as one of the possible values to choose from
+  # If the value is undefined (hive_capacity and analysis_capacity can be NULL, for example)
+  # We insert the string "NULL"
+  my $curr_val = $obj->$method;
+  $curr_val = "NULL" unless(defined $curr_val);
+
+  $vals = insert_val_if_needed($vals,$curr_val);
+
+  ## In case the value and its display should be different
   $displays = $vals unless (defined $displays);
+
   my @final_vals = ();
   for (my $i=0; $i<scalar(@$vals); $i++) {
       push @final_vals, [$vals->[$i], $displays->[$i]];
   }
-  print STDERR "$obj->$method => ", $obj->$method, "\n";
-  my $curr_val = $obj->$method;
+
   return [{"id"       => $obj->can("analysis_id") ? $obj->analysis_id : $obj->dbID,
 	   "adaptor"  => $adaptor,
 	   "method"   => $method,
-	   "values"   => [map {{is_current => $curr_val == $_->[0], $method."_value" => $_->[0], $method."_display" => $_->[1]}} @final_vals],
+	   "values"   => [map {{is_current => $curr_val eq $_->[0], $method."_value" => $_->[0], $method."_display" => $_->[1]}} @final_vals],
 	  }];
 }
 
@@ -197,4 +228,36 @@ sub get_resource_class_ids {
 	push @names, "$rc_id (" . $rcs->{$rc_id} . ")";
     }
     return [@ids], [@names];
+}
+
+## insert_val_if_needed takes an ordered array ref of numbers and a value
+## and inserts it in the correct position (if the value is not in the array ref)
+## The value can be of a different type (for example, "undef" in
+## an array ref with numbers.
+sub insert_val_if_needed {
+  # We may be doing string and numeric comparisons, so we turn off
+  # this kind of warnings for this function
+  no warnings 'numeric';
+
+  my ($arref, $newVal) = @_;
+
+  if ($newVal > $arref->[$#{$arref}]) {
+    return [(@{$arref}, $newVal)];
+  }
+
+  if ($newVal < $arref->[0]) {
+    return [($newVal, @{$arref})];
+  }
+
+  for (my $i=0; $i<scalar(@$arref); $i++) {
+    if ($arref->[$i] eq $newVal) {
+      return $arref;
+    }
+    next if ($i == scalar(@$arref - 1));
+    if ( ($arref->[$i] < $newVal) &&
+	 ($arref->[$i+1] > $newVal) ) {
+      return [(@{$arref}[0..$i], $newVal, @{$arref}[$i+1..$#{$arref}])];
+    }
+  }
+  return [($newVal, @$arref)];
 }
