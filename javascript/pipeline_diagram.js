@@ -198,8 +198,12 @@ function pipeline_overview_update(pChart) {
 function jobs_chart(div, analysis_id) {
     // We assume that the analysis_board can be indexed by analysis_id
     var g = d3.select(div)
+	.append("hr")
+	.append("h5")
+	.text("Jobs")
 	.append("div")
-	.append("svg:svg")
+	.attr("class","jobs_chart")
+	.append("svg")
 	.attr("height", 60)
 	.attr("width", 500)
 	.append("svg:g");

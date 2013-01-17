@@ -64,6 +64,13 @@ body {
     right            : 5px;
 }
 
+/* jobs_chart div */
+.jobs_chart {
+    margin-left      : 0px;
+    margin-right     : 0px;
+    margin-bottom    : 20px;
+    margin-top       : 20px;
+}
 
 /* Tables located in table fields */
 
