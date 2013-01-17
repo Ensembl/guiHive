@@ -99,6 +99,36 @@
     </TMPL_LOOP></td>
   </tr>
 
+  <tr> <!-- FAILED JOB TOLERANCE -->
+    <td> Failed job tolerance: </td>
+    <td><TMPL_LOOP NAME=failed_job_tolerance>
+	<select size="1"
+		class="update_param"
+		data-analysisID="<TMPL_VAR NAME=id>"
+		data-adaptor="<TMPL_VAR NAME=adaptor>"
+		data-method="<TMPL_VAR NAME=method>">
+	  <TMPL_LOOP NAME=values>
+	    <option <TMPL_IF NAME=is_current>selected</TMPL_IF> value="<TMPL_VAR NAME=failed_job_tolerance_value>"> <TMPL_VAR NAME=failed_job_tolerance_display></option>
+	  </TMPL_LOOP>
+	</select>
+    </TMPL_LOOP></td>
+  </tr>
+
+  <tr> <!-- MAX RETRY COUNT -->
+    <td> Max retry count: </td>
+    <td><TMPL_LOOP NAME=max_retry_count>
+	<select size="1"
+		class="update_param"
+		data-analysisID="<TMPL_VAR NAME=id>"
+		data-adaptor="<TMPL_VAR NAME=adaptor>"
+		data-method="<TMPL_VAR NAME=method>">
+	  <TMPL_LOOP NAME=values>
+	    <option <TMPL_IF NAME=is_current>selected</TMPL_IF> value="<TMPL_VAR NAME=max_retry_count_value>"> <TMPL_VAR NAME=max_retry_count_display></option>
+	  </TMPL_LOOP>
+	</select>
+    </TMPL_LOOP></td>
+  </tr>
+
   <tr> <!-- HIVE CAPACITY -->
     <td> Hive capacity:</td>
     <td>
@@ -115,7 +145,8 @@
       </TMPL_LOOP>
     </td>
   </tr>
-  <tr>
+
+  <tr> <!-- PRIORITY -->
     <td> Priority:</td>
     <td>
       <TMPL_LOOP NAME=priority>
@@ -149,7 +180,8 @@
       </TMPL_LOOP>
     </td>
   </tr>
-  <tr>
+
+  <tr>  <!-- CAN BE EMPTY --> <!-- We can implement CAN_BE_EMPTY as a radio button -->
     <td> Can be empty:</td>
     <td>
       <TMPL_LOOP NAME=can_be_empty>
@@ -165,7 +197,25 @@
       </TMPL_LOOP>
     </td>
   </tr>
-  <tr>
+
+  <tr>  <!-- MEADOW TYPE -->
+    <td> Meadow type:</td>
+    <td>
+      <TMPL_LOOP NAME=meadow_type>
+	<select size="1"
+		class="update_param"
+		data-analysisID="<TMPL_VAR NAME=id>"
+		data-adaptor="<TMPL_VAR NAME=adaptor>"
+		data-method="<TMPL_VAR NAME=method>">
+	  <TMPL_LOOP NAME=values>
+	    <option <TMPL_IF NAME=is_current>selected </TMPL_IF>value="<TMPL_VAR NAME=meadow_type_value>"><TMPL_VAR NAME=meadow_type_display></option>
+	  </TMPL_LOOP>
+	</select>
+      </TMPL_LOOP>
+    </td>
+  </tr>
+
+  <tr> <!-- RESOURCE CLASS ID -->
     <td> Resource class ID:</td>
     <td>
       <TMPL_LOOP NAME=resource_class_id>

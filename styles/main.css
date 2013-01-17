@@ -68,7 +68,7 @@ body {
 /* Tables located in table fields */
 
 #moduleName {
-    width            : 276px;
+    width            : 266px;
 }
 
 .input-row, .input-key {
@@ -83,7 +83,7 @@ input[type="text"], select {
 }
 
 .td-input-key {
-    width            : 120px;
+    width            : 110px;
     overflow         : hidden;
     display          : inline-block;
     margin           : 0;

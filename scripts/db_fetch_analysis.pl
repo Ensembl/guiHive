@@ -74,6 +74,18 @@ sub formAnalysisInfo {
 								      100=>[100,1000]}),
 						       );
 
+  $info->{failed_job_tolerance} = template_mappings_SELECT("Analysis",
+							   $analysis,
+							   "failed_job_tolerance",
+							   build_values({int($analysis_stats->total_job_count()/10)||1=>[0,$analysis_stats->total_job_count()]}),
+							  );
+
+  $info->{max_retry_count}   = template_mappings_SELECT("Analysis",
+							$analysis,
+							"max_retry_count",
+							build_values({1=>[0,3]}),
+						       );
+
   $info->{hive_capacity}     = template_mappings_SELECT("AnalysisStats",
 							$analysis_stats,
 							"hive_capacity",
@@ -101,6 +113,11 @@ sub formAnalysisInfo {
 							"can_be_empty",
 							build_values({1=>[0,1]}),
 						       );
+
+  $info->{meadow_type}       = template_mappings_SELECT("Analysis",
+							$analysis,
+							"meadow_type",
+							build_values({0=>["NULL","LOCAL","LSF"]}));
 
   $info->{resource_class_id} = template_mappings_SELECT("Analysis",
 							$analysis,
@@ -209,6 +226,8 @@ sub template_mappings_SELECT {
   for (my $i=0; $i<scalar(@$vals); $i++) {
       push @final_vals, [$vals->[$i], $displays->[$i]];
   }
+
+  print STDERR "METHOD: ${method}_value\n";
 
   return [{"id"       => $obj->can("analysis_id") ? $obj->analysis_id : $obj->dbID,
 	   "adaptor"  => $adaptor,
