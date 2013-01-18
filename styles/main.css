@@ -37,6 +37,11 @@ body {
     max-height       : 100px;
 }
 
+/* Analysis advanced options */
+#analysis_advanced_options {
+    display          : none;
+}
+
 /* Diagram Div */
 #pipeline_diagram {
 /*    width            : 960px;*/
@@ -51,7 +56,7 @@ body {
 
 /* Analysis Div */
 #analysis_details {
-    
+
     font-size        : 12px;
     width            : 450px;
     color            : black;
