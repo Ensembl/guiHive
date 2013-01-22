@@ -2,10 +2,11 @@
 function pieChart() {
   // Initial values:
   // TODO: height should be substituted by max_height
-  var height=400;
-  var data = {counts : [1,1,1,1,1,0],
+  var max_height=100;
+  var data = {counts : [1,1,1,1,1,0], // Should be [0,0,0,0,0,1] once it is working
               colors : ["green", "yellow", "red", "blue", "cyan", "white"],
-              total  : 5
+	      names  : ["semaphored", "ready", "inprogress", "failed", "done"],
+              total  : 5 // Should be 1 once it is working
              }
 
   var pie = d3.layout.pie()
@@ -15,11 +16,9 @@ function pieChart() {
   // The size of the pie chart (outerRadius) is dynamic.
   var total_counts_extent = [0, max_counts];
   var pie_size_scale = d3.scale.linear()
-                               .range([height/10, height/5])
+                               .range([max_height/5, max_height/3])
                                .domain(total_counts_extent);
   var outerRadius = pie_size_scale(data.total);
-  var posx = 420;
-  var posy = 258;
   
   var paths = [];
   var radiusFactor = 4;
@@ -55,15 +54,17 @@ function pieChart() {
         // The size of the pie chart (outerRadius) is dynamic.
         var total_counts_extent = [0, chart.max_counts()];
         var pie_size_scale = d3.scale.linear()
-                               .range([height/10, height/5])
+                               .range([max_height/5, max_height/3])
                                .domain(total_counts_extent);
 
-        
+	// We use the current colors given in the transitions
+        path.attr("fill", function(d,i) {return data.colors[i]});
+
         var duration = 1500;
         var delay    = 0;
         path.transition().delay(delay).duration(newT.duration()).attrTween("d", function(a) {
          var i = d3.interpolate(this._current, a),
-             k = d3.interpolate(arc.outerRadius()(),pie_size_scale(data.total));
+             k = d3.interpolate(arc.outerRadius()(),pie_size_scale(d3.sum(data.counts)));
           this._current = i(0);
           return function(t) {
             return arc.innerRadius(k(t)/radiusFactor).outerRadius(k(t))(i(t));
@@ -115,7 +116,6 @@ function pieChart() {
   };
     
   chart.x = function(value) {
-    console.log(posx)
     if (!arguments.length) return posx;
     posx = value;
     return chart;

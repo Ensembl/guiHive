@@ -119,7 +119,7 @@ function onSuccess_dbConnect(res) {
 
     // TODO: This has to be cleaned up?
 //    monitor_overview();
-    monitor_pipeline_diagram();
+//    monitor_pipeline_diagram();
 }
 
 function display(analysis_id, fetch_url, callback) {

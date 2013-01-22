@@ -3,197 +3,10 @@
 // Compile the analysis_id regexp once
 var analysis_id_regexp = /analysis_(\d+)/;
 
-// TODO: Put this inside the monitor function
-// TODO: Now that we have analysis_board this should be removed! -- but pieCharts still use this
-var total_jobs_counts = [];
-
-// We need to have all the views centralized to make it possible to
-// orchestrate the refreshes
-// TODO: Should this be included in the guiHive global object?
-var basicViews = function() {
-    // TODO: we can convert this into an array
-    // so the update method, calls all the update submethods
-    var overviewChart = {};
-    overviewChart.chart = pipeline_overview();
-    overviewChart.update = pipeline_overview_update; // a closure;
-
-    var allAnalysisCharts = {};
-    allAnalysisCharts.chart = initialize_analysis_summary();
-    allAnalysisCharts.update = analysis_summary_update; // a closure;
-    // more...
-
-    var views = function() {
-    };
-
-    views.update = function() {
-	// New data is already in the board
-	overviewChart.update(overviewChart.chart);
-	allAnalysisCharts.update(allAnalysisCharts.chart);
-    }
-
-    return views;
-}
-
-function initialize_views_and_refresh() {
-    // Create the new refresh timer
-    $("#refresh_time").html("<p>Time to refresh: </p>");
-
-    // We need some initial data, so we first call update_analysis_board with an empty callback
-    // At this point, the board is empty, so
-    // update_analysis_board will run in "sync" mode
-    // and the views will not be updated (they are not created yet)
-    // TODO: We are retrieving data twice (see below in this function). But this is
-    // not easy to avoid because for some of the views we need to have initial values to work with
-    // so we are in a loop here.
-    refresh_data_and_views(function(){});
-
-    // We initialize the views
-    var views = basicViews();
-
-    // We set up the callback for the timer
-    guiHive.refresh_data_timer.callback(function(){refresh_data_and_views(views.update)});
-
-    // We now refresh data and views
-    // We need the analysis_board to be populated by now
-    guiHive.refresh_data_timer.now();
-
-    // We listen to the timer controls    
-    $(".refresh_now").click(guiHive.refresh_data_timer.now);
-    $(".start_refreshing").click(guiHive.refresh_data_timer.start);
-    $(".stop_refreshing").click(guiHive.refresh_data_timer.stop);
-    $(".reset_timer").click(guiHive.refresh_data_timer.reset);
-    
-}
-
-function get_totals() {
-    var totals = new Array();
-    for (var k = 0; k<guiHive.analysis_board[0].jobs_counts.counts.length; k++) {
-	totals[k] = 0;
-    }
-    for (var i = 0; i<guiHive.analysis_board.length; i++) {
-	for (var j = 0; j<guiHive.analysis_board[i].jobs_counts.counts.length; j++) {
-	    totals[j] += guiHive.analysis_board[i].jobs_counts.counts[j]
-	}
-    }
-
-    return totals;
-}
-
-function form_data() {
-    var totals = get_totals();
-    // We always have at least 1 value (job),
-    // so we don't need the last "white" value
-    // TODO: Investigate why the "white" color is not here
-    totals.pop();
-    var data = {};
-    data.counts = totals;
-    data.colors = guiHive.analysis_board[0].jobs_counts.colors;
-    data.names  = guiHive.analysis_board[0].jobs_counts.names;
-    data.total  = d3.sum(totals);
-
-    return data;
-}
-
-function pipeline_overview() {
-    var summary_header = "<h4>Pipeline progress</h4>";
-    $("#summary").html(summary_header);
-    var data = form_data();
-    var foo = d3.select("#summary")
-	.append("svg:svg")
-	.attr("width", 550)
-	.attr("height", 150)
-	.append("svg:g");
-    var bChart = barChart().data(data);
-    bChart(foo);
-    return bChart;
-//    var tt = bChart.transition();
-//    setTimeout (function() { live_overview_lite(bChart)}, 2000);
-
-
-//// Pie chart instead of bars:
-//     var vis = d3.select("#summary")
-//     .append("svg:svg")
-//     .attr("width", 250)
-//     .attr("height", 300)
-//     .append("svg:g");
-
-//     var data = form_data();
-//     var pChart = pieChart().x(110).y(110).data(data);
-//     pChart(vis);
-//     var l = legend().x(-60).y(100);
-//     l(vis, data.colors, data.names);
-//     setTimeout(function() {live_overview_lite(pChart)}, monitorTimeout);
-}
-
-function pipeline_overview_update(pChart) {
-    var data = form_data();
-    var t = pChart.transition();
-//    pChart.max_counts(data.total).update(data, t);
-    pChart.update(data,t);
-    
-//    setTimeout(function() {live_overview_lite(pChart)}, monitorTimeout);
-}
-
-// hStackedBarChart for a given analysis
-function jobs_chart(div, analysis_id) {
-    // We assume that the analysis_board can be indexed by analysis_id
-    var g = d3.select(div)
-	.append("div")
-	.attr("class","jobs_chart")
-	.append("svg")
-	.attr("height", 60)
-	.attr("width", 500)
-	.append("svg:g");
-    var gChart = hStackedBarChart(guiHive.analysis_board[analysis_id-1]).height(50).width(300).barsmargin(120).fontsize(12).id(1);
-    gChart(g);
-    setTimeout(function() {live_analysis_chart(gChart, analysis_id)}, 2000); // We update fast from the zero values
-}
-
-function live_analysis_chart(gChart, analysis_id) {
-    var t = gChart.transition();
-
-    gChart.update(guiHive.analysis_board[analysis_id - 1], t);
-    setTimeout(function() {live_analysis_chart(gChart, analysis_id)}, guiHive.monitorTimeout);
-}
-
-// uses analysis_board -- duplicated with initialize_overview. Fix!
-function initialize_analysis_summary() {
-    // We first remove previous diagrams;
-    $("#analysis_summary").empty();
-    var vis = d3.select("#analysis_summary");
-
-    var gs = vis.selectAll("div")
-	.data(guiHive.analysis_board)
-	.enter()
-	.append("div")
-	.append("svg:svg")
-	.attr("height", 60)
-	.append("svg:g")
-
-    var gCharts = [];
-    for (var i = 0; i < gs[0].length; i++) {
-
-	var gChart = hStackedBarChart(guiHive.analysis_board[i]).height(50).width(500).barsmargin(220).id(2);
-	gChart(d3.select(gs[0][i]));
-	// transitions can be obtained from gChart directly
-	gCharts.push(gChart);
-    }
-    return gCharts;
-//    setTimeout(function() {live_overview(gCharts)}, 2000); // We update fast from the zero values
-}
-
-function analysis_summary_update(gCharts) {
-    for (var i = 0; i < gCharts.length; i++) {
-	var gChart = gCharts[i];
-	var t = gChart.transition();//.duration(1000); TODO: Include "duration" method
-	gChart.update(guiHive.analysis_board[i], t);
-    }
-    setTimeout(function() {analysis_summary_update(gCharts)}, guiHive.monitorTimeout);
-}
-
-
 // draw_diagram incorporate the pipeline diagram into the DOM
 // and set the "draggability" and "pannability" of the diagram
+// TODO: Firefox can't run this.
+//       It seems to have problems with DOMParser.parseFromString(xmlStr, 'img/svg+xml')
 function draw_diagram(xmlStr) {
     // we first remove previous diagrams
     $("#pipeline_diagram").empty();
@@ -215,112 +28,63 @@ function draw_diagram(xmlStr) {
 }
 
 // This is creating the pie charts in the pipeline diagram
-// TODO: This is not using the analysis_board yet.
-function monitor_pipeline_diagram() {
-    var pie = d3.layout.pie()
-	.sort(null)
-
+function initialize_pipeline_diagram() {
+    var allPies = [];
     jQuery.map($('.node title'), function(v,i) {
 	var titleText = $(v).text();
 	var matches = analysis_id_regexp.exec(titleText);
-	if (matches != null &&  matches.length > 1) {
+	if (matches != null && matches.length > 1) {
 	    var analysis_id = matches[1];
 	    var gRoot = $(v).parent()[0];
+	    var node  = $(v).siblings("ellipse,polygon")[0];
 	    var bbox = gRoot.getBBox();
+	    var posx = bbox.x + bbox.width;
+	    var posy = bbox.y;
+	    var pChart = pieChart().x(posx).y(posy);
+	    var gpie = d3.select(gRoot)
+		.append("g");
+	    pChart(gpie);
+	    allPies.push({chart          : pChart,
+			  transition     : pChart.transition().duration(1500),
+			  analysis_id    : analysis_id,
+			  breakout_label : $(gRoot).children("text")[1],
+			  root_node      : node,
+			 });
+
 	    // Links to the analysis_details
 	    d3.select(gRoot)
 		.attr("data-analysis_id", analysis_id)
-		.on("click", function(){
+		.on("click", function() {
 		    display(analysis_id, "/scripts/db_fetch_analysis.pl", onSuccess_fetchAnalysis);
 		    display(analysis_id, "/scripts/db_fetch_jobs.pl", onSuccess_fetchJobs);
 		});
-
-	    var outerRadius = bbox.height/3;
-	    var innerRadius = outerRadius/4; //bbox.height/7;
-
-	    var arc = d3.svg.arc()
-		.innerRadius(innerRadius)
-		.outerRadius(outerRadius)
-	    // piecharts with jobs information
-	    var gpie = d3.select(gRoot)
-		.append("g")
-		.attr("transform", "translate(" + (bbox.x+bbox.width) + "," + bbox.y + ")");
-	    var path = gpie.selectAll("path").data(pie([1,1,1,1,1,1]))
-		.enter().append("path")
-		.attr("fill", "white")
-		.attr("stroke", "black")
-		.attr("d", arc)
-		.each(function(d) { this._current = d; }); // store initial values
-
-	    $(v).bind("monitor", {analysis_id:analysis_id, path:path, arc:arc, pie:pie}, worker);
-	    $(v).trigger("monitor");
 	}
     });
+    return allPies;
 }
 
-// One monitor per analysis
-// TODO: This is not using the analysis_board yet. Fix!
-function worker(event) {
-    var gRoot = $(this).parent()[0]; 
-    var bbox = gRoot.getBBox();
-    
-    var analysis_id = event.data.analysis_id;
-    var path        = event.data.path;
-    var arc         = event.data.arc;
-    var pie         = event.data.pie;
+function pipeline_diagram_update(allCharts) {
+    var max_counts = d3.max(guiHive.analysis_board, function(v){return d3.sum(v.jobs_counts.counts)});
+    for (var i = 0; i < allCharts.length; i++) {
+	var analysis_id = allCharts[i].analysis_id;
 
-    var called_elem = $(this);
-    var node_shape  = $(this).siblings("ellipse,polygon")[0];
+	// Update the color status of the node
+	var node_color = guiHive.analysis_board[analysis_id-1].status[1];
+	var node_shape = allCharts[i].root_node;
+	d3.select(node_shape).transition().duration(1500).delay(0).style("fill",node_color);
+	
+	// Update the pie charts
+	var chart = allCharts[i].chart;
+	chart.max_counts(max_counts);
+	var t = allCharts[i].transition;
+	var data = guiHive.analysis_board[analysis_id-1].jobs_counts;
+	chart.update(data, t);
 
-    $.ajax({ url      : "/scripts/db_monitor_analysis.pl",
-	     type     : "post",
-	     data     : "url=" + guiHive.pipeline_url + "&analysis_id=" + analysis_id,
-	     dataType : "json",
-	     success  : function(monitorRes) {
-		 if(monitorRes.status != "ok") {
-		     $("#log").append(monitorRes.err_msg); scroll_down();
-		 } else {
-		     // The worker posts its value for total_job_count
-		     // This is not very fast, since workers can update their
-		     // size before all the other workers post their number of jobs
-		     // in the wall.
-		     total_jobs_counts[analysis_id] = parseInt(monitorRes.out_msg.total_job_count);
-
-		     // Here we change the color status of the node
-		     var color = monitorRes.out_msg.status;
-		     d3.select(node_shape).transition().duration(1500).delay(0).style('fill',color);
-
-		     // We update the labels in the nodes
-		     var breakdown_label = monitorRes.out_msg.breakout_label;
-		     var label = $(gRoot).children("text")[1];
-		     $(label).text(breakdown_label);
-
-		     // and include the pie charts showing the progression of the analysis
-		     var jobs_info   = monitorRes.out_msg.jobs;
-		     var jobs_counts = jobs_info.counts;
-		     var jobs_colors = jobs_info.colors;
-
-		     // TODO: Shouldn't the scale be .domain([0, total_counts_extent[1]]) ???
-		     var total_counts_extent = d3.extent(total_jobs_counts, function(d){return d});
-		     var pie_size_scale = d3.scale.linear()
-			 .range([bbox.height/5, bbox.height/3])
-			 .domain(total_counts_extent);
-
-		     path = path.data(pie(jobs_counts))
-			 .attr("fill", function(d,i) { return jobs_colors[i] });
-
-		     path.transition().duration(1500).attrTween("d", function(a) {
-			 var i = d3.interpolate(this._current, a),
-			     k = d3.interpolate(arc.outerRadius()(), pie_size_scale(total_jobs_counts[analysis_id]));
-			 this._current = i(0);
-			 return function(t) {
-			     return arc.innerRadius(k(t)/4).outerRadius(k(t))(i(t));
-			 };
-		     }); // redraw the arcs
-		 }
-	     },
-	     complete : setTimeout(function(){$(called_elem).trigger("monitor")}, guiHive.monitorTimeout),
-	   });
+	// Update the breakout_label
+	var breakout_label = guiHive.analysis_board[analysis_id-1].breakout_label;
+	var breakout_elem = allCharts[i].breakout_lable;
+	$(breakout_elem).text(breakout_label);
+    }
 }
 
 function redraw(viz) {
