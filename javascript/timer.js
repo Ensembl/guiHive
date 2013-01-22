@@ -4,6 +4,7 @@ function setup_timer() {
     var tMax        = 10; // 10 seconds by default
     var stop        = true;
     var tCurr       = 0;
+    var startElem   = undefined;
     var div; // undef by default
 
     // Closure / Object
@@ -21,6 +22,7 @@ function setup_timer() {
 	var tid = setTimeout(function() {tf.loop()}, 1000);
 	if (stop) {
 	    clearTimeout(tid);
+	    $(startElem).removeAttr("disabled");
 	}
     };
 
@@ -32,6 +34,8 @@ function setup_timer() {
     };
 
     tf.start = function() {
+	startElem = this;
+	$(startElem).attr("disabled",1);
 	var oldcback = cback;
 	newcback = function(){oldcback(); tf.loop()};
 	cbackloop = newcback;
