@@ -1,15 +1,14 @@
 // Globally defined
-var url = "";
-
-// analysis_board stores the data of all the analysis.
-// pipeline_diagram and pipeline_summary should read 
-// from this board
-// TODO: Should this be global?
-var analysis_board;
-
-// monitorTimeout is the time that passes before monitoring again
-// It is being used by the analysis_board and its consumers
-var monitorTimeout = 30000; // 30seg by default. This can be changed dynamically by the app
+var guiHive = {
+    pipeline_url       : "",        // The url to connect to the pipeline
+                                    // This is the value of $("#db_url") i.e. it is entered by the user
+    refresh_data_timer : undefined, // The timer for the next data update
+    monitorTimeout     : 30000,     // Time for next data updaet
+                                    // TODO: This has to disappear in favor of refresh_data_timer
+                                    // once the pie charts get listens to the analysis_board
+    analysis_board     : undefined, // The analysis data pulled from the database
+                                    // All the views should read this data.
+};
 
 // wait for the DOM to be loaded 
 $(document).ready(function() {
@@ -32,6 +31,9 @@ $(document).ready(function() {
 	fetch_resources();
     });
 
+    // We initialize the refresh_data_timer
+    guiHive.refresh_data_timer = setup_timer().timer(guiHive.monitorTimeout/1000);
+
     // Default value. Only for testing. TODO: Remove the following line
     $("#db_url").val("mysql://ensadmin:ensembl@127.0.0.1:2912/mp12_long_mult");
     $("#Connect").click(function() {
@@ -51,15 +53,11 @@ function fetch_resources() {
     var fetch_url = "/scripts/db_fetch_resource.pl";
     $.ajax({url        : fetch_url,
 	    type       : "post",
-	    data       : "url=" + url,
+	    data       : "url=" + guiHive.pipeline_url,
 	    dataType   : "json",
 	    beforeSend : function() {showProcessing($("#resource_details"))},
 	    success    : function() {display("", fetch_url, onSuccess_fetchResources)}
 	   });
-}
-
-function reset_time_to_refresh() {
-    $("#secs_to_refresh").html(monitorTimeout/1000)
 }
 
 // refresh_data_and_views retrieves the information for all the analysis
@@ -78,7 +76,7 @@ function refresh_data_and_views(callback) {
 		if(allAnalysisRes.status != "ok") {
 		    $("#log").append(allAnalysisRes.err_msg); scroll_down();
 		} else {
-		    analysis_board = allAnalysisRes.out_msg;
+		    guiHive.analysis_board = allAnalysisRes.out_msg;
 		    // We only update the views once the data has been updated
 		    callback();
 		    console.log("OK");
@@ -98,7 +96,7 @@ function onSuccess_dbConnect(res) {
     $("#connexion_msg").html(connexion_header + res.status);
 
     // The number of seconds to refresh is exposed
-    reset_time_to_refresh();
+    guiHive.refresh_data_timer.div($("#secs_to_refresh"));
 
     // We draw the pipeline diagram
     draw_diagram(res.out_msg);
@@ -111,7 +109,7 @@ function onSuccess_dbConnect(res) {
     $("#log").append(res.err_msg); scroll_down();
 
     // the url for the rest of the queries is set (url var is global)
-    url = $("#db_url").val();
+    guiHive.pipeline_url = $("#db_url").val();
 
     // Showing the resources
     $("#show_resources").trigger('click');  // TODO: Best way to handle?
@@ -127,7 +125,7 @@ function onSuccess_dbConnect(res) {
 function display(analysis_id, fetch_url, callback) {
     $.ajax({url        : fetch_url,
 	    type       : "post",
-	    data       : "url=" + url + "&analysis_id=" + analysis_id,
+	    data       : "url=" + guiHive.pipeline_url + "&analysis_id=" + analysis_id,
 	    dataType   : "json",
 	    success    : function(resp) {callback(resp, analysis_id, fetch_url)},
 	   });
@@ -145,7 +143,8 @@ function onSuccess_fetchResources(resourcesRes, analysis_id, fetch_url) {
 }
 
 function change_refresh_time() {
-    monitorTimeout = $(this).val()
+    guiHive.monitorTimeout = $(this).val()
+    guiHive.refresh_data_timer.timer(guiHive.monitorTimeout/1000);
 }
 
 function listen_config() {
@@ -302,7 +301,7 @@ function onSuccess_fetchJobs(jobsRes, analysis_id, fetch_url) {
 	    $(this).editable("/scripts/db_update2.pl", {
 		indicator  : "Saving...",
 		tooltip    : "Click to edit...",
-		loadurl    : "/scripts/db_fetch_max_retry_count.pl?url=" + url + "&job_id=" + job_id,
+		loadurl    : "/scripts/db_fetch_max_retry_count.pl?url=" + guiHive.pipeline_url + "&job_id=" + job_id,
 		type       : "select",
 		submit     : "Ok",
 		event      : "dblclick",
@@ -380,7 +379,7 @@ function buildSendParams(obj) {
 	value = $(elem).text();
     }
 
-    var urlHash = {url      : url,
+    var urlHash = {url      : guiHive.pipeline_url,
 		   adaptor  : $(obj).attr("data-adaptor"),
 		   method   : $(obj).attr("data-method"),
 		  };
@@ -403,7 +402,7 @@ function update_db(obj) {
     var url = obj.data.script;
     var fetch_url = obj.data.fetch_url;
     var analysis_id = obj.data.analysis_id;
-    $.ajax({url        : url,
+    $.ajax({url        : guiHive.pipeline_url,
 	    type       : "post",
 	    data       : buildURL(this),
 	    dataType   : "json",
@@ -438,7 +437,7 @@ function buildURL(obj) {
 	value = obj.value;
     }
 
-    var URL = "url="+url + 
+    var URL = "url="+ guiHive.pipeline_url + 
         "&args="+value + 
         "&adaptor="+$(obj).attr("data-adaptor") + 
         "&method="+$(obj).attr("data-method");

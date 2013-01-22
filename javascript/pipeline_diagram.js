@@ -9,6 +9,7 @@ var total_jobs_counts = [];
 
 // We need to have all the views centralized to make it possible to
 // orchestrate the refreshes
+// TODO: Should this be included in the guiHive global object?
 var basicViews = function() {
     // TODO: we can convert this into an array
     // so the update method, calls all the update submethods
@@ -34,8 +35,8 @@ var basicViews = function() {
 }
 
 function initialize_views_and_refresh() {
-    // we set up the timer/status (with white)
-    var gTimer = create_new_timer();
+    // Create the new refresh timer
+    $("#refresh_time").html("<p>Time to refresh: </p>");
 
     // We need some initial data, so we first call update_analysis_board with an empty callback
     // At this point, the board is empty, so
@@ -46,93 +47,32 @@ function initialize_views_and_refresh() {
     // so we are in a loop here.
     refresh_data_and_views(function(){});
 
-    $(".refresh_now").click(function() {refresh_data_and_views(views.update)});
-
     // We initialize the views
     var views = basicViews();
 
+    // We set up the callback for the timer
+    guiHive.refresh_data_timer.callback(function(){refresh_data_and_views(views.update)});
+
     // We now refresh data and views
-    refresh_data_and_views(views.update);
+    // We need the analysis_board to be populated by now
+    guiHive.refresh_data_timer.now();
 
-    // When start_refreshing is clicked, we refresh_data_and_views with a callback to update the views and start the timer
-    $(".start_refreshing").click(function() {
-	refresh_data_and_views(function(){views.update();start_refreshing(views, gTimer)})});
+    // We listen to the timer controls    
+    $(".refresh_now").click(guiHive.refresh_data_timer.now);
+    $(".start_refreshing").click(guiHive.refresh_data_timer.start);
+    $(".stop_refreshing").click(guiHive.refresh_data_timer.stop);
+    $(".reset_timer").click(guiHive.refresh_data_timer.reset);
     
-}
-
-function delete_timer() {
-    $("#refresh_time").empty();
-}
-
-function create_new_timer() {
-    // Create the new refresh timer
-    $("#refresh_time").html("<p>Time to refresh: </p>");
-    var vis = d3.select("#refresh_time")
-	.append("svg:svg")
-	.attr("width", 50)
-	.attr("height", 50)
-	.append("svg:g");
-
-    var timeChart = refreshTimer();
-    timeChart(vis);
-    return timeChart;
-}
-
-function start_refreshing(views, timeChart) {
-    var t = timeChart.transition().duration(1000);
-
-    // We have to inactive the start_refreshing button --
-    // TODO: Or create a new button everytime the timer is initialized.
-    $(".start_refreshing").attr("disabled", true);
-    update_refresh_timer(timeChart,t,monitorTimeout/1000,0, views, false); 
-}
-
-function update_refresh_timer(tChart, trans, tOrig, tCurr, views, stop) {
-    // listener to stop_refreshing
-    // because update_refresh_timer is a recursive function, everytime it is executed, a new event is attached
-    // we remove the previous one and attach the new one.
-    // 'stop' is a namespace here and it is used to avoid unbinding other events attached elsewhere
-    // TODO: Another option is to create a global variable and move the listener to initialize_views_and_refresh
-    $(".stop_refreshing").unbind('click.stop');
-    $(".stop_refreshing").bind('click.stop', function(){stop = true});
-
-    // Condition to update data and views
-    if (tCurr > tOrig) {
-	tChart.update([1,0], trans.duration(500));
-	refresh_data_and_views(views.update);
-	setTimeout(function() {start_refreshing(views, tChart)}, 1000);
-	return;
-    }
-
-    // update the chart
-    var countsDone = tCurr/tOrig;
-    var countsAhead = 1 - countsDone;
-    var newcounts = [countsAhead,countsDone];
-    tChart.update(newcounts, trans);
-
-    // Update the value in the connexion panel
-    var secs_to_refresh = tOrig - tCurr;
-    $("#secs_to_refresh").html(secs_to_refresh);
-
-    var timeout_id = setTimeout(function() {update_refresh_timer(tChart, trans, tOrig, tCurr + 1, views, stop)}, 1000);
-    if(stop) {
-	reset_time_to_refresh();  // sets the secs_to_refresh div to monitorTimeout/1000
-	clearTimeout(timeout_id);
-	tChart.update([1,0], trans.duration(500));
-	// re-enable the start_refreshing button
-	$(".start_refreshing").attr("disabled", false);
-	return;
-    }
 }
 
 function get_totals() {
     var totals = new Array();
-    for (var k = 0; k<analysis_board[0].jobs_counts.counts.length; k++) {
+    for (var k = 0; k<guiHive.analysis_board[0].jobs_counts.counts.length; k++) {
 	totals[k] = 0;
     }
-    for (var i = 0; i<analysis_board.length; i++) {
-	for (var j = 0; j<analysis_board[i].jobs_counts.counts.length; j++) {
-	    totals[j] += analysis_board[i].jobs_counts.counts[j]
+    for (var i = 0; i<guiHive.analysis_board.length; i++) {
+	for (var j = 0; j<guiHive.analysis_board[i].jobs_counts.counts.length; j++) {
+	    totals[j] += guiHive.analysis_board[i].jobs_counts.counts[j]
 	}
     }
 
@@ -147,8 +87,8 @@ function form_data() {
     totals.pop();
     var data = {};
     data.counts = totals;
-    data.colors = analysis_board[0].jobs_counts.colors;
-    data.names  = analysis_board[0].jobs_counts.names;
+    data.colors = guiHive.analysis_board[0].jobs_counts.colors;
+    data.names  = guiHive.analysis_board[0].jobs_counts.names;
     data.total  = d3.sum(totals);
 
     return data;
@@ -204,7 +144,7 @@ function jobs_chart(div, analysis_id) {
 	.attr("height", 60)
 	.attr("width", 500)
 	.append("svg:g");
-    var gChart = hStackedBarChart(analysis_board[analysis_id-1]).height(50).width(300).barsmargin(120).fontsize(12).id(1);
+    var gChart = hStackedBarChart(guiHive.analysis_board[analysis_id-1]).height(50).width(300).barsmargin(120).fontsize(12).id(1);
     gChart(g);
     setTimeout(function() {live_analysis_chart(gChart, analysis_id)}, 2000); // We update fast from the zero values
 }
@@ -212,20 +152,18 @@ function jobs_chart(div, analysis_id) {
 function live_analysis_chart(gChart, analysis_id) {
     var t = gChart.transition();
 
-    gChart.update(analysis_board[analysis_id - 1], t);
-    setTimeout(function() {live_analysis_chart(gChart, analysis_id)}, monitorTimeout);
+    gChart.update(guiHive.analysis_board[analysis_id - 1], t);
+    setTimeout(function() {live_analysis_chart(gChart, analysis_id)}, guiHive.monitorTimeout);
 }
 
 // uses analysis_board -- duplicated with initialize_overview. Fix!
 function initialize_analysis_summary() {
     // We first remove previous diagrams;
     $("#analysis_summary").empty();
-    console.log("ANALYSIS_BOARD:");
-    console.log(analysis_board);
     var vis = d3.select("#analysis_summary");
 
     var gs = vis.selectAll("div")
-	.data(analysis_board)
+	.data(guiHive.analysis_board)
 	.enter()
 	.append("div")
 	.append("svg:svg")
@@ -235,7 +173,7 @@ function initialize_analysis_summary() {
     var gCharts = [];
     for (var i = 0; i < gs[0].length; i++) {
 
-	var gChart = hStackedBarChart(analysis_board[i]).height(50).width(500).barsmargin(220).id(2);
+	var gChart = hStackedBarChart(guiHive.analysis_board[i]).height(50).width(500).barsmargin(220).id(2);
 	gChart(d3.select(gs[0][i]));
 	// transitions can be obtained from gChart directly
 	gCharts.push(gChart);
@@ -248,9 +186,9 @@ function analysis_summary_update(gCharts) {
     for (var i = 0; i < gCharts.length; i++) {
 	var gChart = gCharts[i];
 	var t = gChart.transition();//.duration(1000); TODO: Include "duration" method
-	gChart.update(analysis_board[i], t);
+	gChart.update(guiHive.analysis_board[i], t);
     }
-    setTimeout(function() {analysis_summary_update(gCharts)}, monitorTimeout);
+    setTimeout(function() {analysis_summary_update(gCharts)}, guiHive.monitorTimeout);
 }
 
 
@@ -336,7 +274,7 @@ function worker(event) {
 
     $.ajax({ url      : "/scripts/db_monitor_analysis.pl",
 	     type     : "post",
-	     data     : "url=" + url + "&analysis_id=" + analysis_id,
+	     data     : "url=" + guiHive.pipeline_url + "&analysis_id=" + analysis_id,
 	     dataType : "json",
 	     success  : function(monitorRes) {
 		 if(monitorRes.status != "ok") {
@@ -381,7 +319,7 @@ function worker(event) {
 		     }); // redraw the arcs
 		 }
 	     },
-	     complete : setTimeout(function(){$(called_elem).trigger("monitor")}, monitorTimeout),
+	     complete : setTimeout(function(){$(called_elem).trigger("monitor")}, guiHive.monitorTimeout),
 	   });
 }
 

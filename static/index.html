@@ -29,7 +29,7 @@
 
 <!-- Local javascripts -->
 <script src="/javascript/toggleDiv.js"></script>
-<script src="/javascript/refresh_timer.js"></script>
+<script src="/javascript/timer.js"></script>
 <script src="/javascript/hBarChart.js"></script>
 <script src="/javascript/legend.js"></script>
 <script src="/javascript/pipeline_diagram.js"></script>
@@ -73,7 +73,6 @@
   <li><a href="#analysis_summary" data-toggle="tab">Analysis Summary</a></li>
   <li><a href="#resource_details" data-toggle="tab">Resources</a></li>
   <li><a href="#views" data-toggle="tab">Stat Views</a></li>
-  <li><a href="#refresh_control" data-toggle="tab">Refreshing</a></li>
   <li><a href="#configuration" data-toggle="tab">Configuration</a></li>
 </ul>
 
@@ -97,24 +96,14 @@
     <p>Empty for now</p>
   </div>
 
-  <!-- Time to refresh the data -->
-  <div id="refresh_control" class="tab-pane">
-    <div id="refresh_time"></div>
-    <a class="btn btn-mini hidden_by_default start_refreshing"><i class="icon-play"></i></a>
-    <a class="btn btn-mini hidden_by_default stop_refreshing"><i class="icon-stop"></i></a>
-    <a class="btn btn-mini hidden_by_default refresh_now" alt="Refresh_now"><i class="icon-download"></i></a></td>
-
+  <div id="configuration" class="tab-pane">
     <p>Set time to refresh data:<select id="select_refresh_time">
 	<option value="5000">5 seg</option>
 	<option value="30000" selected=1>30 seg</option>
 	<option value="60000">1 min</option>
 	<option value="120000">2 min</option>
       </select></p>
-
   </div>
-
-
-  <div id="configuration" class="tab-pane"> </div>
 </div>
 
 <footer>

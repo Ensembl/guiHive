@@ -1,8 +1,9 @@
 function setup_timer() {
-    var cback = function(){console.log("EXECUTED_CALLBACK")};
-    var timer = 10; // 10 seconds by default
-    var stop  = false;
-    var tCurr = 0;
+    var cback       = function(){console.log("EXECUTED_CALLBACK")};
+    var cbackloop   = undefined;
+    var tMax        = 10; // 10 seconds by default
+    var stop        = true;
+    var tCurr       = 0;
     var div; // undef by default
 
     // Closure / Object
@@ -11,14 +12,11 @@ function setup_timer() {
 
     // LOOP
     tf.loop = function() {
-	if (tCurr > timer) {
-	    tf.now();
-	    tf.loop();
+	if (tCurr > tMax) {
+	    tf.nowloop();
 	    return;
 	}
-	var time_to_refresh = tf.time_to_refresh()
-	div.html(time_to_refresh);
-	console.log(time_to_refresh);
+	tf.show();
 	tf.increase_time();
 	var tid = setTimeout(function() {tf.loop()}, 1000);
 	if (stop) {
@@ -27,7 +25,16 @@ function setup_timer() {
     };
 
     // Controls
+    tf.unfreeze = function() {
+	if (!stop) {
+	    tf.start();
+	}
+    };
+
     tf.start = function() {
+	var oldcback = cback;
+	newcback = function(){oldcback(); tf.loop()};
+	cbackloop = newcback;
 	stop = false;
 	tf.loop();
     };
@@ -36,14 +43,19 @@ function setup_timer() {
 	stop = true;
     };
 
-    tf.now = function() {
-	cback();
+    tf.nowloop = function() {
 	tf.reset();
+	cbackloop();
+    };
+
+    tf.now = function() {
+	tf.reset();
+	cback();
     };
 
     tf.reset = function() {
 	tCurr = 0;
-	div.html(tf.time_to_refresh());
+	tf.show();
     };
 
     // Getters/Setters
@@ -54,8 +66,10 @@ function setup_timer() {
     };
 
     tf.timer = function(t) {
-	if (!arguments.length) return timer;
-	t = timer;
+	if (!arguments.length) return tMax;
+	tMax = t;
+	tCurr = 0;
+	tf.show();
 	return tf;
     };
 
@@ -67,15 +81,22 @@ function setup_timer() {
     tf.div = function(elem) {
 	if (!arguments.length) return div;
 	div = elem;
-	div.html(tf.time_to_refresh());
+	tf.show()
 	return tf;
     };
 
     // misc
     tf.time_to_refresh = function() {
-	return timer - tCurr;
+	return tMax - tCurr;
     };
 
+    // Show
+    tf.show = function() {
+	console.log(tf.time_to_refresh());
+	if (div !== undefined) {
+	    div.html(tf.time_to_refresh());
+	}
+    };
 
     return tf;
 }
