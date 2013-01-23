@@ -19,11 +19,11 @@ function pieChart() {
                                .range([max_height/5, max_height/3])
                                .domain(total_counts_extent);
   var outerRadius = pie_size_scale(data.total);
-  
-  var paths = [];
   var radiusFactor = 4;
+
+  var paths = [];
   var innerRadius = outerRadius / radiusFactor;
-  
+
   var arc = d3.svg.arc()
                   .innerRadius(innerRadius)
                   .outerRadius(outerRadius);
@@ -39,6 +39,7 @@ function pieChart() {
     var path = g.selectAll("path").data(pie(data.counts))
                                   .enter().append("path")
                                   .attr("fill", "white")
+                         	  .attr("stroke", "black")
                                   .attr("d", arc)
                                   .each(function(d) { this._current = d; }); // store the initial values
   

@@ -6,6 +6,8 @@ use Data::Dumper;
 
 use Bio::EnsEMBL::Hive::Utils::Graph;
 
+my $hive_config_file = $ENV{GUIHIVE_BASEDIR} . "config/hive_config.json";
+
 ## TODO:  normalize these colors with Hive colors
 ## It would be good to have this in a centralize language-agnostic format (JSON?)
 ## So these color-encodings are used in the javascript side and script side (the svg pipeline_diagram).
@@ -14,10 +16,10 @@ use Bio::EnsEMBL::Hive::Utils::Graph;
 ## I need to sit down with Leo and try to define a better/comprehensive coloring schema.
 ## This is issue#17
 my $job_colors = {
-		  'semaphored' => 'yellow',
-		  'ready'      => 'cyan',
-		  'inprogress' => 'blue',
-		  'failed'     => 'red',
+		  'semaphored' => 'red',
+		  'ready'      => 'orange',
+		  'inprogress' => 'yellow',
+		  'failed'     => 'grey',
 		  'done'       => 'green',
 		  'background' => 'white',
 		 };
@@ -25,9 +27,9 @@ my $job_colors = {
 sub fetch {
     my ($class, $analysis) = @_;
     my $analysis_stats = $analysis->stats();
-    my $config = Bio::EnsEMBL::Hive::Utils::Config->new();
+    my $config = Bio::EnsEMBL::Hive::Utils::Config->new($hive_config_file);
     my $status = $analysis_stats->status();
-    my $status_colour = $config->get('Graph', 'Node', $analysis_stats->status, 'Colour');
+    my $status_colour = $config->get('Graph', 'Node', 'AnalysisStatus', $analysis_stats->status, 'Colour');
     my ($breakout_label, $total_job_count, $job_counts) = $analysis_stats->job_count_breakout();
 
 ## TODO: status should be only the $status string (not the color), but we need to define this here

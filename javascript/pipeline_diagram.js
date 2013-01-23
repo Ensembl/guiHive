@@ -36,7 +36,9 @@ function initialize_pipeline_diagram() {
 	if (matches != null && matches.length > 1) {
 	    var analysis_id = matches[1];
 	    var gRoot = $(v).parent()[0];
-	    var node  = $(v).siblings("ellipse,polygon")[0];
+	    var node  = $(v).siblings("path,polygon,polyline");
+	    console.log("NODE:");
+	    console.log(node);
 	    var bbox = gRoot.getBBox();
 	    var posx = bbox.x + bbox.width;
 	    var posy = bbox.y;
@@ -47,8 +49,8 @@ function initialize_pipeline_diagram() {
 	    allPies.push({chart          : pChart,
 			  transition     : pChart.transition().duration(1500),
 			  analysis_id    : analysis_id,
-			  breakout_label : $(gRoot).children("text")[1],
-			  root_node      : node,
+			  breakout_label : $(gRoot).children("text")[2],
+			  root_node      : v,
 			 });
 
 	    // Links to the analysis_details
@@ -70,9 +72,9 @@ function pipeline_diagram_update(allCharts) {
 
 	// Update the color status of the node
 	var node_color = guiHive.analysis_board[analysis_id-1].status[1];
-	var node_shape = allCharts[i].root_node;
-	d3.select(node_shape).transition().duration(1500).delay(0).style("fill",node_color);
-	
+	var nodes = $(allCharts[i].root_node).siblings("path,polygon,polyline");
+	d3.selectAll(nodes).transition().duration(1500).delay(0).attr("fill",node_color).attr("stroke",function() {if($(this).attr("stroke") === "black") {return "black"} else {return node_color}});
+
 	// Update the pie charts
 	var chart = allCharts[i].chart;
 	chart.max_counts(max_counts);
@@ -82,7 +84,7 @@ function pipeline_diagram_update(allCharts) {
 
 	// Update the breakout_label
 	var breakout_label = guiHive.analysis_board[analysis_id-1].breakout_label;
-	var breakout_elem = allCharts[i].breakout_lable;
+	var breakout_elem = allCharts[i].breakout_label;
 	$(breakout_elem).text(breakout_label);
     }
 }
