@@ -37,8 +37,6 @@ function initialize_pipeline_diagram() {
 	    var analysis_id = matches[1];
 	    var gRoot = $(v).parent()[0];
 	    var node  = $(v).siblings("path,polygon,polyline");
-	    console.log("NODE:");
-	    console.log(node);
 	    var bbox = gRoot.getBBox();
 	    var posx = bbox.x + bbox.width;
 	    var posy = bbox.y;

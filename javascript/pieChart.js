@@ -3,10 +3,9 @@ function pieChart() {
   // Initial values:
   // TODO: height should be substituted by max_height
   var max_height=100;
-  var data = {counts : [1,1,1,1,1,0], // Should be [0,0,0,0,0,1] once it is working
+  var data = {counts : [0,0,0,0,0,1],
               colors : ["green", "yellow", "red", "blue", "cyan", "white"],
 	      names  : ["semaphored", "ready", "inprogress", "failed", "done"],
-              total  : 5 // Should be 1 once it is working
              }
 
   var pie = d3.layout.pie()
@@ -18,11 +17,12 @@ function pieChart() {
   var pie_size_scale = d3.scale.linear()
                                .range([max_height/5, max_height/3])
                                .domain(total_counts_extent);
-  var outerRadius = pie_size_scale(data.total);
-  var radiusFactor = 4;
+    var outerRadius = pie_size_scale(d3.sum(data.counts));
+//  var radiusFactor = 4;
 
   var paths = [];
-  var innerRadius = outerRadius / radiusFactor;
+//  var innerRadius = outerRadius / radiusFactor;
+    var innerRadius = 15;
 
   var arc = d3.svg.arc()
                   .innerRadius(innerRadius)
@@ -42,6 +42,12 @@ function pieChart() {
                          	  .attr("stroke", "black")
                                   .attr("d", arc)
                                   .each(function(d) { this._current = d; }); // store the initial values
+
+    var panic_circle = g.append("circle")
+	  .attr("cx", 0)
+	  .attr("cy", 0)
+	  .attr("r", 15)
+	  .attr("fill", "white");
   
     // The pie-chart is feeded with the initial data and colouring
     path.data(pie(data.counts))
@@ -63,12 +69,19 @@ function pieChart() {
 
         var duration = 1500;
         var delay    = 0;
+
+	  // We update the panic_circle
+	  console.log("UPDATING PANIC CIRCLE");
+	  console.log(panic_circle);
+	  panic_circle.transition().duration(duration).delay(delay).attr("fill",function(){if (chart.data().counts[3] === 0){return "white"} else {return "red"}});
+
         path.transition().delay(delay).duration(newT.duration()).attrTween("d", function(a) {
          var i = d3.interpolate(this._current, a),
              k = d3.interpolate(arc.outerRadius()(),pie_size_scale(d3.sum(data.counts)));
           this._current = i(0);
           return function(t) {
-            return arc.innerRadius(k(t)/radiusFactor).outerRadius(k(t))(i(t));
+	      return arc.outerRadius(k(t))(i(t));
+//            return arc.innerRadius(k(t)/radiusFactor).outerRadius(k(t))(i(t));
           };
         }); // redraw the arcs
       };
