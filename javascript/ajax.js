@@ -8,6 +8,11 @@ var guiHive = {
                                     // once the pie charts get listens to the analysis_board
     analysis_board     : undefined, // The analysis data pulled from the database
                                     // All the views should read this data.
+    views              : undefined, // All the views generated that consumes from analysis_board
+                                    // They are included in the global object to allow dynamically
+                                    // generated views (like the jobs_chart that is generated and destroyed on demand)
+                                    // Instead of storing here an array of views, we store a closure that knows how to generate them
+                                    // and how to update them once the analysis_board is updated
 };
 
 // wait for the DOM to be loaded 
