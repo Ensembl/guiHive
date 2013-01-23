@@ -25,8 +25,10 @@ var basicViews = function() {
     var views = function() {
     };
 
-    views.addChart = function (name, chart) {
-	charts.name = chart;
+    views.addChart = function (name, chart_closure, update_closure) {
+	var new_chart = {chart : chart_closure,
+			 update : update_closure};
+	charts.name = new_chart;
     };
 
     views.removeChart = function (name) {
@@ -40,13 +42,6 @@ var basicViews = function() {
 	    update(chart);
 	}
     };
-
-    // views.update = function() {
-    // 	// New data is already in the board
-    // 	overviewChart.update(overviewChart.chart);
-    // 	allAnalysisCharts.update(allAnalysisCharts.chart);
-    // 	allAnalysisPies.update(allAnalysisPies.charts);
-    // };
 
     return views;
 }

@@ -176,12 +176,14 @@ function onSuccess_fetchAnalysis(analysisRes, analysis_id, fetch_url) {
     if(analysisRes.status == "ok") {
 	// We first empty any previous analysis displayed -- TODO: Not harmful, but... needed?
 	$("#analysis_details").empty();
+	// We also remove any jobs_chart we may have
+	guiHive.views.removeChart("jobs_chart");
 
 	// We populate the analysis_details div with the new analysis data
 	$("#analysis_details").html(analysisRes.out_msg);
 
 	// The details can be closed
-	$("#close_analysis_details").click(function(){$("#analysis_details").empty();});
+	$("#close_analysis_details").click(function(){$("#analysis_details").empty(); guiHive.views.removeChart("jobs_chart")});
     } else {
 	$("#log").append(analysisRes.err_msg); scroll_down();
 	$("#connexion_msg").html(analysisRes.status);
@@ -193,7 +195,7 @@ function listen_Analysis(analysis_id, fetch_url) {
     //  We activate the show/hide div toggle
     $(".toggle-div").click(function(){$(this).toggleDiv()});
 
-    jobs_chart("#analysis_details", analysis_id);
+    jobs_chart(analysis_id);
     // We have db_update.pl and db_update2.pl
     // TODO: use a generic version (db_update.pl or db_update2.pl)
     // that can deal with both cases

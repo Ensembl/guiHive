@@ -30,7 +30,7 @@ function hStackedBarChart(raw_data) {
 	// Only 1 layer
 	var gLayer = g.selectAll(".layer")
 	    .data(bChart.layers)
-	    .enter().append("svg:g")
+	    .enter().append("g")
 	    .attr("class", "layer")
 	    .style("fill", function(d, i) { return raw_data.jobs_counts.colors[i] })
  
@@ -40,7 +40,7 @@ function hStackedBarChart(raw_data) {
 	    .attr("class", raw_data.logic_name + "__" + id)
 	    .classed("bar", true);
 
-	gRects.append("svg:rect")
+	gRects.append("rect")
 	      .attr("x", function(d) {return barsmargin + y(d.y0)})
               .attr("y", 0) // at the top
 	      .attr("height", height)
@@ -49,11 +49,11 @@ function hStackedBarChart(raw_data) {
 
 	// analysis label
 	g
-	    .append("svg:g")
+	    .append("g")
 	    .attr("class", "analysis_label")
 	    .attr("to_id", raw_data.logic_name + "__" + id)
 	    .on("click", bChart.switch_type)
-	    .append("svg:text")
+	    .append("text")
 	    .attr("x", 0)
 	    .attr("y", bChart.height()/2 + bChart.fontsize()/2.5)
 	    .attr("fill", "black")
@@ -63,7 +63,7 @@ function hStackedBarChart(raw_data) {
 
     // general counts label
 	g
-	    .append("svg:text")
+	    .append("text")
 	    .attr("class", "count_label")
 	    .attr("x", barsmargin + y.range()[1]+10)
 	    .attr("y", bChart.height()/2 + bChart.fontsize()/2.5)
@@ -71,7 +71,7 @@ function hStackedBarChart(raw_data) {
 	    .attr("font-size", fontsize)
 	    .text(y.domain()[1]);
     
-	gRects.append("svg:text")
+	gRects.append("text")
 	    .attr("x", barsmargin)
 	    .attr("y", 0)
 	    .attr("font-size", 10)
@@ -103,8 +103,9 @@ function hStackedBarChart(raw_data) {
 		    .transition()
 		    .delay(function(d,i){return i*100})
 		    .duration(1000)
-		    .attr("x", function(d,i){var l=bChart.layers.slice(-1)[0][0]; return(y(l.y0+l.y) + barsmargin + 10)})
-		    .text(function(d,i){var l=bChart.layers.slice(-1)[0][0]; return (l.y0 + l.y)});
+//		    .attr("x", function(d,i){var l=bChart.layers.slice(-1)[0][0]; return(y(l.y0+l.y) + barsmargin + 10)})
+//		    .text(function(d,i){var l=bChart.layers.slice(-1)[0][0]; return (l.y0 + l.y)});
+		    .text(function(){return bChart.data().total_job_count});
 	    };
       
 	    return newT;
