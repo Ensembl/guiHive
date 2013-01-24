@@ -4,7 +4,8 @@ This repository contains the guiHive code, a graphic user interface to easily in
 
 ### Status
 
-This code is in early development. New commits are added continuosly and there is no guarantee that it compiles.
+This code is in early development. New commits are added continuosly and there is no guarantee that it compiles in a given state.
+
 
 ### Installation
 
@@ -23,10 +24,10 @@ Once you have all the dependencies installed and up to date (specially the eHive
 * Clone the guiHive repository (if you haven't done yet) and cd into it.
 
 * Set the GUIHIVE_BASEDIR environmental variable to point to your guiHive/src folder. Something like this should work:
-     $ export GUIHIVE_BASEDIR=$PWD/src
+     $ export GUIHIVE_BASEDIR=$PWD
 (Note: To make this change permanent include the $GUIHIVE_BASEDIR variable in your ~/.bashrc or ~/.profile file)
 
-* cd into guiHive/src/server and build the web server
+* cd into the "server" folder and build the web server
      $ cd $GUIHIVE_BASEDIR/server
      $ go build
 
@@ -43,4 +44,9 @@ Once you have all the dependencies installed and up to date (specially the eHive
 
 You shouuld now be able to connect to your database and start monitoring your pipeline.
 
+
 ### Browser compatibility
+
+All the 3rd party libraries used in guiHive are supposed to work in reasonably recent versions of the good most used web browsers. IE>=9 should also work. If you experience any problem, please, send your comments to mp@ebi.ac.uk
+
+AFAIK everything works fine in Firefox (v18.0.1) and Chrome (v24.0.1312.56), although the experience in Chrome seems to be a bit more pleasent (everything seems to run smoother).
