@@ -49,4 +49,5 @@ You shouuld now be able to connect to your database and start monitoring your pi
 
 All the 3rd party libraries used in guiHive are supposed to work in reasonably recent versions of the good most used web browsers. IE>=9 should also work. If you experience any problem, please, send your comments to mp@ebi.ac.uk
 
-AFAIK everything works fine in Firefox (v18.0.1) and Chrome (v24.0.1312.56), although the experience in Chrome seems to be a bit more pleasent (everything seems to run smoother).
+AFAIK everything works fine in Firefox (v7.0.1, v8.0.1, v12.0, v18.0.1), Chrome (v24.0.1312.56), Safari (v5.1.7) and Opera (v12.12) (although v18.0.1 of Firefox seems to choke slightly while zooming in/out the pipeline diagram. Since this seems to happen only with that specific version of Firefox, I will wait until a new version is released before trying to investigate further).
+
