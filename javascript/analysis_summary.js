@@ -9,6 +9,7 @@ function initialize_analysis_summary() {
 	.append("div")
 	.append("svg:svg")
 	.attr("height", 60)
+	.attr("width", 800)
 	.append("svg:g")
 
     var gCharts = [];
@@ -20,7 +21,6 @@ function initialize_analysis_summary() {
 	gCharts.push(gChart);
     }
     return gCharts;
-//    setTimeout(function() {live_overview(gCharts)}, 2000); // We update fast from the zero values
 }
 
 function analysis_summary_update(gCharts) {

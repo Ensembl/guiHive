@@ -5,26 +5,31 @@ var analysis_id_regexp = /analysis_(\d+)/;
 
 // draw_diagram incorporate the pipeline diagram into the DOM
 // and set the "draggability" and "pannability" of the diagram
-// TODO: Firefox can't run this.
-//       It seems to have problems with DOMParser.parseFromString(xmlStr, 'img/svg+xml')
 function draw_diagram(xmlStr) {
     // we first remove previous diagrams
     $("#pipeline_diagram").empty();
 
     var DOMParser = new window.DOMParser();
-    var xml = DOMParser.parseFromString(xmlStr,'img/svg+xml');
+//    var xml = DOMParser.parseFromString(xmlStr,'img/svg+xml');
+    var xml = DOMParser.parseFromString(xmlStr,'text/xml');
     var importedNode = document.importNode(xml.documentElement,true);
 
-    // TODO: This is creating a nested svg structure. It is working fine, but it may be better
-    // to find a way to get a cleaner structure and still have the zoom, panning capabilities
+    // TODO: This is creating a nested svg structure. This is needed because Firefox will only use the
+    // the width and height of the outer structure, so we need to give the width and height
+    // of the inner svg (the real one).
+    // I am not able to have zoom and panning capabilities without the outer svg
+    var width = $("#pipeline_diagram").css("width");
+    var height = $("#pipeline_diagram").css("height");
     var g = d3.select("#pipeline_diagram")
-	.append("svg:svg")
-	.attr("pointer-events", "all")
-	.append("svg:g")
-	.call(d3.behavior.zoom().on("zoom", function() { redraw(g) }))
-	.append("svg:g");
-
-    g.node().appendChild(importedNode);
+    	.append("svg")
+    	.attr("width",width)
+    	.attr("height",height)
+    	.attr("pointer-events", "all")
+    	.append("g")
+    	.call(d3.behavior.zoom().on("zoom", function() { redraw(g) }))
+    	.append("g");
+    
+   g.node().appendChild(importedNode);
 }
 
 // This is creating the pie charts in the pipeline diagram
