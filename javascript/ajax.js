@@ -154,6 +154,7 @@ function change_refresh_time() {
 
 function listen_config() {
     $("#select_refresh_time").change(change_refresh_time);
+    $("#ClearLog").click(function(){$("#log").html("Log")});
 }
 
 function listen_Resources(fetch_url) {
@@ -469,6 +470,6 @@ function onSend(req, settings) {
 // or (non-IE, AFAIK):
 // http://stackoverflow.com/questions/4979738/fire-jquery-event-on-div-change
 function scroll_down() {
-    $("#log").scrollTop($("#log").height()+10000000); // TODO: Try to avoid this arbitrary addition
+    $("#logContainer").scrollTop($("#log").height()+10000000); // TODO: Try to avoid this arbitrary addition
 }
 

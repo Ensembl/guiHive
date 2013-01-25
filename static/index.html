@@ -67,10 +67,9 @@
 <!-- TODO: This has to be done better once the layout is being defined -->
 <button id="show_resources"></button>
 
-<div id="log">
-  <p>Log</p>
+<div id="logContainer">
+  <pre id="log">Log</pre>
 </div>
-
 
 <!-- TABBING -->
 <ul class="nav nav-tabs">
@@ -107,7 +106,8 @@
 	<option value="30000" selected=1>30 seg</option>
 	<option value="60000">1 min</option>
 	<option value="120000">2 min</option>
-      </select></p>
+    </select></p>
+    <p>Clear Log content:<input type="button" value="Clear" id="ClearLog" class="btn" /></p>
   </div>
 </div>
 

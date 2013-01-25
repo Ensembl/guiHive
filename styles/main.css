@@ -22,19 +22,25 @@ body {
 
 #connexion_msg {
 /*    width            : 960px;*/
-    height           : 150px;
+    height           : 190px;
     background-color : white;
     padding          : 5px;
 }
 
-/* Log div */ 
-#log {
-    width            : 960px;
-    color            : white;
-    background-color : black;
+/* Log Container div */ 
+#logContainer {
+    width            : 700px;
+    /* color            : white; */
+    /* background-color : black; */
     overflow         : auto;
+    position         : relative;
     padding          : 5px;
     max-height       : 100px;
+}
+
+#log {
+    background-color : black;
+    color            : white;
 }
 
 /* Analysis advanced options */
