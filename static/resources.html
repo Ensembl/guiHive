@@ -25,11 +25,11 @@
 		     data-linkTo="<TMPL_VAR NAME=rcName>">+</button>
 	</td>
       </TMPL_LOOP>
-      <td>
+      <td class="short-field">
 	<TMPL_VAR NAME=meadow>
       </td>
       <TMPL_LOOP NAME=resourceParams>
-	<td><input type="text"
+	<td class="large-field"><input class="large-input" type="text"
 		   id="<TMPL_VAR NAME=rcParams>"
 		   size=80
 		   value="<TMPL_VAR NAME=params>">
@@ -48,8 +48,8 @@
     <tr>
       <td>ID</td>
       <td><input type="text" size=30 id="r_new_name"></td><td></td>
-      <td><input type="text" size=20 id="r_new_meadow"></td>
-      <td><input type="text" size=50 id="r_new_parameters"></td>
+      <td class="short-field"><input class="short-input" type="text" id="r_new_meadow"></td>
+      <td class="large-field"><input class="large-input" type="text" size=50 id="r_new_parameters"></td>
       <td><button class="create_resource"
 		  data-adaptor="<TMPL_VAR NAME=adaptor>"
 		  data-method="<TMPL_VAR NAME=method>"

@@ -75,6 +75,34 @@ body {
     right            : 5px;
 }
 
+/******************/
+/* resources table /
+/******************/
+#resources_table {
+    font-size        : 12px;
+    width            : 850px;
+    background-color : #E6EBF0;
+    padding          : active;
+}
+
+.short-field {
+    display          : inline-block;
+    width            : 80px;
+}
+.short-input {
+    width            : 80px;
+}
+
+.large-field {
+    display          : inline-block;
+    width            : 300px;
+}
+
+.large-input {
+    width            : 300px;
+}
+/******************/
+
 /* jobs_chart div */
 .jobs_chart {
     margin-left      : 0px;
@@ -161,18 +189,32 @@ input[type="text"], select {
     text-align     : right;
 }
 
-/* None of this seems to work */
 #jobs_table {
-    width : 100%;
+    width          : 100%;
+    font-size      : 12px;
 }
 
-#jobs_table td {
-    width:1px;
+.number_filter {
+    width          : 50px;
+}
+
+.select_filter {
+    width          : 80px;
+}
+
+.update_param_all {
+    width          : 80px;
+}
+
+.number_range_filter {
+    width          : 20px;
 }
 
 .inner_table {
     padding : 0px;
-    margin : 0;
-    
+    margin  : 0;
+    border  : 0;
+    background-color : "gray";
+    width   : 100%;
 }
 
