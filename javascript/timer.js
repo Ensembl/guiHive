@@ -96,7 +96,7 @@ function setup_timer() {
 
     // Show
     tf.show = function() {
-	console.log(tf.time_to_refresh());
+//	console.log(tf.time_to_refresh());
 	if (div !== undefined) {
 	    div.html(tf.time_to_refresh());
 	}

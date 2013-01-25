@@ -71,8 +71,6 @@ function pieChart() {
         var delay    = 0;
 
 	  // We update the panic_circle
-	  console.log("UPDATING PANIC CIRCLE");
-	  console.log(panic_circle);
 	  panic_circle.transition().duration(duration).delay(delay).attr("fill",function(){if (chart.data().counts[3] === 0){return "white"} else {return "red"}});
 
         path.transition().delay(delay).duration(newT.duration()).attrTween("d", function(a) {
