@@ -100,6 +100,9 @@ function onSuccess_dbConnect(res) {
     var connexion_header = "<h4>Connexion Details</h4>";
     $("#connexion_msg").html(connexion_header + res.status);
 
+    // We update the timer:
+    guiHive.refresh_data_timer.stop();
+    guiHive.refresh_data_timer.reset();
     // The number of seconds to refresh is exposed
     guiHive.refresh_data_timer.div($("#secs_to_refresh"));
 
@@ -121,10 +124,6 @@ function onSuccess_dbConnect(res) {
 
     // Now we start monitoring the analyses.
     initialize_views_and_refresh();
-
-    // TODO: This has to be cleaned up?
-//    monitor_overview();
-//    monitor_pipeline_diagram();
 }
 
 function display(analysis_id, fetch_url, callback) {
