@@ -244,8 +244,15 @@ function onSuccess_fetchJobs(jobsRes, analysis_id, fetch_url) {
 
 
 	// We convert the whole job table in a dataTable
-	var oTable = $('#jobs_table').dataTable()
-	    .columnFilter( {
+	var oTable = $('#jobs_table').dataTable({
+	    "sDom": 'C<"clear">lfrtip',
+	    "aoColumnDefs": [
+		{ "bVisible": false, "aTargets": [ 3,7,8,9,10 ] }
+	    ],
+	    "oColVis": {
+		"aiExclude": [ 0,1 ],
+	    },
+	}).columnFilter( {
 		aoColumns : [ { type : "number" },
 			      { type : "number" },
 			      { type : "text"   },
