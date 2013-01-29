@@ -263,7 +263,7 @@ function onSuccess_fetchJobs(jobsRes, analysis_id, fetch_url) {
 			      { type : "number" },
 			      { type : "text"   },
 			      { type : "number" },
-			      { type : "select", values: [ 'SEMAPHORED', 'READY', 'DONE', 'FAILED' ] },
+			      { type : "select", values: [ 'SEMAPHORED', 'READY', 'DONE', 'FAILED', 'RUN' ] },
 			      { type : "number-range" },
 			      { type : "date-range" },
 			      { type : "number" },
