@@ -79,7 +79,8 @@ function refresh_data_and_views(callback) {
 	    dataType : "json",
 	    success  : function(allAnalysisRes) {
 		if(allAnalysisRes.status != "ok") {
-		    $("#log").append(allAnalysisRes.err_msg); scroll_down();
+		    log(allAnalysisRes);
+//		    $("#log").append(allAnalysisRes.err_msg); scroll_down();
 		} else {
 		    guiHive.analysis_board = allAnalysisRes.out_msg;
 		    // We only update the views once the data has been updated
@@ -93,6 +94,7 @@ function refresh_data_and_views(callback) {
 
 // res is the JSON-encoded response from the server in the Ajax call
 function onSuccess_dbConnect(res) {
+
     // Hidden elements are now displayed
     $(".hidden_by_default").show();
     
@@ -111,10 +113,10 @@ function onSuccess_dbConnect(res) {
 
     // We activate tooltips and popups
     $("[rel=tooltip-it]").tooltip({animation:true});
-    $("[rel=popup-it]").popover({animation:true, content:"kk", title:"kk doble"});
+//    $("[rel=popup-it]").popover({animation:true, content:"kk", title:"kk doble"});
 
     // If there has been an error, it is reported in the "log" div
-    $("#log").append(res.err_msg); scroll_down();
+    log(res);
 
     // the url for the rest of the queries is set (url var is global)
     guiHive.pipeline_url = $("#db_url").val();
@@ -124,6 +126,8 @@ function onSuccess_dbConnect(res) {
 
     // Now we start monitoring the analyses.
     initialize_views_and_refresh();
+
+    return;
 }
 
 function display(analysis_id, fetch_url, callback) {
@@ -139,7 +143,8 @@ function display(analysis_id, fetch_url, callback) {
 // to the last position (and avoid the 'undef' in the calling code)
 function onSuccess_fetchResources(resourcesRes, analysis_id, fetch_url) {
     if (resourcesRes.status != "ok") {
-	$("#log").append(resourcesRes.err_msg); scroll_down();
+	log(resourcesRes);
+//	$("#log").append(resourcesRes.err_msg); scroll_down();
     } else {
 	$("#resource_details").html(resourcesRes.out_msg);
     }
@@ -153,7 +158,7 @@ function change_refresh_time() {
 
 function listen_config() {
     $("#select_refresh_time").change(change_refresh_time);
-    $("#ClearLog").click(function(){$("#log").html("Log")});
+    $("#ClearLog").click(function(){$("#log").html("Log"); $("#log-tab").css("color","#B8B8B8")});
 }
 
 function listen_Resources(fetch_url) {
@@ -185,7 +190,8 @@ function onSuccess_fetchAnalysis(analysisRes, analysis_id, fetch_url) {
 	// The details can be closed
 	$("#close_analysis_details").click(function(){$("#analysis_details").empty(); guiHive.views.removeChart("jobs_chart")});
     } else {
-	$("#log").append(analysisRes.err_msg); scroll_down();
+	log(analysisRes);
+//	$("#log").append(analysisRes.err_msg); scroll_down();
 	$("#connexion_msg").html(analysisRes.status);
     }
     listen_Analysis(analysis_id, fetch_url);
@@ -360,7 +366,8 @@ function onSuccess_fetchJobs(jobsRes, analysis_id, fetch_url) {
 	});
 
     } else {
-	$("#log").append(jobsRes.err_msg); scroll_down();
+	log(jobsRes);
+//	$("#log").append(jobsRes.err_msg); scroll_down();
 	$("#connexion_msg").html(jobsRes.status);
     }
 }
@@ -424,7 +431,8 @@ function update_db(obj) {
 	    cache      : false,
 	    success    : function(updateRes) {
 		if(updateRes.status != "ok") {
-		    $("#log").append(updateRes.err_msg); scroll_down();
+		    log(updateRes);
+//		    $("#log").append(updateRes.err_msg); scroll_down();
 		};
 	    },
 //	    complete   :  function() {$(button).trigger('click')},
@@ -479,3 +487,13 @@ function scroll_down() {
     $("#logContainer").scrollTop($("#log").height()+10000000); // TODO: Try to avoid this arbitrary addition
 }
 
+function log(res) {
+    console.log("LOG IS CALLED");
+    if (res.err_msg !== "") {
+	console.log("AND ERR_MSG IS NOT EMPTY");
+	console.log(res.err_msg);
+	$("#log").append(res.err_msg); scroll_down();
+	$("#log-tab").css("color","red");
+    }
+    return
+}

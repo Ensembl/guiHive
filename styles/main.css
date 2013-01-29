@@ -30,12 +30,13 @@ body {
 /* Log Container div */ 
 #logContainer {
     width            : 700px;
+    height           : 560px;
     /* color            : white; */
     /* background-color : black; */
     overflow         : auto;
     position         : relative;
     padding          : 5px;
-    max-height       : 100px;
+    max-height       : 300px;
 }
 
 #log {
@@ -218,3 +219,6 @@ input[type="text"], select {
     width   : 100%;
 }
 
+#log-tab {
+    color  : #B8B8B8;
+}
