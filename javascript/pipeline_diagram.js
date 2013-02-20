@@ -61,7 +61,7 @@ function initialize_pipeline_diagram() {
 		.attr("data-analysis_id", analysis_id)
 		.on("click", function() {
 		    display(analysis_id, "/scripts/db_fetch_analysis.pl", onSuccess_fetchAnalysis);
-		    display(analysis_id, "/scripts/db_fetch_jobs.pl", onSuccess_fetchJobs);
+//		    display(analysis_id, "/scripts/db_fetch_jobs.pl", onSuccess_fetchJobs);
 		});
 	}
     });
@@ -74,6 +74,10 @@ function pipeline_diagram_update(allCharts) {
 	var analysis_id = allCharts[i].analysis_id;
 
 	// Update the color status of the node
+	// TODO: This is assuming that the analysis_id corresponds to indexes in the analysis_board (-1)
+	// but this may not be the case if we have missing analysis_ids
+	// A more robust version of this code would index the analysis_board by analysis_id, but this would
+	// require an extra data structure (a ids=>index hash table or similar).
 	var node_color = guiHive.analysis_board[analysis_id-1].status[1];
 	var nodes = $(allCharts[i].root_node).siblings("path,polygon,polyline");
 	d3.selectAll(nodes).transition().duration(1500).delay(0).attr("fill",node_color).attr("stroke",function() {if($(this).attr("stroke") === "black") {return "black"} else {return node_color}});

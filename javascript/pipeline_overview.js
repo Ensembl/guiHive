@@ -32,17 +32,17 @@ function pipeline_overview() {
     $("#summary").html(summary_header);
     var data = form_data();
     var foo = d3.select("#summary")
-	.append("svg:svg")
+	.append("svg")
 	.attr("width", 550)
 	.attr("height", 150)
-	.append("svg:g");
+	.append("g");
     var bChart = barChart().data(data);
     bChart(foo);
     return bChart;
 }
 
-function pipeline_overview_update(pChart) {
+function pipeline_overview_update(bChart) {
     var data = form_data();
-    var t = pChart.transition();
-    pChart.update(data,t);
+    var t = bChart.transition();
+    bChart.update(data,t);
 }

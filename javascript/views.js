@@ -12,14 +12,19 @@ var basicViews = function() {
     allAnalysisCharts.chart = initialize_analysis_summary();
     allAnalysisCharts.update = analysis_summary_update; // a closure;
 
-    var allAnalysisPies = {}
+    var allAnalysisPies = {};
     allAnalysisPies.chart = initialize_pipeline_diagram();
     allAnalysisPies.update = pipeline_diagram_update; // a closure
+
+    var allBubbles = {};
+    allBubbles.chart = initialize_bubbles_cloud();
+    allBubbles.update = bubbles_cloud_update; // a closure
     // more...
 
     var charts = { overview     : overviewChart,
 		   allAnalysis  : allAnalysisCharts,
 		   allAnalysisP : allAnalysisPies,
+		   bubblesCloud : allBubbles,
 		 };
 
     var views = function() {

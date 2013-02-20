@@ -61,6 +61,14 @@ body {
     overflow         : hidden;
 }
 
+#views {
+    width            : 100%;
+    height           : 650px;
+    color            : black;
+    background-color : white;
+    overflow         : hidden;
+}
+
 /* Analysis Div */
 #analysis_details {
 

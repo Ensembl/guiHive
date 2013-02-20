@@ -31,6 +31,7 @@ sub fetch {
     my $status = $analysis_stats->status();
     my $status_colour = $config->get('Graph', 'Node', 'AnalysisStatus', $analysis_stats->status, 'Colour');
     my ($breakout_label, $total_job_count, $job_counts) = $analysis_stats->job_count_breakout();
+    my $avg_msec_per_job = $analysis_stats->avg_msec_per_job();
 
 ## TODO: status should be only the $status string (not the color), but we need to define this here
 ## until issue#17 is solved (job's colors in json and accessible by client code -- javascript).
@@ -39,6 +40,7 @@ sub fetch {
 		       logic_name => $analysis->logic_name(),
 		       status => [$status,$status_colour],
 		       breakout_label => $breakout_label,
+		       avg_msec_per_job => $avg_msec_per_job,
 		       total_job_count => $total_job_count,
 		       jobs_counts => {
 			   counts => [],
@@ -82,6 +84,17 @@ sub sum_jobs {
 	$res += $i;
     }
     return $res;
+}
+
+sub meadow_type {
+  my ($self, $meadow_type) = @_;
+  $self->{meadow_type} = $meadow_type;
+}
+
+sub mem {
+  my ($self, $min_mem, $max_mem, $avg_mem, $resource_mem) = @_;
+  $self->{mem} = [$min_mem, $avg_mem, $max_mem];
+  $self->{resource_mem} = [$max_mem, 0, $resource_mem];
 }
 
 sub TO_JSON {

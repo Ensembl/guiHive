@@ -9,16 +9,22 @@ use HTML::Template;
 use Data::Dumper;
 
 use lib ("./scripts/lib");
+use new_hive_methods;
 use msg;
 
-my $json_data = shift @ARGV || '{"url":["mysql://ensadmin:ensembl@127.0.0.1:2912/mp12_long_mult"], "analysis_id":["2"], "status":["DONE"]}';
+my $json_data = shift @ARGV || '{"url":["mysql://ensadmin:ensembl@127.0.0.1:2911/mp12_long_mult"],"analysis_id":["2"],"sSortDir_0":["asc"],"iDisplayLength":["10"],"iDisplayStart":["0"],"iSortCol_0":["0"],"iSortingCols":["1"]}';
 my $jobs_template = $ENV{GUIHIVE_BASEDIR} . "static/jobs.html";
+my $input_ids_template = $ENV{GUIHIVE_BASEDIR} . "static/jobs_input_ids.html";
 
 # Input
 my $var = decode_json($json_data);
-my $url = $var->{url}->[0];
-my $analysis_id = $var->{analysis_id}->[0];
-my $status = $var->{status}->[0];
+my $url            = $var->{url}->[0];
+my $analysis_id    = $var->{analysis_id}->[0];
+
+my $sSearch        = $var->{sSearch}->[0];
+my $bRegex         = $var->{bRegex}->[0];
+my $iSortingCols   = $var->{iSortingCols}->[0];
+my $sEcho          = $var->{sEcho}->[0];
 
 # Initialization
 my $dbConn = Bio::EnsEMBL::Hive::URLFactory->fetch($url);
@@ -26,93 +32,82 @@ my $response = msg->new();
 
 if (defined $dbConn) {
     my $jobs;
-    my $params = {'analysis_id' => $analysis_id};
-    $params->{status} = $status if (defined $status);
+    my $njobs;
+    my ($constraints, $final_clause) = constraints($var);
     eval {
-      $jobs = $dbConn->get_AnalysisJobAdaptor()->fetch_all_by_analysis_id_status($analysis_id, $status || undef, undef);
+      ## TODO: If the jobs are very short, we get some inconsistency between the jobs fetched and the number of jobs
+      ## We can't assument that $njobs = scalar @$jobs because the $final_clause include a LIMIT
+      ## So, for now $njobs is "aproximate"
+      $jobs = $dbConn->get_AnalysisJobAdaptor()->_generic_fetch($constraints, undef, $final_clause);
+      $njobs = $dbConn->get_AnalysisJobAdaptor()->_generic_count($constraints);
     };
     if ($@) {
-	$response->err_msg("I can't retrieve jobs with analysis_id $analysis_id and status $status: $@");
+	$response->err_msg("I can't retrieve jobs with analysis_id $analysis_id: $@");
 	$response->status("FAILED");
     }
     if (! defined $jobs) {
-	$response->err_msg("I can't retrieve jobs with analysis_id $analysis_id and status $status: $@");
+	$response->err_msg("I can't retrieve jobs with analysis_id $analysis_id: $@");
 	$response->status("FAILED");
     }
-    $response->out_msg(formJobsInfo($jobs));
+    $response->out_msg(formJobsInfo($jobs, $analysis_id, $njobs));
 } else {
     $response->err_msg("The provided URL seems to be invalid. Please check the URL and try again");
     $response->status("FAILED");
 }
 
-print $response->toJSON;
+print encode_json($response->out_msg);
+#print $response->toJSON;
 
 sub formJobsInfo {
-# There is no method for prev_job_id. Should we include it?
-    my ($jobs) = @_;
-    my @all_jobs;
-    my @methods = qw/analysis_id input_id worker_id status retry_count completed runtime_msec query_count semaphore_count semaphored_job_id/;
-    my $adaptor = "AnalysisJob";
-    for my $job (@$jobs) {
-	my $job_id = $job->dbID();
-#       LogMessageAdaptor inherits from 
-	my $msg = fetch_last_error_for_jobid($job_id);
-#	my $msg = $dbConn->get_LogMessageAdaptor()->fetch_job_messages($job_id)->[0];
+  my ($jobs, $analysis_id, $iTotalDisplayRecords) = @_;
+  my $adaptor = "AnalysisJob";
 
-	my $unique_job_label = unique_job_label($job);
-      my $job_info = { job_id => $job_id,
-		       unique_job_label => $unique_job_label,
-		       analysis_id => $job->analysis_id(),
-		       JOB_INPUT_ID => formInputIDs($job, $unique_job_label, $adaptor),
-		       worker_id => $job->worker_id(),
-		       JOB_STATUS => [{
-				       status => $job->status(),
-				       job_label => $unique_job_label,
-				       adaptor => $adaptor,
-				       method => "status",
-				      }],
-		       JOB_RETRY_COUNT => [{
-					retry_count => $job->retry_count,
-					job_label => $unique_job_label,
-					adaptor => $adaptor,
-					method => "retry_count",
-				       }],
-		       completed => $job->completed(),
-		       runtime_msec => $job->runtime_msec(),
-		       query_count  => $job->query_count(),
-		       JOB_SEMAPHORE_COUNT => [{
-						semaphore_count => $job->semaphore_count(),
-						job_label => $unique_job_label,
-						adaptor => $adaptor,
-						method => "semaphore_count",
-					       }],
-		       JOB_SEMAPHORED_JOB_ID => [{
-						  semaphored_job_id => $job->semaphored_job_id(),
-						  job_label => $unique_job_label,
-						  adaptor => $adaptor,
-						  method => "semaphored_job_id",
-						 }],
-		       msg => $msg,
-		     };
+  my $iTotalRecords = $dbConn->get_AnalysisJobAdaptor()->_generic_count("analysis_id = $analysis_id");
+  my @aaData;
 
-      push @all_jobs, $job_info;
-    }
+  my $template = HTML::Template->new(filename=> $input_ids_template);
 
-    my $status_col_edit = {
-			   field => "status",
-			   adaptor => $adaptor,
-			   method => "status",
-			  };
-    my $retry_count_col_edit =  {
-				 field => "retry_count",
-				 adaptor => $adaptor,
-				 method => "retry_count",
-				};
-    my $template = HTML::Template->new(filename => $jobs_template);
-    $template->param('jobs' => [@all_jobs]);
-    $template->param('STATUS_COL_EDIT' => [$status_col_edit]);
-    $template->param('RETRY_COUNT_COL_EDIT' => [$retry_count_col_edit]);
-    return $template->output();
+  for my $job (@$jobs) {
+    my $job_id = $job->dbID();
+    my $msg = fetch_last_error_for_jobid($job_id);
+    my $unique_job_label = unique_job_label($job);
+    $template->param('JOB_INPUT_ID' => formInputIDs($job, $unique_job_label, $adaptor));
+    push @aaData, { "0" => { 'value' => $job_id,
+			     'id'    => $unique_job_label
+			   },
+		    "1" => $job->analysis_id(),
+		    "2" => $template->output(),
+		    "3" => $job->worker_id,
+		    "4" => { 'value'     => $job->status(),
+			     'job_label' => $unique_job_label,
+			     'adaptor'   => $adaptor,
+			     'method'    => "status"
+			   },
+		    "5" => { 'value'     => $job->retry_count(),
+			     'job_label' => $unique_job_label,
+			     'adaptor'   => $adaptor,
+			     'method'    => 'retry_count'
+			   },
+		    "6" => $job->completed(),
+		    "7" => $job->runtime_msec(),
+		    "8" => $job->query_count(),
+		    "9" => { 'value'     => $job->semaphore_count(),
+			     'job_label' => $unique_job_label,
+			     'adaptor'   => $adaptor,
+			     'method'    => 'semaphore_count'
+			   },
+		    "10" => $job->semaphored_job_id(),
+		    "11" => $msg,
+		  };
+  }
+  my $response = {
+		  "iTotalRecords" => $iTotalRecords,
+		  "iTotalDisplayRecords" => $iTotalDisplayRecords,
+		  "sEcho"  => $sEcho,
+		  "aaData" =>  [@aaData],
+		 };
+
+  return $response;
 }
 
 sub formInputIDs {
@@ -121,7 +116,8 @@ sub formInputIDs {
     my $existing_ids = [];
     for my $inputKeyID (keys %$input_id_hash) {
 	my $inputPair = {};
-	$inputPair->{inputKeyID} = $inputKeyID; # TODO: We may need stringify_if_needed here that is currently defined in db_fetch_analysis.pl
+	$inputPair->{inputKeyID}       = $inputKeyID; # TODO: We may need stringify_if_needed here
+	                                              #       that is currently defined in db_fetch_analysis.pl
 	$inputPair->{job_label}        = $unique_job_label;
 	$inputPair->{adaptor}          = $adaptor;
 	$inputPair->{method}           = "add_input_id";
@@ -158,5 +154,64 @@ sub fetch_last_error_for_jobid {
     
     my $errmsg = defined ($msg_key)? $all_msgs->{$msg_key}->{1} : "";
     return $errmsg;
+}
+
+sub constraints {
+  my ($var) = @_;
+  my @columns = qw/job_id analysis_id input_id worker_id status retry_count completed runtime_msec query_count semaphore_count semaphored_job_id msg/;
+
+  ## For more information on these values, please see:
+  # http://datatables.net/usage/server-side
+
+  ## GROUP & LIMIT:
+  my $iDisplayStart  = $var->{iDisplayStart}->[0];
+  my $iDisplayLength = $var->{iDisplayLength}->[0];
+
+  my $iSortCol_0     = $var->{iSortCol_0}->[0]; # The first column index we are sorting on
+  my $order_by       = $columns[$iSortCol_0];
+  my $order_dir      = $var->{sSortDir_0}->[0];
+  my $final_clause   = get_final_clause($order_by, uc($order_dir), $iDisplayStart, $iDisplayLength);
+  ## Constraints
+  my $analysis_id = $var->{analysis_id}->[0];
+  my %constraints = ('analysis_id' => $analysis_id);
+  for (my $i = 0; $i < scalar @columns; $i++) {
+    my $sSearch = $var->{"sSearch_$i"}->[0];
+    next if (!$sSearch || $sSearch eq '~');
+    if ($sSearch =~ /~/) {
+      ## Range
+      my ($from, $to) = split /~/, $sSearch;
+      $constraints{$columns[$i]} = [$from, $to];
+    } else {
+      if ($var->{"bRegex_$i"}->[0] eq "true") {
+	$constraints{$columns[$i]} = [$sSearch];
+      } else {
+	$constraints{$columns[$i]} = $sSearch;
+      }
+    }
+  }
+  return (_merge_constraints(\%constraints), $final_clause);
+}
+
+sub _merge_constraints {
+  my ($constraints) = @_;
+  my @constraints_strs = ();
+  for my $constr (keys %$constraints) {
+    if (ref ($constraints->{$constr}) eq "ARRAY") {
+      if (scalar @{$constraints->{$constr}} > 1) {
+	push @constraints_strs, "$constr >= " . $constraints->{$constr}->[0];
+	push @constraints_strs, "$constr <= " . $constraints->{$constr}->[1];
+      } else {
+	push @constraints_strs, "$constr LIKE '%" . $constraints->{$constr}->[0] . "%'";
+      }
+    } else {
+      push @constraints_strs, "$constr = '" . $constraints->{$constr}. "'";
+    }
+  }
+  return join " AND ", @constraints_strs;
+}
+
+sub get_final_clause {
+  my ($order_by, $dir, $iDisplayStart, $iDisplayLength) = @_;
+  return   "ORDER BY $order_by $dir LIMIT $iDisplayStart, $iDisplayLength";
 }
 

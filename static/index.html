@@ -39,6 +39,8 @@
 <script src="/javascript/legend.js"></script>
 <script src="/javascript/pipeline_diagram.js"></script>
 <script src="/javascript/pieChart.js"></script>
+<script src="/javascript/bubblesCloud.js"></script>
+<script src="/javascript/bubbles_cloud.js"></script>
 <script src="/javascript/hStackedBarChart.js"></script>
 <script src="/javascript/ajax.js"></script>
 
@@ -92,14 +94,32 @@
     </div>
   </div>
 
-  <div id="jobs" class="tab-pane"></div>
+  <div id="jobs" class="tab-pane">
+    <div id="jobs_form"></div>
+    <div id="jobs_table_div"></div>
+  </div>
 
   <div id="analysis_summary" class="tab-pane"></div>
 
   <div id="resource_details" class="tab-pane"></div>
 
   <div id="views" class="tab-pane">
-    <p>Empty for now</p>
+    <div id="bubbles">
+
+      <input type=button id="job-counts" value="Job Counts"></input>
+      <input type=button id="job-time" value="Avg Job Time"></input>
+      <input type=button id="mem" value="Memory used"></input>
+      <input type=button id="mem-resource" value="Used vs reserved Mem"></input>
+	     
+      <div>
+        <input type=button id="one-sun" value="All"></input>
+        <input type=button id="two-suns" value="Display by meadow type"></input>
+      </div>
+      <div>
+        Bubble size: 
+        <input type=range  id="max-size" value=50 min=20 max=80 step=1></input>
+      </div>
+    </div>
   </div>
 
   <div id="logContainer" class="tab-pane">

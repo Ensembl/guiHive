@@ -18,6 +18,7 @@ package new_hive_methods;
 
 use strict;
 use warnings;
+use Data::Dumper;
 no warnings "once";
 
 use Bio::EnsEMBL::Hive::Utils qw/stringify destringify/;
@@ -74,9 +75,10 @@ use Bio::EnsEMBL::Hive::Utils qw/stringify destringify/;
 # native method of the object
 *Bio::EnsEMBL::Hive::Analysis::add_param = sub {
     my ($self, $key, $value) = @_;
+    my $var = eval $value;
     my $curr_raw_parameters = $self->parameters;
     my $curr_parameters = Bio::EnsEMBL::Hive::Utils->destringify($curr_raw_parameters);
-    $curr_parameters->{$key} = $value;
+    $curr_parameters->{$key} = $var;
     my $new_raw_parameters = Bio::EnsEMBL::Hive::Utils->stringify($curr_parameters);
     $self->parameters($new_raw_parameters);
     return;
@@ -149,9 +151,9 @@ use Bio::EnsEMBL::Hive::Utils qw/stringify destringify/;
   $sql .= ",status='" . $job->status . "'";
   $sql .= ",retry_count=" . $job->retry_count;
   $sql .= ",semaphore_count=" . $job->semaphore_count;
-  $sql .= ",semaphored_job_id=" . $job->semaphored_job_id;
+  $sql .= ",semaphored_job_id=" . $job->semaphored_job_id if (defined $job->semaphored_job_id);
   $sql .= " WHERE job_id=" . $job->dbID;
-
+  print STDERR "$sql\n";
   my $sth = $self->prepare($sql);
   $sth->execute();
   $sth->finish();
@@ -159,6 +161,38 @@ use Bio::EnsEMBL::Hive::Utils qw/stringify destringify/;
   unless ($job->completed) {
     $self->update_status($job);
   }
+};
+
+## Method to get all the jobs in the database
+## Too tricky. It would be better to have a _generic_count directly in the AnalysisJob adaptor
+## or better still in Hive's BaseAdaptor
+*Bio::EnsEMBL::Hive::DBSQL::AnalysisJobAdaptor::_generic_count = sub {
+  my ($self, $constraints) = @_;
+
+  # We save previous _columns and _objs_from_sth methods
+  my $old_columns = *Bio::EnsEMBL::Hive::DBSQL::AnalysisJobAdaptor::_columns;
+  my $old_objs_from_sth = *Bio::EnsEMBL::Hive::DBSQL::AnalysisJobAdaptor::_objs_from_sth;
+
+  # _columns and _objs_from_sth methods are redefined
+  no warnings 'redefine';
+  *Bio::EnsEMBL::Hive::DBSQL::AnalysisJobAdaptor::_columns = sub {
+    return "COUNT(*)";
+  };
+  *Bio::EnsEMBL::Hive::DBSQL::AnalysisJobAdaptor::_objs_from_sth = sub {
+    my ($self, $sth) = @_;
+    my ($n) = $sth->fetchrow_array();
+    $sth->finish();
+    return $n;
+  };
+
+  ## We call _generic_fetch as usual and get back only the count
+  my $n = $self->_generic_fetch($constraints);
+
+  ## We reassign the _columns and _objs_from_sth to their original form
+  *Bio::EnsEMBL::Hive::DBSQL::AnalysisJobAdaptor::_columns = $old_columns;
+  *Bio::EnsEMBL::Hive::DBSQL::AnalysisJobAdaptor::_objs_from_sth = $old_objs_from_sth;
+
+  return $n;
 };
 
 1;

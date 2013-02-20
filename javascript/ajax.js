@@ -48,8 +48,15 @@ $(document).ready(function() {
 		type       : "post",
 		data       : "url=" + $("#db_url").val(),
 		dataType   : "json",
+		timeout    : 10000,
 		beforeSend : function() {showProcessing($("#connexion_msg"))},
-		success    : onSuccess_dbConnect
+		success    : onSuccess_dbConnect,
+		error      : function (x, t, m) {
+		    if(t==="timeout") {
+			log({err_msg : "No response from mysql sever for 10s. Try it later"});
+			$("#connexion_msg").empty();
+		    }
+		}
 	       });
     });
 }); 
@@ -75,7 +82,8 @@ function refresh_data_and_views(callback) {
     $.ajax({url      : "/scripts/db_fetch_all_analysis.pl",
 	    type     : "post",
 	    data     : "url=" + $("#db_url").val(),
-	    async    : analysis_board != undefined,
+	    async    : guiHive.analysis_board != undefined,
+	    timeout  : 10000,
 	    dataType : "json",
 	    success  : function(allAnalysisRes) {
 		if(allAnalysisRes.status != "ok") {
@@ -88,7 +96,11 @@ function refresh_data_and_views(callback) {
 		    console.log("OK");
 		}
 	    },
-//	    complete : reset_time_to_refresh,
+	    error    : function (x, t, m) {
+		if(t==="timeout") {
+		    log({err_msg : "No response from mysql sever for 10s. No refresh this time"});
+		}
+	    }
 	   });
 }
 
@@ -124,6 +136,16 @@ function onSuccess_dbConnect(res) {
     // Showing the resources
     $("#show_resources").trigger('click');  // TODO: Best way to handle?
 
+    // We load the jobs form
+    $.get('/scripts/db_jobs_form.pl', {url : guiHive.pipeline_url} ,function(data) {
+	$('#jobs_form').html(data);
+	listen_jobs();
+    });
+    // and table
+    $.get('/static/jobs_table.html', function(data) {
+	$("#jobs_table_div").append(data);
+    });
+    
     // Now we start monitoring the analyses.
     initialize_views_and_refresh();
 
@@ -158,6 +180,8 @@ function change_refresh_time() {
 
 function listen_config() {
     $("#select_refresh_time").change(change_refresh_time);
+
+    // TODO: This shouldn't be here. This button is not in the config pane anymore
     $("#ClearLog").click(function(){$("#log").html("Log"); $("#log-tab").css("color","#B8B8B8")});
 }
 
@@ -176,9 +200,158 @@ function listen_Resources(fetch_url) {
 	update_db);
 }
 
+function listen_jobs() {
+    $("#jobs_select").change(fetch_jobs);
+}
+
+// This is the new jobs table with server-side processing
+function fetch_jobs() {
+    var analysis_id = $(this).find(":selected").val();
+    
+    var oTable = $('#jobs_table').dataTable( {
+	"aoColumnDefs"  : [
+	    { "fnCreatedCell"  : function(elem, cellData, rowData, rowIndex, colIndex) {
+		$(elem).attr("data-method", rowData[colIndex].method);
+		$(elem).attr("data-adaptor", rowData[colIndex].adaptor);
+		$(elem).attr("data-linkTo", rowData[colIndex].job_label);
+	    }, "aTargets" : [4,5,9]
+	    },
+	    { "fnCreatedCell" : function(elem, cellData, rowData, rowIndex, colIndex) {
+		$(elem).attr("id", rowData[0].id);
+	    }, "aTargets" : [0]
+	    },
+	    { "mRender"   : "value", "aTargets" : [0,4,5,9] },
+
+	    { "bSortable" : false, "aTargets" : [1,2,4,10,11] },
+	    { "sClass"    : "editableStatus" , "aTargets" : [4] },
+	    { "sClass"    : "editableRetries", "aTargets" : [5] },
+	    //	    { "bVisible": false, "aTargets": [ 3,7,8,9,10 ] },
+	],
+	"bServerSide"   : true,
+	"bProcessing"   : true,
+	"sAjaxSource"   : "/scripts/db_fetch_jobs.pl?url=" + guiHive.pipeline_url + "&analysis_id=" + analysis_id,
+	"sDom": 'C<"clear">lfrtip',
+	"bRetrieve"     : false,
+	"bDestroy"      : true,
+//	"oColVis": {
+//	    "aiExclude": [ 0,1 ],
+//	},
+	"fnDrawCallback" : function() {
+	    // Delete input_id key/value pairs
+	    $(".delete_input_id").click(function(){var sel = this;
+						   $.ajax({url       : "/scripts/db_update2.pl",
+							   type      : "post",
+							   data      : jQuery.param(buildSendParams(sel)),
+							   dataType  : "json",
+							   async     : false,
+							   cache     : false,
+							   success   : function() {
+							       oTable.fnDraw();
+							   }
+							  });
+						  }
+				       );
+
+	    // Global updaters work on all the visible fields of the dataTable.
+	    $('.update_param_all').change(function() {
+		column = $(this).attr("data-column");
+		column_index = $(this).attr("data-column-index");
+
+		var job_ids = [];
+		$.each(oTable._('tr', {"filter":"applied"}), function(i,v) { // applied to all visible rows via the _ method
+ 		    // TODO: There seems to be a bug here
+		    // Now we have 1 extra row that is null
+		    // I think this happens since we have introduced the tables in the input_id field.
+ 		    // Take a look to debug!
+		    if (v != null) {
+			job_ids.push(v[0].value); // pushed the job_ids (first column). TODO: More portable way
+		    }
+		});
+
+		var sel = this;
+		$.ajax({url      : "/scripts/db_update2.pl",
+			type     : "post",
+			data     : jQuery.param(buildSendParams(sel)) + "&dbID=" + job_ids.join() + "&value=" + $(sel).val(),
+			dataType : "json",
+			async    : false,
+			cache    : false,
+			success  : function () {
+			    oTable.fnDraw();
+			}
+		       });
+		    
+		// We return to default in the select
+		$(this).children('option:selected').removeAttr("selected");
+		$(this).children('option:first-child').attr("selected","selected");
+	    });
+
+	    oTable.$("td.editableInputID").editable("/scripts/db_update2.pl", {
+		indicator  : "Saving...",
+		tooltip    : "Click to edit...",
+		event      : "dblclick",
+		callback   : function(response) {
+		    oTable.fnDraw();
+		},
+		submitdata : function() {
+		    return (buildSendParams(this));
+		}
+	    });
+
+	    oTable.$("td.editableStatus").editable("/scripts/db_update2.pl", {
+		indicator  : "Saving...",
+		tooltip    : "Click to edit...",
+		data       : "{'SEMAPHORED':'SEMAPHORED','READY':'READY','RUN':'RUN','DONE':'DONE'}",
+		type       : "select",
+		submit     : "Ok",
+		event      : "dblclick",
+		callback   : function(response) {
+		    oTable.fnDraw();
+		},
+		submitdata : function() {
+		    return (buildSendParams(this));
+		}
+	    });
+    
+	    oTable.$("td.editableRetries").each(function() {
+		var job_id = $(this).attr("data-linkTo");
+		$(this).editable("/scripts/db_update2.pl", {
+		    indicator  : "Saving...",
+		    tooltip    : "Click to edit...",
+		    loadurl    : "/scripts/db_fetch_max_retry_count.pl?url=" + guiHive.pipeline_url + "&job_id=" + job_id,
+		    type       : "select",
+		    submit     : "Ok",
+		    event      : "dblclick",
+		    callback   : function(response) {
+			oTable.fnDraw();
+		    },
+		    submitdata : function() {
+			return (buildSendParams(this))
+		    }
+		});
+	    });
+	    
+	},
+    }).columnFilter( {
+	aoColumns : [ { type : "number" },
+		      { type : "number" },
+		      { type : "text", bRegex : true },
+		      { type : "number" },
+		      { type : "select", values: [ 'SEMAPHORED', 'READY', 'DONE', 'FAILED', 'RUN' ] },
+		      { type : "number-range" },
+		      { type : "date-range" },
+		      { type : "number-range" },
+		      { type : "number" },
+		      { type : "number" },
+		      { type : "number" },
+		      { type : "text", bRegex : true }
+		    ],
+    });
+
+}
+
 // res is the JSON-encoded response from the server in the Ajax call
 function onSuccess_fetchAnalysis(analysisRes, analysis_id, fetch_url) {
-    if(analysisRes.status == "ok") {
+    if(analysisRes.status === "ok") {
 	// We first empty any previous analysis displayed -- TODO: Not harmful, but... needed?
 	$("#analysis_details").empty();
 	// We also remove any jobs_chart we may have
@@ -226,172 +399,170 @@ function listen_Analysis(analysis_id, fetch_url) {
 }
 
 // TODO: Currently, analysis_id and fetch_url are not being used
-function onSuccess_fetchJobs(jobsRes, analysis_id, fetch_url) {
-    if(jobsRes.status == "ok") {
-	// Datepicker format
-	$.datepicker.regional[""].dateFormat = 'dd/mmo/yy';
-	$.datepicker.setDefaults($.datepicker.regional['']);
+// function onSuccess_fetchJobs(jobsRes, analysis_id, fetch_url) {
+//     if(jobsRes.status === "ok") {
+// 	console.log("JOBS_FETCHED");
+// 	// Datepicker format
+// 	$.datepicker.regional[""].dateFormat = 'dd/mmo/yy';
+// 	$.datepicker.setDefaults($.datepicker.regional['']);
 
-	var jobs_header = "<h4>Jobs</h4>";
-	$("#jobs").html(jobs_header + jobsRes.out_msg);
+// 	var jobs_header = "<h4>Jobs</h4>";
+// 	$("#jobs").html(jobs_header + jobsRes.out_msg);
 
-	// Listener to delete_input_id button:
-	$(".delete_input_id").click(function(){var sel = this;
-					       $.ajax({url       : "/scripts/db_update2.pl",
-						       type      : "post",
-						       data      : jQuery.param(buildSendParams(sel)),
-						       dataType  : "json",
-						       async     : false,
-						       cache     : false,
-						       success   : function() {display(analysis_id, "/scripts/db_fetch_jobs.pl", onSuccess_fetchJobs)}
-						      });
-					      }
-				   );
+// 	// Listener to delete_input_id button:
+// 	$(".delete_input_id").click(function(){var sel = this;
+// 					       $.ajax({url       : "/scripts/db_update2.pl",
+// 						       type      : "post",
+// 						       data      : jQuery.param(buildSendParams(sel)),
+// 						       dataType  : "json",
+// 						       async     : false,
+// 						       cache     : false,
+// 						       success   : function() {display(analysis_id, "/scripts/db_fetch_jobs.pl", onSuccess_fetchJobs)}
+// 						      });
+// 					      }
+// 				   );
 
 
-	// We convert the whole job table in a dataTable
-	var oTable = $('#jobs_table').dataTable({
-	    "sDom": 'C<"clear">lfrtip',
-	    "aoColumnDefs": [
-		{ "bVisible": false, "aTargets": [ 3,7,8,9,10 ] }
-	    ],
-	    "oColVis": {
-		"aiExclude": [ 0,1 ],
-	    },
-	}).columnFilter( {
-		aoColumns : [ { type : "number" },
-			      { type : "number" },
-			      { type : "text"   },
-			      { type : "number" },
-			      { type : "select", values: [ 'SEMAPHORED', 'READY', 'DONE', 'FAILED', 'RUN' ] },
-			      { type : "number-range" },
-			      { type : "date-range" },
-			      { type : "number" },
-			      { type : "number" },
-			      { type : "number" },
-			      { type : "number" }
-			    ],
-	    });
+// 	// We convert the whole job table in a dataTable
+// 	var oTable = $('#jobs_table').dataTable({
+// 	    "sDom": 'C<"clear">lfrtip',
+// 	    "aoColumnDefs": [
+// 		{ "bVisible": false, "aTargets": [ 3,7,8,9,10 ] }
+// 	    ],
+// 	    "oColVis": {
+// 		"aiExclude": [ 0,1 ],
+// 	    },
+// 	}).columnFilter( {
+// 		aoColumns : [ { type : "number" },
+// 			      { type : "number" },
+// 			      { type : "text"   },
+// 			      { type : "number" },
+// 			      { type : "select", values: [ 'SEMAPHORED', 'READY', 'DONE', 'FAILED', 'RUN' ] },
+// 			      { type : "number-range" },
+// 			      { type : "date-range" },
+// 			      { type : "number" },
+// 			      { type : "number" },
+// 			      { type : "number" },
+// 			      { type : "number" },
+// 			      { type : "text"   }
+// 			    ],
+// 	    });
 
-	// We attach global updaters. Maybe this can be inserted as datatable's fnInitComplete event
-	// Global updaters work on all the visible fields of the dataTable.
-	$('.update_param_all').change(function() {
-	    column = $(this).attr("data-column");
-	    column_index = $(this).attr("data-column-index");
+// 	// We attach global updaters. Maybe this can be inserted as datatable's fnInitComplete event
+// 	// Global updaters work on all the visible fields of the dataTable.
+// 	$('.update_param_all').change(function() {
+// 	    column = $(this).attr("data-column");
+// 	    column_index = $(this).attr("data-column-index");
 
-	    var job_ids = [];
-	    $.each(oTable._('tr', {"filter":"applied"}), function(i,v) { // applied to all visible rows via the _ method
-		// TODO: There seems to be a bug here
-		// Now we have 1 extra row that is null
-		// I think this happens since we have introduced the tables in the input_id field.
-		// Take a look to debug!
-		if (v != null) {
-		    job_ids.push(v[0]); // pushed the job_ids (first column). TODO: More portable way?
-		}
-	    });
+// 	    var job_ids = [];
+// 	    $.each(oTable._('tr', {"filter":"applied"}), function(i,v) { // applied to all visible rows via the _ method
+// 		// TODO: There seems to be a bug here
+// 		// Now we have 1 extra row that is null
+// 		// I think this happens since we have introduced the tables in the input_id field.
+// 		// Take a look to debug!
+// 		if (v != null) {
+// 		    job_ids.push(v[0]); // pushed the job_ids (first column). TODO: More portable way
+// 		}
+// 	    });
 
-	    var sel = this;
-	    $.ajax({url      : "/scripts/db_update2.pl",
-		    type     : "post",
-		    data     : jQuery.param(buildSendParams(sel)) + "&dbID=" + job_ids.join() + "&value=" + $(sel).val(),
-		    dataType : "json",
-		    async    : false,
-		    cache    : false,
-		    success  : function () {
-			$.each(oTable.$('tr', {"filter":"applied"}), function(i,v) {
-			    // TODO: There seems to be a bug here
-			    // Now we have 1 extra row that is null (see above)
-			    var tr = $(v)[0];
-			    var aPos = oTable.fnGetPosition(tr);
-			    oTable.fnUpdate($(sel).val(), aPos, column_index);
-			});
-		    }
-//		    complete : function() {$(button).trigger('click')},
-//		    complete : display(analysis_id, fetch_url, onSuccess_fetchJobs)
-		   });
+// 	    var sel = this;
+// 	    $.ajax({url      : "/scripts/db_update2.pl",
+// 		    type     : "post",
+// 		    data     : jQuery.param(buildSendParams(sel)) + "&dbID=" + job_ids.join() + "&value=" + $(sel).val(),
+// 		    dataType : "json",
+// 		    async    : false,
+// 		    cache    : false,
+// 		    success  : function () {
+// 			$.each(oTable.$('tr', {"filter":"applied"}), function(i,v) {
+// 			    // TODO: There seems to be a bug here
+// 			    // Now we have 1 extra row that is null (see above)
+// 			    var tr = $(v)[0];
+// 			    var aPos = oTable.fnGetPosition(tr);
+// 			    oTable.fnUpdate($(sel).val(), aPos, column_index);
+// 			});
+// 		    }
+// 		   });
 		    
-	    // TODO: In principle this is not needed because we re-create the table on column updates (or we should!)
-	    $(this).children('option:selected').removeAttr("selected");
-	    $(this).children('option:first-child').attr("selected","selected");
-	});
+// 	    // TODO: In principle this is not needed because we re-create the table on column updates (or we should!)
+// 	    $(this).children('option:selected').removeAttr("selected");
+// 	    $(this).children('option:first-child').attr("selected","selected");
+// 	});
 
-	// We have individual jeditable fields specialized by columns
-	oTable.$("td.editableRetries").each(function() {
-	    var job_id = $(this).attr("data-linkTo");
-	    $(this).editable("/scripts/db_update2.pl", {
-		indicator  : "Saving...",
-		tooltip    : "Click to edit...",
-		loadurl    : "/scripts/db_fetch_max_retry_count.pl?url=" + guiHive.pipeline_url + "&job_id=" + job_id,
-		type       : "select",
-		submit     : "Ok",
-		event      : "dblclick",
-		callback   : function(response) {editableCallback.call(this, response, oTable)},
-		submitdata : function() { return (buildSendParams(this)) }
-	    });
-	});
+// 	// We have individual jeditable fields specialized by columns
+// 	oTable.$("td.editableRetries").each(function() {
+// 	    var job_id = $(this).attr("data-linkTo");
+// 	    $(this).editable("/scripts/db_update2.pl", {
+// 		indicator  : "Saving...",
+// 		tooltip    : "Click to edit...",
+// 		loadurl    : "/scripts/db_fetch_max_retry_count.pl?url=" + guiHive.pipeline_url + "&job_id=" + job_id,
+// 		type       : "select",
+// 		submit     : "Ok",
+// 		event      : "dblclick",
+// 		callback   : function(response) {editableCallback.call(this, response, oTable)},
+// 		submitdata : function() { return (buildSendParams(this)) }
+// 	    });
+// 	});
 
-	oTable.$("td.editableInputID").editable("/scripts/db_update2.pl", {
-	    indicator  : "Saving...",
-	    tooltip    : "Click to edit...",
-	    event      : "dblclick",
-	    //		callback   : function(response) {innerEditableCallback.call(this, response, job_id)},
-	    callback   : function(response) {
-		var needsReload = $(this).attr("data-needsReload");
-		if (needsReload == 1) {
-		    display(analysis_id, "/scripts/db_fetch_jobs.pl", onSuccess_fetchJobs);
-		} else {innerEditableCallback.call(this, response)}
-	    },
-	    submitdata : function() { return (buildSendParams(this)) }
-	});
+// 	oTable.$("td.editableInputID").editable("/scripts/db_update2.pl", {
+// 	    indicator  : "Saving...",
+// 	    tooltip    : "Click to edit...",
+// 	    event      : "dblclick",
+// 	    callback   : function(response) {
+// 		var needsReload = $(this).attr("data-needsReload");
+// 		if (needsReload === 1) {
+// 		    display(analysis_id, "/scripts/db_fetch_jobs.pl", onSuccess_fetchJobs);
+// 		} else {innerEditableCallback.call(this, response)}
+// 	    },
+// 	    submitdata : function() { return (buildSendParams(this)) }
+// 	});
 
-	oTable.$("td.editableStatus").editable("/scripts/db_update2.pl", {
-	    indicator  : "Saving...",
-	    tooltip    : "Click to edit...",
-	    data       : "{'SEMAPHORED':'SEMAPHORED','READY':'READY','RUN':'RUN','DONE':'DONE'}",
-	    type       : "select",
-	    submit     : "Ok",
-	    event      : "dblclick",
-	    callback   : function(response) {editableCallback.call(this, response, oTable)},
-	    submitdata : function() { return (buildSendParams(this)) }
-	});
+// 	oTable.$("td.editableStatus").editable("/scripts/db_update2.pl", {
+// 	    indicator  : "Saving...",
+// 	    tooltip    : "Click to edit...",
+// 	    data       : "{'SEMAPHORED':'SEMAPHORED','READY':'READY','RUN':'RUN','DONE':'DONE'}",
+// 	    type       : "select",
+// 	    submit     : "Ok",
+// 	    event      : "dblclick",
+// 	    callback   : function(response) {editableCallback.call(this, response, oTable)},
+// 	    submitdata : function() { return (buildSendParams(this)) }
+// 	});
 
-	// TODO: I think this action over td.editable is not needed because we have
-	// to have specialised sections above (not sure though -- double-check)
-	oTable.$("td.editable").editable("/scripts/db_update2.pl", {
-	    indicator  : 'Saving...',
-	    tooltip    : 'Click to edit...',
-	    event      : "dblclick",
-	    callback   : function(response) {editableCallback.call(this, response, oTable)},
-	    submitdata : function() { return (buildSendParams(this)) }
-	});
+// 	// TODO: I think this action over td.editable is not needed because we have
+// 	// to have specialised sections above (not sure though -- double-check)
+// 	oTable.$("td.editable").editable("/scripts/db_update2.pl", {
+// 	    indicator  : 'Saving...',
+// 	    tooltip    : 'Click to edit...',
+// 	    event      : "dblclick",
+// 	    callback   : function(response) {editableCallback.call(this, response, oTable)},
+// 	    submitdata : function() { return (buildSendParams(this)) }
+// 	});
 
-    } else {
-	log(jobsRes);
-//	$("#log").append(jobsRes.err_msg); scroll_down();
-	$("#connexion_msg").html(jobsRes.status);
-    }
-}
+//     } else {
+// 	log(jobsRes);
+// 	$("#connexion_msg").html(jobsRes.status);
+//     }
+// }
 
-function innerEditableCallback(response) {
-    var value = jQuery.parseJSON(response);
-    $(this).html(value.out_msg);
+// function innerEditableCallback(response) {
+//     var value = jQuery.parseJSON(response);
+//     $(this).html(value.out_msg);
 
-    // If there exist a sibling with data-newvalueID then we activate it
-    var val_sibling_id = $(this).attr("data-newValueID");
-    if (val_sibling_id != undefined) {
-	var val_sibling = $("#" + val_sibling_id);
-	var key = $(this).html();
-	val_sibling.addClass("editableInputID");
-	val_sibling.attr("data-key", key);
-	doEditableInputID();
-    }
-}
+//     // If there exist a sibling with data-newvalueID then we activate it
+//     var val_sibling_id = $(this).attr("data-newValueID");
+//     if (val_sibling_id != undefined) {
+// 	var val_sibling = $("#" + val_sibling_id);
+// 	var key = $(this).html();
+// 	val_sibling.addClass("editableInputID");
+// 	val_sibling.attr("data-key", key);
+// 	doEditableInputID();
+//     }
+// }
 
-function editableCallback(response, oTable) {
-    var aPos = oTable.fnGetPosition(this);
-    var value = jQuery.parseJSON(response);
-    oTable.fnUpdate( value.out_msg, aPos[0], aPos[1] );
-}
+// function editableCallback(response, oTable) {
+//     var aPos = oTable.fnGetPosition(this);
+//     var value = jQuery.parseJSON(response);
+//     oTable.fnUpdate( value.out_msg, aPos[0], aPos[1] );
+// }
 
 function buildSendParams(obj) {
     var value = "";
@@ -423,7 +594,7 @@ function update_db(obj) {
     var url = obj.data.script;
     var fetch_url = obj.data.fetch_url;
     var analysis_id = obj.data.analysis_id;
-    $.ajax({url        : guiHive.pipeline_url,
+    $.ajax({url        : url, //guiHive.pipeline_url,
 	    type       : "post",
 	    data       : buildURL(this),
 	    dataType   : "json",
@@ -488,10 +659,7 @@ function scroll_down() {
 }
 
 function log(res) {
-    console.log("LOG IS CALLED");
     if (res.err_msg !== "") {
-	console.log("AND ERR_MSG IS NOT EMPTY");
-	console.log(res.err_msg);
 	$("#log").append(res.err_msg); scroll_down();
 	$("#log-tab").css("color","red");
     }

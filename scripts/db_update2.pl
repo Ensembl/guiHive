@@ -4,6 +4,7 @@ use strict;
 use warnings;
 
 use Bio::EnsEMBL::Hive::URLFactory;
+use Bio::EnsEMBL::Hive::Queen;
 
 use JSON::XS;
 
@@ -14,7 +15,7 @@ use new_hive_methods;
 # and put the corresponding field in the inner cell
 use msg;
 
-my $json_data = shift @ARGV || '{"adaptor":["AnalysisJob"],"method":["add_input_id_key"],"url":["mysql://ensadmin:ensembl@127.0.0.1:2912/mp12_long_mult"],"dbID":["7"],"value":["pkpp"]}'; #'{"analysis_id":["2"],"adaptor":["ResourceDescription"],"method":["parameters"],"args":["-C0 -M8000000  -R\"select[mem>8000]  rusage[mem=8000]\""],"url":["mysql://ensadmin:ensembl@127.0.0.1:2912/mp12_compara_nctrees_69a2"]}'; #'{"url":["mysql://ensro@127.0.0.1:2912/mp12_compara_nctrees_69b"], "column_name":["parameters"], "analysis_id":["27"], "newval":["cmalign_exe"]}';
+my $json_data = shift @ARGV || '{"adaptor":["AnalysisJob"],"method":["status"],"url":["mysql://ensadmin:ensembl@127.0.0.1:2911/mp12_long_mult"],"value":["DONE"],"dbID":["3,9"]}'; #'{"analysis_id":["2"],"adaptor":["ResourceDescription"],"method":["parameters"],"args":["-C0 -M8000000  -R\"select[mem>8000]  rusage[mem=8000]\""],"url":["mysql://ensadmin:ensembl@127.0.0.1:2912/mp12_compara_nctrees_69a2"]}'; #'{"url":["mysql://ensro@127.0.0.1:2912/mp12_compara_nctrees_69b"], "column_name":["parameters"], "analysis_id":["27"], "newval":["cmalign_exe"]}';
 
 print STDERR "$json_data\n";
 
@@ -59,7 +60,7 @@ if (defined $dbConn) {
 
   for my $obj (@$objs) {
     eval {
-	print STDERR "$obj->$method(@args)\n";
+      print STDERR "$obj->$method(@args)\n";
       $obj->$method(@args);
       $obj->adaptor->update($obj);
     };
@@ -79,6 +80,13 @@ if (defined $dbConn) {
 	    $response->out_msg($obj->$method()||$args[0]);
 	}
     }
+  }
+  ## If we change something in the job table, we need to sync the hive to
+  ## reflect the changes in the analysis_stats table
+  ## We assume that only one analysis_id is changed
+  ## If there may be more, we should change synchronize_AnalysisStats for synchronize_hive (without arguments)
+  if ($adaptor_name  =~ /AnalysisJob/) {
+    $dbConn->get_Queen()->synchronize_AnalysisStats($dbConn->get_AnalysisAdaptor->fetch_by_dbID($objs->[0]->analysis_id)->stats);
   }
 
 } else {
