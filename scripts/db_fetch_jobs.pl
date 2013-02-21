@@ -62,7 +62,7 @@ sub formJobsInfo {
   my ($jobs, $analysis_id, $iTotalDisplayRecords) = @_;
   my $adaptor = "AnalysisJob";
 
-  my $iTotalRecords = $dbConn->get_AnalysisJobAdaptor()->_generic_count("analysis_id = $analysis_id");
+  my $iTotalRecords = $dbConn->get_AnalysisJobAdaptor()->_generic_count("analysis_id = '$analysis_id'");
   my @aaData;
 
   my $template = HTML::Template->new(filename=> $input_ids_template);

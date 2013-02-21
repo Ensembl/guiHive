@@ -153,7 +153,6 @@ use Bio::EnsEMBL::Hive::Utils qw/stringify destringify/;
   $sql .= ",semaphore_count=" . $job->semaphore_count;
   $sql .= ",semaphored_job_id=" . $job->semaphored_job_id if (defined $job->semaphored_job_id);
   $sql .= " WHERE job_id=" . $job->dbID;
-  print STDERR "$sql\n";
   my $sth = $self->prepare($sql);
   $sth->execute();
   $sth->finish();
