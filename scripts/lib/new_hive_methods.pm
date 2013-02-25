@@ -76,6 +76,7 @@ use Bio::EnsEMBL::Hive::Utils qw/stringify destringify/;
 *Bio::EnsEMBL::Hive::Analysis::add_param = sub {
     my ($self, $key, $value) = @_;
     my $var = eval $value;
+    $var = $value unless(defined $var);
     my $curr_raw_parameters = $self->parameters;
     my $curr_parameters = Bio::EnsEMBL::Hive::Utils->destringify($curr_raw_parameters);
     $curr_parameters->{$key} = $var;
