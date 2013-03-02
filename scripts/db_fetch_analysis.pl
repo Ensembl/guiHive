@@ -56,7 +56,7 @@ sub formAnalysisInfo {
   $info->{module}            = [
 				{module  => $analysis->module(),
 				 id      => $analysis->dbID(),
-				 adaptor => "analysisAdaptor",
+				 adaptor => "Analysis",
 				 method  => "update_module",
 				}
 			       ];
@@ -136,7 +136,7 @@ sub module_mappings {
   return [
 	  {"module"  => $module,
 	   "id"      => $obj->dbID,
-	   "adaptor" => "analysis",
+	   "adaptor" => "Analysis",
 	   "method"  => "module",
 	  }
 	 ];
@@ -147,7 +147,7 @@ sub template_mappings_PARAMS {
   my $curr_raw_val = $obj->$method;
   my $curr_val = eval $curr_raw_val;
   my $vals;
-  my $adaptor = "analysis";
+  my $adaptor = "Analysis";
   my $i = 0;
   for my $param (keys %$curr_val) {
     push @{$vals->{existing_parameters}}, {
