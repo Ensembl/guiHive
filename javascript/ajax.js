@@ -13,6 +13,7 @@ var guiHive = {
                                     // generated views (like the jobs_chart that is generated and destroyed on demand)
                                     // Instead of storing here an array of views, we store a closure that knows how to generate them
                                     // and how to update them once the analysis_board is updated
+    databaseConnectionTimeout : 30000,
 };
 
 // wait for the DOM to be loaded 
@@ -48,7 +49,7 @@ $(document).ready(function() {
 		type       : "post",
 		data       : "url=" + $("#db_url").val(),
 		dataType   : "json",
-		timeout    : 10000,
+		timeout    : guiHive.databaseConnectionTimeout,
 		beforeSend : function() {showProcessing($("#connexion_msg"))},
 		success    : onSuccess_dbConnect,
 		error      : function (x, t, m) {
