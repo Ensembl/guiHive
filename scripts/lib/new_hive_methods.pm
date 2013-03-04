@@ -23,6 +23,18 @@ no warnings "once";
 
 use Bio::EnsEMBL::Hive::Utils qw/stringify destringify/;
 
+# Analysis' module should check that the module exists and is compilable
+*Bio::EnsEMBL::Hive::Analysis::update_module = sub {
+    my $self = shift;
+    $self->{'_module'} = shift if(@_ && do{
+	my $module = $_[0];
+	eval "require $module";
+	die "The module '$module' can't be loaded: $@\n" if ($@);
+	die "Problem accessing methods in '$module'. Please check that it inherits from Bio::EnsEMBL::Hive::Process and is named correctly\n" unless ($module->isa('Bio::EnsEMBL::Hive::Process'));
+	1;
+				  });
+    return $self->{'_module'};
+};
 
 # add_input_id_key adds a new key with empty value
 *Bio::EnsEMBL::Hive::AnalysisJob::add_input_id_key = sub {
@@ -83,15 +95,6 @@ use Bio::EnsEMBL::Hive::Utils qw/stringify destringify/;
     my $new_raw_parameters = Bio::EnsEMBL::Hive::Utils->stringify($curr_parameters);
     $self->parameters($new_raw_parameters);
     return;
-};
-
-# update_module evaluates its argument in order to 
-# determine if the module exists and is in the path
-# Then calls the "module" method of the Analysis adaptor
-*Bio::EnsEMBL::Hive::Analysis::update_module = sub {
-    my ($self, $module) = @_;
-    eval "require $module";
-    $self->module($module);
 };
 
 # description returns the ResourceDescription object

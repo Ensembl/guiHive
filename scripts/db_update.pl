@@ -8,7 +8,7 @@ use Bio::EnsEMBL::Hive::URLFactory;
 
 use JSON::XS;
 
-use lib "./scripts/lib";
+use lib "./scripts/lib"; ## Only needed for local testing
 use new_hive_methods;
 use msg;
 
