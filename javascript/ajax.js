@@ -123,8 +123,13 @@ function onSuccess_dbConnect(res) {
     // We draw the pipeline diagram
     draw_diagram(res.out_msg);
 
+    // Tooltips
+    $('body').tooltip({
+	selector: '[rel=tooltip-it]'
+    });
+
     // We activate tooltips and popups
-    $("[rel=tooltip-it]").tooltip({animation:true});
+//    $("[rel=tooltip-it]").tooltip({animation:true});
 //    $("[rel=popup-it]").popover({animation:true, content:"kk", title:"kk doble"});
 
     // If there has been an error, it is reported in the "log" div
