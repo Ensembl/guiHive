@@ -203,12 +203,28 @@ use Bio::EnsEMBL::Hive::Utils qw/stringify destringify/;
 ## This method decreases the semaphore_count for jobs blocked by these failed jobs:
 *Bio::EnsEMBL::Hive::DBSQL::AnalysisJobAdaptor::forgive_dependent_jobs_semaphored_by_failed_jobs = sub {
   my ($self, $analysis_id) = @_;
-  # First we need to fetch all failed jobs
   my $jobs = $self->fetch_all_by_analysis_id_status($analysis_id, 'FAILED');
   for my $job(@$jobs) {
     $self->decrease_semaphore_count_for_jobid($job->semaphored_job_id());
   }
   return scalar @$jobs;
+};
+
+## This method is equivalent to AnalysisJobAdaptor's reset_job_for_analysis_id
+## but updating the semaphore counts accordingly
+*Bio::EnsEMBL::Hive::DBSQL::AnalysisJobAdaptor::reset_jobs_and_semaphores_for_analysis_id = sub {
+    my ($self, $analysis_id) = @_;
+
+    for my $job(@{$self->fetch_all_by_analysis_id_status($analysis_id, 'DONE')},
+		@{$self->fetch_all_by_analysis_id_status($analysis_id, 'PASSED ON')}) {
+	my $semaphored_job = $self->fetch_by_dbID($job->semaphored_job_id());
+	if ($semaphored_job->status() ne 'SEMAPHORED') {
+	    $semaphored_job->update_status('SEMAPHORED');
+	}
+	$self->increase_semaphore_count_for_jobid($job->semaphored_job_id());
+    }
+    $self->reset_jobs_for_analysis_id($analysis_id, 1);
+    return;
 };
 
 1;
