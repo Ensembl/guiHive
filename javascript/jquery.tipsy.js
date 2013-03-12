@@ -3,6 +3,10 @@
 // (c) 2008-2010 jason frame [jason@onehackoranother.com]
 // released under the MIT license
 
+// Modified by Miguel Pignatelli [emepyc@gmai.com]
+// Added support for svg elements
+
+
 (function($) {
     
     function maybeCall(thing, ctx) {
@@ -34,14 +38,24 @@
                 $tip.remove().css({top: 0, left: 0, visibility: 'hidden', display: 'block'}).prependTo(document.body);
                 
                 var pos = $.extend({}, this.$element.offset(), {
-                    width: this.$element[0].offsetWidth,
-                    height: this.$element[0].offsetHeight
+                    width: this.$element[0].offsetWidth || 0,
+                    height: this.$element[0].offsetHeight || 0
                 });
-                
+
+                if (typeof this.$element[0].nearestViewportElement == 'object') {
+                    // SVG
+		    var el = this.$element[0];
+		    var located_element = $(el).children("text")[0];
+                    var rect = located_element.getBoundingClientRect();
+		    pos.width  = rect.width;
+		    pos.height = rect.height;
+		    pos.left   = rect.left;
+                }
+
                 var actualWidth = $tip[0].offsetWidth,
                     actualHeight = $tip[0].offsetHeight,
                     gravity = maybeCall(this.options.gravity, this.$element[0]);
-                
+
                 var tp;
                 switch (gravity.charAt(0)) {
                     case 'n':
@@ -57,7 +71,6 @@
                         tp = {top: pos.top + pos.height / 2 - actualHeight / 2, left: pos.left + pos.width + this.options.offset};
                         break;
                 }
-                
                 if (gravity.length == 2) {
                     if (gravity.charAt(1) == 'w') {
                         tp.left = pos.left + pos.width / 2 - 15;
