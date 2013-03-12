@@ -9,7 +9,7 @@ use Bio::EnsEMBL::Hive::URLFactory;
 use JSON::XS;
 
 use lib "./scripts/lib";
-use new_hive_methods;
+use hive_extended;
 use msg;
 
 my $json_data = shift @ARGV || '{"adaptor":["ResourceClass"],"args":["new_resource_class", "LSF", "-q ok"],"method":["create_full_description"],"url":["mysql://ensadmin:ensembl@127.0.0.1:2912/mp12_compara_nctrees_69a2"]}';

@@ -9,7 +9,7 @@ use Bio::EnsEMBL::Hive::URLFactory;
 use JSON::XS;
 
 use lib "./scripts/lib"; ## Only needed for local testing
-use new_hive_methods;
+use hive_extended;
 use msg;
 
 my $json_data = shift @ARGV || '{"adaptor":["Analysis"],"analysis_id":["2"],"args":["key1,[\"one\",\"two\",\"three\"]"],"method":["add_param"],"url":["mysql://ensadmin:ensembl@127.0.0.1:2912/mp12_long_mult"]}';#'{"analysis_id":["2"],"adaptor":["ResourceDescription"],"method":["parameters"],"args":["-C0 -M8000000  -R\"select[mem>8000]  rusage[mem=8000]\""],"url":["mysql://ensadmin:ensembl@127.0.0.1:2912/mp12_compara_nctrees_69a2"]}'; #'{"url":["mysql://ensro@127.0.0.1:2912/mp12_compara_nctrees_69b"], "column_name":["parameters"], "analysis_id":["27"], "newval":["cmalign_exe"]}';

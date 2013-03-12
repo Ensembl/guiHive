@@ -13,7 +13,7 @@ var guiHive = {
                                     // generated views (like the jobs_chart that is generated and destroyed on demand)
                                     // Instead of storing here an array of views, we store a closure that knows how to generate them
                                     // and how to update them once the analysis_board is updated
-    databaseConnectionTimeout : 30000,
+    databaseConnectionTimeout : 30000, //  30s
 };
 
 // wait for the DOM to be loaded 
@@ -124,15 +124,6 @@ function onSuccess_dbConnect(res) {
     // We draw the pipeline diagram
     draw_diagram(res.out_msg);
 
-    // Tooltips
-    $('body').tooltip({
-	selector: '[rel=tooltip-it]'
-    });
-
-    // We activate tooltips and popups
-//    $("[rel=tooltip-it]").tooltip({animation:true});
-//    $("[rel=popup-it]").popover({animation:true, content:"kk", title:"kk doble"});
-
     // If there has been an error, it is reported in the "log" div
     log(res);
 
@@ -154,6 +145,27 @@ function onSuccess_dbConnect(res) {
     
     // Now we start monitoring the analyses.
     initialize_views_and_refresh();
+
+// Tooltips:
+// For some reason I haven't been able to make the bootstrap's tooltips work with the force layout (bubbles view).
+// The tootips div appear too deep in the svg hierarchy and thery are not displayed (visible) at all.
+// Tipsy seems to work better, so I am using it at the moment.
+
+// Tooltips -- This should have worked with Bootstrap's tooltips, but the divs seem to be inserted in a wrong place
+//    $('body').tooltip({
+//	selector: '[rel=tooltip-it]'
+//    });
+
+    // We activate tipsy tooltips
+    $("[rel=tooltip-it]").tipsy({
+//	gravity  : $.fn.tipsy.autoNS,
+	gravity  : 'e',
+	fade     : true,
+	html     : true
+    });
+    $("[data-analysis_id=1]").tipsy('show');
+//    $("[rel=popup-it]").popover({animation:true, content:"kk", title:"kk doble"});
+
 
     return;
 }

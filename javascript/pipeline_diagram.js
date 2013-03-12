@@ -1,7 +1,6 @@
 
-
 // Compile the analysis_id regexp once
-var analysis_id_regexp = /analysis_(\d+)/;
+var analysis_id_regexp = /^analysis_(\d+)/;
 
 // draw_diagram incorporate the pipeline diagram into the DOM
 // and set the "draggability" and "pannability" of the diagram
@@ -20,6 +19,7 @@ function draw_diagram(xmlStr) {
     // I am not able to have zoom and panning capabilities without the outer svg
     var width = $("#pipeline_diagram").css("width");
     var height = $("#pipeline_diagram").css("height");
+
     var g = d3.select("#pipeline_diagram")
     	.append("svg")
     	.attr("width",width)
@@ -29,7 +29,8 @@ function draw_diagram(xmlStr) {
     	.call(d3.behavior.zoom().on("zoom", function() { redraw(g) }))
     	.append("g");
     
-   g.node().appendChild(importedNode);
+    g.node().appendChild(importedNode);
+
 }
 
 // This is creating the pie charts in the pipeline diagram
@@ -37,6 +38,9 @@ function initialize_pipeline_diagram() {
     var allPies = [];
     jQuery.map($('.node title'), function(v,i) {
 	var titleText = $(v).text();
+	console.log(titleText);
+	// We delete the title text to allow for better tooltips
+	$(v).text("");
 	var matches = analysis_id_regexp.exec(titleText);
 	if (matches != null && matches.length > 1) {
 	    var analysis_id = matches[1];
@@ -57,11 +61,13 @@ function initialize_pipeline_diagram() {
 			 });
 
 	    // Links to the analysis_details
+	    // and makes the gRoots tooltip-able
 	    d3.select(gRoot)
 		.attr("data-analysis_id", analysis_id)
+		.attr("rel", "tooltip-it")
 		.on("click", function() {
 		    display(analysis_id, "/scripts/db_fetch_analysis.pl", onSuccess_fetchAnalysis);
-//		    display(analysis_id, "/scripts/db_fetch_jobs.pl", onSuccess_fetchJobs);
+		    //		    display(analysis_id, "/scripts/db_fetch_jobs.pl", onSuccess_fetchJobs);
 		});
 	}
     });
@@ -70,6 +76,11 @@ function initialize_pipeline_diagram() {
 
 function pipeline_diagram_update(allCharts) {
     var max_counts = d3.max(guiHive.analysis_board, function(v){return d3.sum(v.jobs_counts.counts)});
+
+    // TODO: This relies on the possibility of mapping the analysis_id with the position in the array.
+    // This breaks if the analysis_ids are not correlative (i.e. if we have updated manually the analysis_base table
+    // removing an entry (ID) there).
+    // This code would be more consistent if we don't rely on this and create another data structure to map analysis_IDs to indexes in the array of analysis
     for (var i = 0; i < allCharts.length; i++) {
 	var analysis_id = allCharts[i].analysis_id;
 
@@ -90,9 +101,20 @@ function pipeline_diagram_update(allCharts) {
 	chart.update(data, t);
 
 	// Update the breakout_label
+	// TODO: The breakout label should be re-located in the node as it grows
 	var breakout_label = guiHive.analysis_board[analysis_id-1].breakout_label;
 	var breakout_elem = allCharts[i].breakout_label;
 	$(breakout_elem).text(breakout_label);
+
+	// Update the tooltips
+	var d = guiHive.analysis_board[analysis_id-1];
+	var tooltip_msg = "Analysis ID: " + (i+1) + "<br/>Logic name: " + d.logic_name + "<br/>Number of jobs:" + d.total_job_count + "<br/>Avg msec per job: " + d.avg_msec_per_job;
+	if (d.mem !== undefined) {
+            tooltip_msg = tooltip_msg + "<br/>Min memory used: " + d.mem[0] + "<br/>Mean memory used: " + d.mem[1] + "<br/>Max memory used:" + d.mem[2];
+	}
+	tooltip_msg = tooltip_msg + "<br/>Breakout label: " + d.breakout_label + "<br/>Status: " + d.status[0];
+	$(allCharts[i].root_node).parent().attr("title",tooltip_msg);
+//	$(allCharts[i].root_node).text(tooltip_msg);
     }
 }
 

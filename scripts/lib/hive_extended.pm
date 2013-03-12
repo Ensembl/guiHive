@@ -14,7 +14,7 @@
 # The cost is not being coded in the class itself
 #
 
-package new_hive_methods;
+package hive_extended;
 
 use strict;
 use warnings;

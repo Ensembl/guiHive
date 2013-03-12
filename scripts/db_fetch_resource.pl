@@ -11,7 +11,7 @@ use HTML::Entities;
 use Data::Dumper;
 
 use lib ("./scripts/lib");
-use new_hive_methods;
+use hive_extended;
 use msg;
 
 # Input data

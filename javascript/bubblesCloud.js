@@ -25,9 +25,16 @@ function bubbleCloud() {
         node = vis.selectAll("node")
             .data(data)
             .enter().append("g")
-            .attr("class", "node");
-
-	node.on("click", function(d){console.log(d)});
+            .attr("class", "node")
+	    .attr("rel", "tooltip-it")
+            .attr("title", function(d, i){
+		var tooltip_msg = "Analysis ID: " + (i+1) + "<br/>Logic name: " + d.logic_name + "<br/>Number of jobs:" + d.total_job_count + "<br/>Avg msec per job: " + d.avg_msec_per_job;
+		if (d.mem !== undefined) {
+                    tooltip_msg = tooltip_msg + "<br/>Min memory used: " + d.mem[0] + "<br/>Mean memory used: " + d.mem[1] + "<br/>Max memory used:" + d.mem[2];
+		}
+		tooltip_msg = tooltip_msg + "<br/>Breakout label: " + d.breakout_label + "<br/>Status: " + d.status[0];
+		return tooltip_msg;
+            })
 
         var max_circles = node.append("circle")
             .attr("class", "max")
@@ -44,13 +51,6 @@ function bubbleCloud() {
 		    return radius_scale((d[attr][2]))
 		}
 	    })
-            .attr("title", function(d){
-		if (typeof(d[attr]) !== "object") {
-                    return "<pre>Val:" + d[attr] + "</pre>"
-		} else {
-                    return "<pre>Max:" + d[attr][2] + "\nMean:" + d[attr][1] + "\nMin:" + d[attr][0] + "\n</pre>";
-		}
-            })
             .style("fill", function (d) { return (d.status[1]) })
             .style("stroke", "black")
             .style("stroke-width", 1.5);

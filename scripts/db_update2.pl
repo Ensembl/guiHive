@@ -9,7 +9,7 @@ use Bio::EnsEMBL::Hive::Queen;
 use JSON::XS;
 
 use lib "./scripts/lib";
-use new_hive_methods;
+use hive_extended;
 # TODO: I am not returning the msg because the inner tables (input_id in jobs table and parameters
 # in analysis table) can't be reached by dataTables. This makes difficult to parse the msg message
 # and put the corresponding field in the inner cell

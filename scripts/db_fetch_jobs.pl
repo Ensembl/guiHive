@@ -9,7 +9,7 @@ use HTML::Template;
 use Data::Dumper;
 
 use lib ("./scripts/lib");
-use new_hive_methods;
+use hive_extended;
 use msg;
 
 my $json_data = shift @ARGV || '{"url":["mysql://ensadmin:ensembl@127.0.0.1:2911/mp12_long_mult"],"analysis_id":["2"],"sSortDir_0":["asc"],"iDisplayLength":["10"],"iDisplayStart":["0"],"iSortCol_0":["0"],"iSortingCols":["1"]}';
