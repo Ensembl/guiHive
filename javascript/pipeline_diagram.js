@@ -38,7 +38,6 @@ function initialize_pipeline_diagram() {
     var allPies = [];
     jQuery.map($('.node title'), function(v,i) {
 	var titleText = $(v).text();
-	console.log(titleText);
 	// We delete the title text to allow for better tooltips
 	$(v).text("");
 	var matches = analysis_id_regexp.exec(titleText);
@@ -76,20 +75,20 @@ function initialize_pipeline_diagram() {
 
 function pipeline_diagram_update(allCharts) {
     var max_counts = d3.max(guiHive.analysis_board, function(v){return d3.sum(v.jobs_counts.counts)});
-
-    // TODO: This relies on the possibility of mapping the analysis_id with the position in the array.
-    // This breaks if the analysis_ids are not correlative (i.e. if we have updated manually the analysis_base table
-    // removing an entry (ID) there).
-    // This code would be more consistent if we don't rely on this and create another data structure to map analysis_IDs to indexes in the array of analysis
+    var node_colors = nodeColor(); // closure
+//    node_colors.attr("avg_msec_per_job");
     for (var i = 0; i < allCharts.length; i++) {
 	var analysis_id = allCharts[i].analysis_id;
 
 	// Update the color status of the node
 	// TODO: This is assuming that the analysis_id corresponds to indexes in the analysis_board (-1)
 	// but this may not be the case if we have missing analysis_ids
+	// (i.e. if we have updated manually the analysis_base table
+	// removing an entry (ID) there).
 	// A more robust version of this code would index the analysis_board by analysis_id, but this would
 	// require an extra data structure (a ids=>index hash table or similar).
-	var node_color = guiHive.analysis_board[analysis_id-1].status[1];
+//	var node_color = guiHive.analysis_board[analysis_id-1].status[1];
+	var node_color = node_colors(analysis_id-1);
 	var nodes = $(allCharts[i].root_node).siblings("path,polygon,polyline");
 	d3.selectAll(nodes).transition().duration(1500).delay(0).attr("fill",node_color).attr("stroke",function() {if($(this).attr("stroke") === "black") {return "black"} else {return node_color}});
 
@@ -108,7 +107,7 @@ function pipeline_diagram_update(allCharts) {
 
 	// Update the tooltips
 	var d = guiHive.analysis_board[analysis_id-1];
-	var tooltip_msg = "Analysis ID: " + (i+1) + "<br/>Logic name: " + d.logic_name + "<br/>Number of jobs:" + d.total_job_count + "<br/>Avg msec per job: " + d.avg_msec_per_job;
+	var tooltip_msg = "Analysis ID: " + analysis_id + "<br/>Logic name: " + d.logic_name + "<br/>Number of jobs:" + d.total_job_count + "<br/>Avg msec per job: " + d.avg_msec_per_job;
 	if (d.mem !== undefined) {
             tooltip_msg = tooltip_msg + "<br/>Min memory used: " + d.mem[0] + "<br/>Mean memory used: " + d.mem[1] + "<br/>Max memory used:" + d.mem[2];
 	}

@@ -44,7 +44,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 func scriptHandler(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()
-	checkError("Can't parse Form", err)
+	checkError("Can't parse Form: ", err)
 
 	debug("METHOD: %s"  , r.Method)
 	debug("URL: %s"     , r.URL)
@@ -97,7 +97,7 @@ func guessProjectDir() (string, error) {
 		return "", err
 	}
 	if pathExists(absPathToIndex) {
-		debug("ABSPATHTOINDEX: ", absPathToIndex)
+		debug("ABSPATHTOINDEX: %s\n", absPathToIndex)
 		return path.Clean(absPathToIndex + "/../.."), nil
 	}
 	for _, srcdir := range build.Default.SrcDirs() {
@@ -139,8 +139,8 @@ func setEnvVar() error {
 
 	// ENSEMBL_CVS_ROOT_DIR
 	ensembl_cvs_root_dir := os.Getenv("ENSEMBL_CVS_ROOT_DIR")
-	if ensembl_cvs_root_dir == "" {
-		return errors.New("ENSEMBL_CVS_ROOT_DIR has to be set to the ensembl root dir")
+	if ensembl_cvs_root_dir == ""{
+		return errors.New("ENSEMBL_CVS_ROOT_DIR has to be set to the ensembl")
 	}
 	debug("ENSEMBL_CVS_ROOT_DIR: %s", ensembl_cvs_root_dir)
 

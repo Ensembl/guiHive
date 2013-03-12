@@ -1,7 +1,6 @@
 // pChart is the function returning the reusable pie-chart with transitions.
 function pieChart() {
   // Initial values:
-  // TODO: height should be substituted by max_height
   var max_height=100;
   var data = {counts : [0,0,0,0,0,1],
               colors : ["green", "yellow", "red", "blue", "cyan", "white"],
@@ -10,6 +9,8 @@ function pieChart() {
 
   var pie = d3.layout.pie()
               .sort(null);
+
+    var attr = 'status';
 
   var max_counts = d3.sum(data.counts);
   // The size of the pie chart (outerRadius) is dynamic.
@@ -21,8 +22,7 @@ function pieChart() {
 //  var radiusFactor = 4;
 
   var paths = [];
-//  var innerRadius = outerRadius / radiusFactor;
-    var innerRadius = 15;
+  var innerRadius = 12;
 
   var arc = d3.svg.arc()
                   .innerRadius(innerRadius)
@@ -46,7 +46,7 @@ function pieChart() {
     var panic_circle = g.append("circle")
 	  .attr("cx", 0)
 	  .attr("cy", 0)
-	  .attr("r", 15)
+	  .attr("r", innerRadius)
 	  .attr("fill", "white");
   
     // The pie-chart is feeded with the initial data and colouring

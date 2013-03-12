@@ -38,7 +38,7 @@ sub fetch {
 ## same for the names
     my $self = bless( {analysis_id => $analysis->dbID(),
 		       logic_name => $analysis->logic_name(),
-		       status => [$status,$status_colour],
+		       status => [$status,$status_colour], ## TODO: This is not needed anymore. The Javascript colors are now taken directly from the hive_config.json
 		       breakout_label => $breakout_label,
 		       avg_msec_per_job => $avg_msec_per_job,
 		       total_job_count => $total_job_count,

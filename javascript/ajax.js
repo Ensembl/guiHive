@@ -1,19 +1,20 @@
 // Globally defined
 var guiHive = {
-    pipeline_url       : "",        // The url to connect to the pipeline
-                                    // This is the value of $("#db_url") i.e. it is entered by the user
-    refresh_data_timer : undefined, // The timer for the next data update
-    monitorTimeout     : 30000,     // Time for next data updaet
-                                    // TODO: This has to disappear in favor of refresh_data_timer
-                                    // once the pie charts get listens to the analysis_board
-    analysis_board     : undefined, // The analysis data pulled from the database
-                                    // All the views should read this data.
-    views              : undefined, // All the views generated that consumes from analysis_board
-                                    // They are included in the global object to allow dynamically
-                                    // generated views (like the jobs_chart that is generated and destroyed on demand)
-                                    // Instead of storing here an array of views, we store a closure that knows how to generate them
-                                    // and how to update them once the analysis_board is updated
-    databaseConnectionTimeout : 30000, //  30s
+    pipeline_url              : "",        // The url to connect to the pipeline
+                                           // This is the value of $("#db_url") i.e. it is entered by the user
+    refresh_data_timer        : undefined, // The timer for the next data update
+    monitorTimeout            : 30000,     // Time for next data updaet
+                                           // TODO: This has to disappear in favor of refresh_data_timer
+                                           // once the pie charts get listens to the analysis_board
+    analysis_board            : undefined, // The analysis data pulled from the database
+                                           // All the views should read this data.
+    views                     : undefined, // All the views generated that consumes from analysis_board
+                                           // They are included in the global object to allow dynamically
+                                           // generated views (like the jobs_chart that is generated and destroyed on demand)
+                                           // Instead of storing here an array of views, we store a closure that knows how to generate them
+                                           // and how to update them once the analysis_board is updated
+    databaseConnectionTimeout : 30000,     // 30s
+    config                    : undefined  // The values in hive_config.json 
 };
 
 // wait for the DOM to be loaded 
@@ -36,6 +37,23 @@ $(document).ready(function() {
     $("#show_resources").hide().click(function() {
 	fetch_resources();
     });
+
+
+    // We read the hive json configuration file
+    $.ajax({ url      : "/scripts/db_load_config.pl",
+	     data     : "url=dummy",  // To keep the server happy (TODO: better way to handle this)
+	     type     : "post",
+	     dataType : "json",
+	     timeout  : guiHive.databaseConnectionTimeout,
+	     success  : function(resp) {
+		 if (resp.status === "ok") {
+		     guiHive.config = jQuery.parseJSON( resp.out_msg );
+		 } else {
+		     log(resp.err_msg);
+		 }
+	     }
+    });
+    console.log(guiHive);
 
     // We initialize the refresh_data_timer
     guiHive.refresh_data_timer = setup_timer().timer(guiHive.monitorTimeout/1000);
