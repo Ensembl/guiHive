@@ -3,7 +3,7 @@ package msg;
 use strict;
 use warnings;
 use Data::Dumper;
-use JSON::XS;
+use JSON;
 
 sub new {
     my ($class) = @_;
@@ -45,7 +45,7 @@ sub TO_JSON {
 
 sub toJSON {
     my ($self) = @_;
-    return JSON::XS->
+    return JSON->
 	new->
 	indent(0)->
 	allow_blessed->

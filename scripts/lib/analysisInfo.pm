@@ -104,7 +104,7 @@ sub TO_JSON {
 
 sub toJSON {
     my ($self) = @_;
-    return JSON::XS->
+    return JSON->
 	new->
 	indent(0)->
 	allow_blessed->
