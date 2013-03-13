@@ -5,7 +5,7 @@ use warnings;
 
 use Bio::EnsEMBL::Hive::URLFactory;
 use Bio::EnsEMBL::Hive::Utils::Graph;
-use JSON::XS;
+use JSON;
 use Data::Dumper;
 
 use lib ("./scripts/lib");  # Only needed for testing the script

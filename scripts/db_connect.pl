@@ -5,7 +5,7 @@ use warnings;
 
 use Bio::EnsEMBL::Hive::Utils::Graph;
 use Bio::EnsEMBL::Hive::URLFactory;
-use JSON::XS;
+use JSON;
 use HTML::Template;
 
 use lib ("./scripts/lib");

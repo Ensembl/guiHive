@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use Bio::EnsEMBL::Hive::Utils::Config;
-use JSON::XS;
+use JSON;
 use Data::Dumper;
 
 use lib ("./scripts/lib"); ## Only needed for local testing

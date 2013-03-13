@@ -13,7 +13,7 @@ var guiHive = {
                                            // generated views (like the jobs_chart that is generated and destroyed on demand)
                                            // Instead of storing here an array of views, we store a closure that knows how to generate them
                                            // and how to update them once the analysis_board is updated
-    databaseConnectionTimeout : 30000,     // 30s
+    databaseConnectionTimeout : 60000,     // 30s
     config                    : undefined  // The values in hive_config.json 
 };
 
@@ -102,7 +102,7 @@ function refresh_data_and_views(callback) {
 	    type     : "post",
 	    data     : "url=" + $("#db_url").val(),
 	    async    : guiHive.analysis_board != undefined,
-	    timeout  : 10000,
+	    timeout  : 60000,
 	    dataType : "json",
 	    success  : function(allAnalysisRes) {
 		if(allAnalysisRes.status != "ok") {

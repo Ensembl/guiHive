@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use Bio::EnsEMBL::Hive::URLFactory;
-use JSON::XS;
+use JSON;
 use Data::Dumper;
 
 use lib ("./scripts/lib");

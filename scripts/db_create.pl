@@ -6,7 +6,7 @@ use Data::Dumper;
 
 use Bio::EnsEMBL::Hive::URLFactory;
 
-use JSON::XS;
+use JSON;
 
 use lib "./scripts/lib";
 use hive_extended;
