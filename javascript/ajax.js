@@ -53,7 +53,6 @@ $(document).ready(function() {
 		 }
 	     }
     });
-    console.log(guiHive);
 
     // We initialize the refresh_data_timer
     guiHive.refresh_data_timer = setup_timer().timer(guiHive.monitorTimeout/1000);
@@ -102,10 +101,10 @@ function refresh_data_and_views(callback) {
 	    type     : "post",
 	    data     : "url=" + $("#db_url").val(),
 	    async    : guiHive.analysis_board != undefined,
-	    timeout  : 60000,
+	    timeout  : guiHive.databaseConnectionTimeout,
 	    dataType : "json",
 	    success  : function(allAnalysisRes) {
-		if(allAnalysisRes.status != "ok") {
+		if(allAnalysisRes.status !== "ok") {
 		    log(allAnalysisRes);
 //		    $("#log").append(allAnalysisRes.err_msg); scroll_down();
 		} else {

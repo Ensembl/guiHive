@@ -37,7 +37,7 @@ function setup_timer() {
 	startElem = this;
 	$(startElem).attr("disabled",1);
 	var oldcback = cback;
-	newcback = function(){oldcback(); tf.loop()};
+	var newcback = function(){oldcback(); tf.loop()};
 	cbackloop = newcback;
 	stop = false;
 	tf.loop();
