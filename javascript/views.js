@@ -42,11 +42,19 @@ var basicViews = function() {
 
     views.update = function() {
 	for (chartname in charts) {
-	    var chart = charts[chartname].chart;
-	    var update = charts[chartname].update;
-	    update(chart);
+	    views.updateOneChart(chartname);
 	}
     };
+
+    views.getChart = function (name) {
+	return charts[name];
+    };
+
+    views.updateOneChart = function(name) {
+	var chart = charts[name].chart;
+	var update = charts[name].update;
+	update(chart);
+    }
 
     return views;
 }

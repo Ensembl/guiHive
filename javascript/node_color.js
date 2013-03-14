@@ -1,6 +1,7 @@
 function nodeColor() {
     var attr = 'status';
     var color_scale;
+    var extent;
 
     var color_status = guiHive.config.Graph.Node.AnalysisStatus;
 
@@ -8,6 +9,7 @@ function nodeColor() {
 	if (attr === "status") {
 	    return color_status[guiHive.analysis_board[index].status[0]].Colour;
 	}
+	node_range.range();
 	return color_scale(guiHive.analysis_board[index][attr]);
     };
 
@@ -16,6 +18,10 @@ function nodeColor() {
 	    return attr;
 	}
 	attr = new_attr;
+	extent = node_range.range();
+    }
+
+    node_range.range = function() {
 	if (attr === 'total_job_count' || attr === 'avg_msec_per_job') {
 	    var extent = d3.extent(guiHive.analysis_board, function(d,i){ return parseInt(d[attr]) });
 

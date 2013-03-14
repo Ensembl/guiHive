@@ -79,7 +79,7 @@
 
 <!-- TABBING -->
 <ul class="nav nav-tabs">
-  <li><a href="#main" data-toggle="tab">Main</a></li>
+  <li><a href="#main" data-toggle="tab">Pipeline diagram</a></li>
   <li><a href="#analysis_summary" data-toggle="tab">Analysis Summary</a></li>
   <li><a href="#jobs" data-toggle="tab">Jobs</a></li>
   <li><a href="#resource_details" data-toggle="tab">Resources</a></li>
@@ -93,8 +93,15 @@
 <div class="tab-content">
 
   <div id="main" class="tab-pane active">
+    <p>Analysis colors represents:<select id="select_analysis_colors">
+	<option value="status">Analysis status</option>
+	<option value="total_job_count">Job counts</option>
+	<option value="avg_msec_per_job">Avg time per job</option>
+	</select>
+    </p>
     <div class="row">
-      <div id="pipeline_diagram" class="span12"></div>
+      <div id="pipeline_diagram" class="span12">
+      </div>
       <div id="analysis_details"></div>
     </div>
   </div>

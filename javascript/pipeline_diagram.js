@@ -30,7 +30,6 @@ function draw_diagram(xmlStr) {
     	.append("g");
     
     g.node().appendChild(importedNode);
-
 }
 
 // This is creating the pie charts in the pipeline diagram
@@ -70,12 +69,19 @@ function initialize_pipeline_diagram() {
 		});
 	}
     });
+
+    // Apart from pies we need to setup and listen node_colors
+    guiHive.node_colors = nodeColor();
+    $("#select_analysis_colors").change(function(){
+	guiHive.node_colors.attr($(this).val())
+	var pChart = guiHive.views.updateOneChart("allAnalysisP");
+    });
     return allPies;
 }
 
 function pipeline_diagram_update(allCharts) {
     var max_counts = d3.max(guiHive.analysis_board, function(v){return d3.sum(v.jobs_counts.counts)});
-    var node_colors = nodeColor(); // closure
+//    var node_colors = nodeColor(); // closure
 //    node_colors.attr("avg_msec_per_job");
     for (var i = 0; i < allCharts.length; i++) {
 	var analysis_id = allCharts[i].analysis_id;
@@ -88,7 +94,7 @@ function pipeline_diagram_update(allCharts) {
 	// A more robust version of this code would index the analysis_board by analysis_id, but this would
 	// require an extra data structure (a ids=>index hash table or similar).
 //	var node_color = guiHive.analysis_board[analysis_id-1].status[1];
-	var node_color = node_colors(analysis_id-1);
+	var node_color = guiHive.node_colors(analysis_id-1);
 	var nodes = $(allCharts[i].root_node).siblings("path,polygon,polyline");
 	d3.selectAll(nodes).transition().duration(1500).delay(0).attr("fill",node_color).attr("stroke",function() {if($(this).attr("stroke") === "black") {return "black"} else {return node_color}});
 
