@@ -1,6 +1,7 @@
 function setup_timer() {
     var cback       = function(){console.log("EXECUTED_CALLBACK")};
-    var cbackloop   = undefined;
+    var inner_cback = undefined;
+    var inner_cback_loop = undefined;
     var tMax        = 10; // 10 seconds by default
     var stop        = true;
     var tCurr       = 0;
@@ -36,9 +37,8 @@ function setup_timer() {
     tf.start = function() {
 	startElem = this;
 	$(startElem).attr("disabled",1);
-	var oldcback = cback;
-	var newcback = function(){oldcback(); tf.loop()};
-	cbackloop = newcback;
+	var old_inner_cback = inner_cback;
+	inner_cback_loop = function(){old_inner_cback(); tf.loop()};
 	stop = false;
 	tf.loop();
     };
@@ -49,12 +49,12 @@ function setup_timer() {
 
     tf.nowloop = function() {
 	tf.reset();
-	cbackloop();
+	cback(inner_cback_loop);
     };
 
     tf.now = function() {
 	tf.reset();
-	cback();
+	cback(inner_cback);
     };
 
     tf.reset = function() {
@@ -68,6 +68,12 @@ function setup_timer() {
 	cback = f;
 	return tf;
     };
+
+    tf.inner_callback = function(f) {
+	if (!arguments.length) return inner_cback;
+	inner_cback = f;
+	return tf;
+    }
 
     tf.timer = function(t) {
 	if (!arguments.length) return tMax;
@@ -96,7 +102,6 @@ function setup_timer() {
 
     // Show
     tf.show = function() {
-//	console.log(tf.time_to_refresh());
 	if (div !== undefined) {
 	    div.html(tf.time_to_refresh());
 	}

@@ -67,8 +67,10 @@ function initialize_views_and_refresh() {
     // We initialize the views
     guiHive.views = basicViews();
 
-    // We set up the callback for the timer
-    guiHive.refresh_data_timer.callback(function(){refresh_data_and_views(guiHive.views.update)});
+    // We set up the callbacks for the timer
+//    guiHive.refresh_data_timer.callback(function(){refresh_data_and_views(guiHive.views.update)});
+    guiHive.refresh_data_timer.callback(refresh_data_and_views);
+    guiHive.refresh_data_timer.inner_callback(guiHive.views.update);
 
     // We now refresh data and views
     // We need the analysis_board to be populated by now
