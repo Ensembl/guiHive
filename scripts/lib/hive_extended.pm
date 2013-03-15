@@ -204,9 +204,20 @@ use Bio::EnsEMBL::Hive::Utils qw/stringify destringify/;
 *Bio::EnsEMBL::Hive::DBSQL::AnalysisJobAdaptor::forgive_dependent_jobs_semaphored_by_failed_jobs = sub {
   my ($self, $analysis_id) = @_;
   my $jobs = $self->fetch_all_by_analysis_id_status($analysis_id, 'FAILED');
+
+  my %semaphored_analysis_ids = ();
   for my $job(@$jobs) {
     $self->decrease_semaphore_count_for_jobid($job->semaphored_job_id());
+    my $semaphored_job = $self->fetch_by_dbID($job->semaphored_job_id());
+    $semaphored_analysis_ids{$semaphored_job->analysis_id}++ if (defined $semaphored_job);
   }
+
+  # We sync the analysis_stats table:
+  my @analysis_ids = ($analysis_id, keys %semaphored_analysis_ids);
+  for my $analysis_id (@analysis_ids) {
+    $self->db->get_Queen()->synchronize_AnalysisStats($self->db->get_AnalysisAdaptor->fetch_by_dbID($analysis_id)->stats);
+  }
+
   return scalar @$jobs;
 };
 
@@ -215,17 +226,54 @@ use Bio::EnsEMBL::Hive::Utils qw/stringify destringify/;
 *Bio::EnsEMBL::Hive::DBSQL::AnalysisJobAdaptor::reset_jobs_and_semaphores_for_analysis_id = sub {
     my ($self, $analysis_id) = @_;
 
+    my %semaphored_analysis_ids = ();
     for my $job(@{$self->fetch_all_by_analysis_id_status($analysis_id, 'DONE')},
 		@{$self->fetch_all_by_analysis_id_status($analysis_id, 'PASSED ON')}) {
+      if ($job->semaphored_job_id()) {
 	my $semaphored_job = $self->fetch_by_dbID($job->semaphored_job_id());
-	if ($semaphored_job->status() ne 'SEMAPHORED') {
-	    $semaphored_job->update_status('SEMAPHORED');
+	$semaphored_analysis_ids{$semaphored_job->analysis_id}++ if (defined $semaphored_job);
+	if ($semaphored_job && ($semaphored_job->status() ne 'SEMAPHORED')) {
+	  $semaphored_job->update_status('SEMAPHORED');
 	}
 	$self->increase_semaphore_count_for_jobid($job->semaphored_job_id());
+      }
     }
     $self->reset_jobs_for_analysis_id($analysis_id, 1);
+
+    # We sync the analysis_stats table:
+    my @analysis_ids = ($analysis_id, keys %semaphored_analysis_ids);
+    for my $analysis_id (@analysis_ids) {
+      $self->db->get_Queen()->synchronize_AnalysisStats($self->db->get_AnalysisAdaptor->fetch_by_dbID($analysis_id)->stats);
+    }
+
     return;
+  };
+
+## This method allows you to discard ready jobs for an analysis
+## It also takes care of the controlled jobs via semaphores
+*Bio::EnsEMBL::Hive::DBSQL::AnalysisJobAdaptor::discard_ready_jobs = sub {
+  my ($self, $analysis_id) = @_;
+
+  my %semaphored_analysis_ids = ();
+  for my $job(@{$self->fetch_all_by_analysis_id_status($analysis_id, 'READY')}) {
+    $self->decrease_semaphore_count_for_jobid($job->semaphored_job_id());
+    $job->update_status('DONE');
+    if ($job->semaphored_job_id) {
+      my $semaphored_job = $self->fetch_by_dbID($job->semaphored_job_id());
+      $semaphored_analysis_ids{$semaphored_job->analysis_id}++ if (defined $semaphored_job);
+    }
+  }
+
+  # We sync the analysis_stats table:
+  my @analysis_ids = ($analysis_id, keys %semaphored_analysis_ids);
+  for my $analysis_id (@analysis_ids) {
+    $self->db->get_Queen()->synchronize_AnalysisStats($self->db->get_AnalysisAdaptor->fetch_by_dbID($analysis_id)->stats);
+  }
+
+
+  return;
 };
+
 
 1;
 

@@ -29,11 +29,6 @@ if (defined $dbConn) {
   my $adaptor = $dbConn->$adaptor_name;
   eval {
     $adaptor->$method($analysis_id);
-    ## If we change something in the job table, we need to sync the hive to
-    ## reflect the changes in the analysis_stats table
-    if ($adaptor_name  =~ /AnalysisJob/) {
-      $dbConn->get_Queen()->synchronize_AnalysisStats();
-    }
   };
   $response->err_msg($@);
   $response->status($response->err_msg) if ($@);
