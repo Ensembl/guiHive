@@ -12,7 +12,7 @@ use lib ("./scripts/lib");
 use hive_extended;
 use msg;
 
-my $json_data = shift @ARGV || '{"url":["mysql://ensadmin:ensembl@127.0.0.1:2912/mp12_long_mult"], "analysis_id":["1"]}';
+my $json_data = shift @ARGV || '{"url":["mysql://ensadmin:ensembl@127.0.0.1:2912/mp12_long_mult"], "analysis_id":["2"]}';
 my $details_template = $ENV{GUIHIVE_BASEDIR} . "static/analysis_details.html";
 
 ## Input
@@ -124,6 +124,24 @@ sub formAnalysisInfo {
 						       "resource_class_id",
 						       get_resource_class_ids());
 
+  $info->{failed_jobs_to_ready} = [{
+				   method  => "reset_failed_jobs",
+				   adaptor => "AnalysisJob",
+				   id      => $analysis_id
+				   }];
+
+  $info->{done_jobs_to_ready} = [{
+				   method  => "reset_jobs_and_semaphores_for_analysis_id",
+				   adaptor => "AnalysisJob",
+				   id      => $analysis_id
+				   }];
+
+  $info->{forgive_semaphored_jobs} = [{
+				   method  => "forgive_dependent_jobs_semaphored_by_failed_jobs",
+				   adaptor => "AnalysisJob",
+				   id      => $analysis_id
+				   }];
+
   my $template = HTML::Template->new(filename => $details_template);
   $template->param(%$info);
 
@@ -226,8 +244,6 @@ sub template_mappings_SELECT {
   for (my $i=0; $i<scalar(@$vals); $i++) {
       push @final_vals, [$vals->[$i], $displays->[$i]];
   }
-
-  print STDERR "METHOD: ${method}_value\n";
 
   return [{"id"       => $obj->can("analysis_id") ? $obj->analysis_id : $obj->dbID,
 	   "adaptor"  => $adaptor,

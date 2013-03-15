@@ -397,12 +397,12 @@ function onSuccess_fetchAnalysis(analysisRes, analysis_id, fetch_url) {
 
 	// The details can be closed
 	$("#close_analysis_details").click(function(){$("#analysis_details").empty(); guiHive.views.removeChart("jobs_chart")});
+	listen_Analysis(analysis_id, fetch_url);
     } else {
 	log(analysisRes);
 //	$("#log").append(analysisRes.err_msg); scroll_down();
 	$("#connexion_msg").html(analysisRes.status);
     }
-    listen_Analysis(analysis_id, fetch_url);
 }
 
 function listen_Analysis(analysis_id, fetch_url) {
@@ -414,8 +414,7 @@ function listen_Analysis(analysis_id, fetch_url) {
     // TODO: use a generic version (db_update.pl or db_update2.pl)
     // that can deal with both cases
     // It this is not possible, give better names
-    // TODO2: Shouldn't this code be moved to the "ok" condition above?
-    // TODO3: analysis_id should be named only dbID or something similar
+    // TODO: analysis_id should be named only dbID or something similar
     // to make it more clear that also resources calls update_db --
     // even if it doesn't use the dbID field
     $(".update_param").change(
@@ -431,6 +430,16 @@ function listen_Analysis(analysis_id, fetch_url) {
 	 script:"/scripts/db_update.pl",
 	 callback:onSuccess_fetchAnalysis},
 	update_db);  // This is recursive!
+
+    $(".job_command").click(function(){
+	var sel = this;
+	$.ajax({url      : "/scripts/db_commands.pl",
+		data     : jQuery.param(buildSendParams(sel)),
+		async    : true
+	       }
+	      );
+    });
+
 }
 
 // TODO: Currently, analysis_id and fetch_url are not being used

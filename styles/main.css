@@ -49,6 +49,12 @@ body {
     display          : none;
 }
 
+/* Jobs advanced options */
+#jobs_advanced_commands {
+    display          : none;
+}
+
+
 /* Diagram Div */
 #pipeline_diagram {
 /*    width            : 960px;*/

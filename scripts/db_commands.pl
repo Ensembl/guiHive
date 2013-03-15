@@ -11,7 +11,7 @@ use lib ("./scripts/lib");
 use hive_extended;
 use msg;
 
-my $json_data = shift @ARGV || '{ "url":["mysql://ensadmin:ensembl@127.0.0.1:2912/mp12_compara_nctrees_71v"],"analysis_id":["29"], "method":["unblock_jobs_blocked_by_failed_jobs"] }';
+my $json_data = shift @ARGV || '{ "url":["mysql://ensadmin:ensembl@127.0.0.1:2912/mp12_compara_nctrees_71v"],"analysis_id":["29"], "method":["forgive_dependent_jobs_semaphored_by_failed_jobs"] }';
 
 # Input
 my $var         = decode_json($json_data);

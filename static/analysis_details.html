@@ -247,4 +247,37 @@
 <h5>Jobs</h5>
 </div>
 <div><a style="cursor:pointer;" class="toggle-div" data-target="jobs_advanced_commands">Show</a> commands on jobs</div>
+<!-- ADVANCED JOB COMMANDS -->
+<div id="jobs_advanced_commands">
+  <table>
+    <tr>
+      <TMPL_LOOP NAME=failed_jobs_to_ready>
+	<td><a style="cursor:pointer;"
+	       class="job_command"
+	       data-method="<TMPL_VAR NAME=method>"
+	       data-adaptor="<TMPL_VAR NAME=adaptor>"
+	       data-analysisID="<TMPL_VAR NAME=id>">Set</a> FAILED jobs to READY</td>
+      </TMPL_LOOP>
+    </tr>
+    <tr>
+      <TMPL_LOOP NAME=done_jobs_to_ready>
+	<td><a style="cursor:pointer;"
+	       class="job_command"
+	       data-method="<TMPL_VAR NAME=method>"
+	       data-adaptor="<TMPL_VAR NAME=adaptor>"
+	       data-analysisID="<TMPL_VAR NAME=id>">Set</a> DONE jobs to READY (re-establishing semaphores)</td>
+      </TMPL_LOOP>
+    </tr>
+    <tr>
+      <TMPL_LOOP NAME=forgive_semaphored_jobs>
+	<td><a style="cursor:pointer;"
+	       class="job_command"
+	       data-method="<TMPL_VAR NAME=method>"
+	       data-adaptor="<TMPL_VAR NAME=adaptor>"
+	       data-analysisID="<TMPL_VAR NAME=id>">Forgive</a> jobs semaphored by FAILED jobs</td>
+      </TMPL_LOOP>
+    </tr>
+  </table>
+</div>
+
 
