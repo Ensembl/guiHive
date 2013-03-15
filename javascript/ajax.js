@@ -434,7 +434,7 @@ function listen_Analysis(analysis_id, fetch_url) {
     $(".job_command").click(function(){
 	var sel = this;
 	$.ajax({url      : "/scripts/db_commands.pl",
-		data     : jQuery.param(buildSendParams(sel)),
+		data     : jQuery.param(buildSendParams(sel)) + "&analysis_id=" + $(sel).attr('data-analysisid'),
 		async    : true
 	       }
 	      );
@@ -656,7 +656,8 @@ function update_db(obj) {
 	    complete   : function() { display(analysis_id, fetch_url, callback)}
 	   });
 }
-			    
+
+// TODO: Duplicated with buildSendParams. It would be nice to merge both
 function buildURL(obj) {
     var value = "";
     if ($(obj).attr("data-linkTo")) {
