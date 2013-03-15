@@ -124,8 +124,14 @@ sub formAnalysisInfo {
 						       "resource_class_id",
 						       get_resource_class_ids());
 
+  $info->{discard_ready_jobs}    = [{
+				    method => "discard_ready_jobs",
+				    adaptor => "AnalysisJob",
+				    id      => $analysis_id
+				   }];
+
   $info->{failed_jobs_to_ready} = [{
-				   method  => "reset_failed_jobs",
+				   method  => "reset_jobs_for_analysis_id",
 				   adaptor => "AnalysisJob",
 				   id      => $analysis_id
 				   }];

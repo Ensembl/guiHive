@@ -251,12 +251,21 @@
 <div id="jobs_advanced_commands">
   <table>
     <tr>
+      <TMPL_LOOP NAME=discard_ready_jobs>
+	<td><a style="cursor:pointer;"
+	       class="job_command"
+	       data-method="<TMPL_VAR NAME=method>"
+	       data-adaptor="<TMPL_VAR NAME=adaptor>"
+	       data-analysisID="<TMPL_VAR NAME=id>">Discard</a> READY jobs (updating semaphores)</td>
+      </TMPL_LOOP>
+    </tr>
+    <tr>
       <TMPL_LOOP NAME=failed_jobs_to_ready>
 	<td><a style="cursor:pointer;"
 	       class="job_command"
 	       data-method="<TMPL_VAR NAME=method>"
 	       data-adaptor="<TMPL_VAR NAME=adaptor>"
-	       data-analysisID="<TMPL_VAR NAME=id>">Set</a> FAILED jobs to READY</td>
+	       data-analysisID="<TMPL_VAR NAME=id>">Reset</a> FAILED jobs</td>
       </TMPL_LOOP>
     </tr>
     <tr>
