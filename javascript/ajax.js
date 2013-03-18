@@ -410,6 +410,7 @@ function listen_Analysis(analysis_id, fetch_url) {
     $(".toggle-div").click(function(){$(this).toggleDiv()});
 
     jobs_chart(analysis_id);
+
     // We have db_update.pl and db_update2.pl
     // TODO: use a generic version (db_update.pl or db_update2.pl)
     // that can deal with both cases
@@ -664,10 +665,12 @@ function buildURL(obj) {
 	var ids = $(obj).attr("data-linkTo").split(",");
 	var vals = jQuery.map(ids, function(e,i) {
 	    var elem = $('#'+e);
+	    console.log(elem);
 	    if ($(elem).is("span")) {
 		return $(elem).attr("data-value")
 	    } else {
-		return $(elem).attr("value")
+		return $(elem).val();
+		//return $(elem).attr("value")
 	    }
 	});
 	value = vals.join(",");
@@ -682,6 +685,9 @@ function buildURL(obj) {
     if ($(obj).attr("data-analysisID")) {
 	URL = URL.concat("&analysis_id="+$(obj).attr("data-analysisID"));
     }
+
+    console.log(URL);
+
     return(URL);
 }
 

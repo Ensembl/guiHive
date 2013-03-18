@@ -28,9 +28,13 @@ use Bio::EnsEMBL::Hive::Utils qw/stringify destringify/;
     my $self = shift;
     $self->{'_module'} = shift if(@_ && do{
 	my $module = $_[0];
-	eval "require $module";
-	die "The module '$module' can't be loaded: $@\n" if ($@);
-	die "Problem accessing methods in '$module'. Please check that it inherits from Bio::EnsEMBL::Hive::Process and is named correctly\n" unless ($module->isa('Bio::EnsEMBL::Hive::Process'));
+
+	 ## The problem with this, is that we are doing these checks *locally*, but the module is suppose to be used *remotely* (in the farm, etc)
+	## So chances are that the module only exists (or is fully functional) remotely, where we don't have change to test it
+	## TODO: use the regular "module" method instead
+#	eval "require $module";
+#	die "The module '$module' can't be loaded: $@\n" if ($@);
+#	die "Problem accessing methods in '$module'. Please check that it inherits from Bio::EnsEMBL::Hive::Process and is named correctly\n" unless ($module->isa('Bio::EnsEMBL::Hive::Process'));
 	1;
 				  });
     return $self->{'_module'};
