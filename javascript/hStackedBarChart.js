@@ -53,7 +53,10 @@ function hStackedBarChart(raw_data) {
 	    .attr("class", "analysis_label")
 	    .attr("to_id", raw_data.logic_name + "__" + id)
 	    .on("click", bChart.switch_type)
+	    .append("a")
+	    .attr("style", "cursor:pointer")
 	    .append("text")
+	    .style("fill", "#0088cc")
 	    .attr("x", 0)
 	    .attr("y", bChart.height()/2 + bChart.fontsize()/2.5)
 	    .attr("fill", "black")
@@ -103,8 +106,6 @@ function hStackedBarChart(raw_data) {
 		    .transition()
 		    .delay(function(d,i){return i*100})
 		    .duration(1000)
-//		    .attr("x", function(d,i){var l=bChart.layers.slice(-1)[0][0]; return(y(l.y0+l.y) + barsmargin + 10)})
-//		    .text(function(d,i){var l=bChart.layers.slice(-1)[0][0]; return (l.y0 + l.y)});
 		    .text(function(){return bChart.data().total_job_count});
 	    };
       

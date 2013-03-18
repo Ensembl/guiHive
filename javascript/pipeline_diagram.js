@@ -76,6 +76,11 @@ function initialize_pipeline_diagram() {
 	guiHive.node_colors.attr($(this).val())
 	var pChart = guiHive.views.updateOneChart("allAnalysisP");
     });
+
+    // And change the cursor style for text
+    d3.selectAll('.node text')
+	.attr("style", "cursor:default");
+
     return allPies;
 }
 
