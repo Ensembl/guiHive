@@ -204,7 +204,9 @@ use Bio::EnsEMBL::Hive::Utils qw/stringify destringify/;
 
 ## When some jobs within the range of the failed_job_tolerance limit fail for an analysis
 ## and that jobs control a semaphore, the semaphored job never unblocks.
-## This method decreases the semaphore_count for jobs blocked by these failed jobs:
+## This method decreases the semaphore_count for jobs blocked by these failed jobs.
+## WARNING!! If the method is run twice on the same failed jobs will be decreasing the count twice and we
+## don't want this. This SHOULD BE FIXED!
 *Bio::EnsEMBL::Hive::DBSQL::AnalysisJobAdaptor::forgive_dependent_jobs_semaphored_by_failed_jobs = sub {
   my ($self, $analysis_id) = @_;
   my $jobs = $self->fetch_all_by_analysis_id_status($analysis_id, 'FAILED');
