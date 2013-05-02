@@ -44,6 +44,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 func scriptHandler(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()
+	defer r.Body.Close();
 	checkError("Can't parse Form: ", err)
 
 	debug("METHOD: %s"  , r.Method)
