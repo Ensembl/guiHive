@@ -15,7 +15,7 @@ use hive_extended;
 use msg;
 
 # Input data
-my $json_url = shift @ARGV || '{"url":["mysql://ensro@127.0.0.1:2912/mp12_compara_nctrees_69b"]}';
+my $json_url = shift @ARGV || '{"url":["mysql://ensro@127.0.0.1:2912/mp12_long_mult"]}';
 my $url = decode_json($json_url)->{url}->[0];
 
 # Initialization
