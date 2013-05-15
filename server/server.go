@@ -5,18 +5,18 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
+	"errors"
+	"flag"
 	"fmt"
-	"net/http"
+	"go/build"
 	"log"
+	"net/http"
 	"os"
 	"os/exec"
-	"encoding/json"
-	"bytes"
-	"flag"
-	"go/build"
 	"path"
 	"path/filepath"
-	"errors"
 )
 
 const (
@@ -27,32 +27,25 @@ var (
 	port string
 )
 
-func init () {
-	flag.StringVar(&port, "port", "12345", "Port to listen (defaults to 12345)")
+func init() {
+	flag.StringVar(&port, "port", "8080", "Port to listen (defaults to 8080)")
 	flag.Parse()
 }
 
-func checkError (s string, err error, ss ...string) {
+func checkError(s string, err error, ss ...string) {
 	if err != nil {
 		log.Fatal(s, err, ss)
 	}
 }
 
-func handler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Hi there, I love %s!", r.URL.Path[1:])
-}
-
 func scriptHandler(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()
-	defer r.Body.Close();
+	defer r.Body.Close()
 	checkError("Can't parse Form: ", err)
 
-	debug("METHOD: %s"  , r.Method)
-	debug("URL: %s"     , r.URL)
-	debug("FRAGMENT: %s", r.URL.Fragment)
-	debug("PATH: %s"    , r.URL.Path)
-	debug("BODY: %s"    , r.Body)
-	debug("URL2: %s"    , r.Form)
+	debug("METHOD: %s", r.Method)
+	debug("URL: %s", r.URL)
+	debug("PATH: %s", r.URL.Path)
 
 	var outMsg bytes.Buffer
 	var errMsg bytes.Buffer
@@ -60,7 +53,6 @@ func scriptHandler(w http.ResponseWriter, r *http.Request) {
 	fname := os.Getenv("GUIHIVE_BASEDIR") + r.URL.Path
 	args, err := json.Marshal(r.Form)
 	checkError("Can't Marshal JSON:", err)
-	debug("ARGS in Go side: %s", args)
 
 	debug("EXECUTING SCRIPT: %s", fname)
 	cmd := exec.Command(fname, string(args))
@@ -73,11 +65,11 @@ func scriptHandler(w http.ResponseWriter, r *http.Request) {
 	if err := cmd.Wait(); err != nil {
 		log.Println("Error Executing Command: ", err)
 	}
-	
+
 	debug("OUTMSG: %s", outMsg.Bytes())
 	debug("ERRMSG: %s", errMsg.Bytes())
 	fmt.Fprintf(w, string(outMsg.Bytes()))
-	
+
 }
 
 func pathExists(name string) bool {
@@ -133,14 +125,14 @@ func setEnvVar() error {
 	debug("PERL5LIB: %s\n", os.Getenv("PERL5LIB"))
 
 	//GUIHIVE_BASEDIR
-	if err := os.Setenv("GUIHIVE_BASEDIR", projectDirectory + "/"); err != nil {
+	if err := os.Setenv("GUIHIVE_BASEDIR", projectDirectory+"/"); err != nil {
 		return err
 	}
 	debug("GUIHIVE_BASEDIR: %s", os.Getenv("GUIHIVE_BASEDIR"))
 
 	// ENSEMBL_CVS_ROOT_DIR
 	ensembl_cvs_root_dir := os.Getenv("ENSEMBL_CVS_ROOT_DIR")
-	if ensembl_cvs_root_dir == ""{
+	if ensembl_cvs_root_dir == "" {
 		return errors.New("ENSEMBL_CVS_ROOT_DIR has to be set to the ensembl")
 	}
 	debug("ENSEMBL_CVS_ROOT_DIR: %s", ensembl_cvs_root_dir)
@@ -152,14 +144,13 @@ func main() {
 
 	//  Fix environmental variables
 	errV := setEnvVar()
-	checkError("Problem setting environmental variables: ", errV);
+	checkError("Problem setting environmental variables: ", errV)
 
 	relPath := os.Getenv("GUIHIVE_BASEDIR")
-	http.HandleFunc("/",         handler)
-	http.Handle("/static/",      http.FileServer(http.Dir(relPath)))
-	http.Handle("/styles/",      http.FileServer(http.Dir(relPath)))
-	http.Handle("/javascript/",  http.FileServer(http.Dir(relPath)))
-	http.Handle("/images/",      http.FileServer(http.Dir(relPath)))
+	http.Handle("/static/", http.FileServer(http.Dir(relPath)))
+	http.Handle("/styles/", http.FileServer(http.Dir(relPath)))
+	http.Handle("/javascript/", http.FileServer(http.Dir(relPath)))
+	http.Handle("/images/", http.FileServer(http.Dir(relPath)))
 	http.HandleFunc("/scripts/", scriptHandler)
 	debug("Listening to port: %s", port)
 	err := http.ListenAndServe(":"+port, nil)
