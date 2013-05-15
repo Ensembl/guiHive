@@ -77,7 +77,8 @@ sub formAnalysisInfo {
   $info->{failed_job_tolerance} = template_mappings_SELECT("Analysis",
 							   $analysis,
 							   "failed_job_tolerance",
-							   build_values({int($analysis_stats->total_job_count()/10)||1=>[0,$analysis_stats->total_job_count()]}),
+							   build_values({10 => [0,100]}),
+ #							   build_values({int($analysis_stats->total_job_count()/10)||1=>[0,$analysis_stats->total_job_count()]}),
 							  );
 
   $info->{max_retry_count}   = template_mappings_SELECT("Analysis",
