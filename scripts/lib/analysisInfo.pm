@@ -24,48 +24,73 @@ my $job_colors = {
 		  'background' => 'white',
 		 };
 
+sub parse_msecs {
+  my ($msec) = @_;
+
+  my $days = int($msec/(24*60*60*1000));
+  my $hours = ($msec/(60*60*1000))%24;
+  my $mins = ($msec/(60*1000))%60;
+  my $secs = ($msec/1000)%60;
+
+  # Using the x!! operator explained in
+  # http://www.perlmonks.org/?node_id=564792
+  my @parts=(
+	     ($days."d") x!! $days,
+	     ($hours."h") x!! $hours,
+	     ($mins."m") x!! $mins,
+	     ($secs."s") x!! $secs,
+	    );
+
+  unless (scalar @parts) {
+    return "<1s";
+  }
+
+  return join ":", @parts;
+}
+
 sub fetch {
-    my ($class, $analysis) = @_;
-    my $analysis_stats = $analysis->stats();
-    my $config = Bio::EnsEMBL::Hive::Utils::Config->new($hive_config_file);
-    my $status = $analysis_stats->status();
-    my $status_colour = $config->get('Graph', 'Node', 'AnalysisStatus', $analysis_stats->status, 'Colour');
-    my ($breakout_label, $total_job_count, $job_counts) = $analysis_stats->job_count_breakout();
-    my $avg_msec_per_job = $analysis_stats->avg_msec_per_job();
+  my ($class, $analysis) = @_;
+  my $analysis_stats = $analysis->stats();
+  my $config = Bio::EnsEMBL::Hive::Utils::Config->new($hive_config_file);
+  my $status = $analysis_stats->status();
+  my $status_colour = $config->get('Graph', 'Node', 'AnalysisStatus', $analysis_stats->status, 'Colour');
+  my ($breakout_label, $total_job_count, $job_counts) = $analysis_stats->job_count_breakout();
+  my $avg_msec_per_job = $analysis_stats->avg_msec_per_job();
 
-## TODO: status should be only the $status string (not the color), but we need to define this here
-## until issue#17 is solved (job's colors in json and accessible by client code -- javascript).
-## same for the names
-    my $self = bless( {analysis_id => $analysis->dbID(),
-		       logic_name => $analysis->logic_name(),
-		       status => [$status,$status_colour], ## TODO: This is not needed anymore. The Javascript colors are now taken directly from the hive_config.json
-		       breakout_label => $breakout_label,
-		       avg_msec_per_job => $avg_msec_per_job,
-		       total_job_count => $total_job_count,
-		       jobs_counts => {
-			   counts => [],
-			   colors => [],
-			   names => [],
-		       }
-		      }, $class);
+  ## TODO: status should be only the $status string (not the color), but we need to define this here
+  ## until issue#17 is solved (job's colors in json and accessible by client code -- javascript).
+  ## same for the names
+  my $self = bless( {analysis_id => $analysis->dbID(),
+		     logic_name => $analysis->logic_name(),
+		     status => [$status,$status_colour], ## TODO: This is not needed anymore. The Javascript colors are now taken directly from the hive_config.json
+		     breakout_label => $breakout_label,
+		     avg_msec_per_job => $avg_msec_per_job,
+		     avg_msec_per_job_parsed => parse_msecs($avg_msec_per_job),
+		     total_job_count => $total_job_count,
+		     jobs_counts => {
+				     counts => [],
+				     colors => [],
+				     names => [],
+				    }
+		    }, $class);
 
-    for my $job_status (qw/semaphored ready inprogress failed done/) {
-	my $job_status_full = $job_status . "_job_count";
-	my $count = $job_counts->{$job_status_full} || 0;
-	$self->add_count($job_status, $count);
-    }
+  for my $job_status (qw/semaphored ready inprogress failed done/) {
+    my $job_status_full = $job_status . "_job_count";
+    my $count = $job_counts->{$job_status_full} || 0;
+    $self->add_count($job_status, $count);
+  }
 
-    # We can't have all job counts = 0, so we add a new category
-    # that can be 0 (if any other category is =/= 0.
-    # or 1 if all other categories are == 0
-    if ($self->sum_jobs()) {
-	push @{$self->{jobs_counts}->{counts}}, 0;
-    } else {
-	push @{$self->{jobs_counts}->{counts}}, 1;
-    }
-    push @{$self->{jobs_counts}->{colors}}, $job_colors->{"background"};
+  # We can't have all job counts = 0, so we add a new category
+  # that can be 0 (if any other category is =/= 0.
+  # or 1 if all other categories are == 0
+  if ($self->sum_jobs()) {
+    push @{$self->{jobs_counts}->{counts}}, 0;
+  } else {
+    push @{$self->{jobs_counts}->{counts}}, 1;
+  }
+  push @{$self->{jobs_counts}->{colors}}, $job_colors->{"background"};
 
-    return $self;
+  return $self;
 }
 
 sub add_count {

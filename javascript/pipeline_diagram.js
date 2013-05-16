@@ -114,11 +114,18 @@ function pipeline_diagram_update(allCharts) {
 	// TODO: The breakout label should be re-located in the node as it grows
 	var breakout_label = guiHive.analysis_board[analysis_id-1].breakout_label;
 	var breakout_elem = allCharts[i].breakout_label;
+	var curr_x = $(breakout_elem).attr("x");
+	var curr_l = $(breakout_elem).text().length;
+	var font_size = $(breakout_elem).attr("font-size");
+	var old_size = curr_l * font_size;
+	var new_size = breakout_label.length * font_size;
+	var new_x = parseFloat(curr_x) + old_size - new_size;
+	$(breakout_elem).attr("x", new_x);
 	$(breakout_elem).text(breakout_label);
 
 	// Update the tooltips
 	var d = guiHive.analysis_board[analysis_id-1];
-	var tooltip_msg = "Analysis ID: " + analysis_id + "<br/>Logic name: " + d.logic_name + "<br/>Number of jobs:" + d.total_job_count + "<br/>Avg msec per job: " + d.avg_msec_per_job;
+	var tooltip_msg = "Analysis ID: " + analysis_id + "<br/>Logic name: " + d.logic_name + "<br/>Number of jobs:" + d.total_job_count + "<br/>Avg msec per job: " + d.avg_msec_per_job_parsed;
 	if (d.mem !== undefined) {
             tooltip_msg = tooltip_msg + "<br/>Min memory used: " + d.mem[0] + "<br/>Mean memory used: " + d.mem[1] + "<br/>Max memory used:" + d.mem[2];
 	}
