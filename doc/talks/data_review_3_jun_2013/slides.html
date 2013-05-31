@@ -25,14 +25,6 @@ URL: https://code.google.com/p/io-2012-slides
 
     <slides class="layout-widescreen">
 
-      <slide>
-	<article class="flexbox vleft vcenter">
-	  <p>
-	    guiHive
-	  </p>
-	</article>
-      </slide>
-
       <slide class="title-slide segue nobackground">
 <!-- 	<aside class="gdbar"><img src="ePeek_logo.png"></aside> -->
 	<!-- The content of this hgroup is replaced programmatically through the slide_config.json. -->
@@ -45,21 +37,81 @@ URL: https://code.google.com/p/io-2012-slides
 
       <slide>
 	<hgroup>
-	  <h2>Why e!Peek?</h2>
+	  <h2>guiHive goals</h2>
 	</hgroup>
 	<article class="flexbox vleft">
 	  <ul>
-	    <li><b>Ensembl</b> data is accessible through...
-	      <ul>
-		<li>The Ensembl Genome Browser</li>
-		<li>The Ensembl Perl API</li>
-		<li>MySQL client</li>
-		<li>The <b>Ensembl REST API</b> (HTTP API)<br/>=>Allows access of Ensembl data directly in the client browser</li>
-	      </ul>
-	    </li>
+	    <li>Monitor your pipeline</li>
+	    <li>Change parameters easily</li>
+	    <li>Visualize basic statistics of your pipeline</li>
+	    <li>Make more complex tasks easier</li>
 	  </ul>
 	</article>
       </slide>
+
+      <slide>
+	<hgroup>
+	  <h2>Where we are</h2>
+	</hgroup>
+	<article class="flexbox vleft">
+	  <ul>
+	    <li>"Mostly working"</li>
+	    <li>Not adding new features<li>
+	    <li>Still important bugs to fix. Use with caution!</li>
+	    <li>Needs better layout and styling</li>
+	  </ul>
+	</article>
+      </slide>
+
+      <slide>
+	<hgroup>
+	  <h2>Browser compatibility...</h2>
+	</hgroup>
+	<article class="flexbox vleft">
+	  <ul>
+	    <li><b>Chrome, Safari, Opera</b> <= Use any of these!</li>
+	    <li><b>Firefox</b>: Has problems with SVGs. Works but it may be painfully slow!</li>
+	    <li><b>Internet Explorer</b>: Should work on IE >= 9 (But I haven't tested it).
+	  </ul>
+	</article>
+      </slide>
+
+      <slide>
+	<hgroup>
+	  <h2>Repository</h2>
+	</hgroup>
+	<article class="flexbox vleft">
+	  <ul>
+	    <li>git clone user@git.internal.ac.uk:/repos/git/ensembl/compara/guihive.git</li>
+	    <li>git clone gitinternal:/repos/git/ensembl/compara/guihive.git</li>
+	  </ul>
+	</article>
+      </slide>
+
+      <slide>
+	<hgroup>
+	  <h2>How guiHive works</h2>
+	</hgroup>
+	<article class="flexbox vcenter">
+	  <span><img src="schema.png" height=500></span>
+	</article>
+      </slide>
+
+      <slide>
+	<hgroup>
+	  <h2>The guiHive Sanger VM</h2>
+	</hgroup>
+	<article class="flexbox vcenter">
+	  <span><img src="schema2.png" height=500></span>
+	</article>
+      </slide>
+
+      <slide>
+	<article class="flexbox vcenter">
+	  <a target="_self" href="http://guihive.internal.sanger.ac.uk:8080/static/">http://guihive.internal.sanger.ac.uk:8080/static/</a>
+	</article>
+      </slide>
+
     </slides>
 
   </body>
