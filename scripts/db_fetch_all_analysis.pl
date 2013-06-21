@@ -71,7 +71,7 @@ sub lsf_report_exists {
 sub fetch_mem {
   my ($analysis_id) = @_;
   my $sql = "select min(mem), max(mem), avg(mem), parameters from lsf_report join worker using(process_id) join resource_description using(resource_class_id) where analysis_id = ?";
-  my $sth = $dbConn->prepare($sql);
+  my $sth = $dbConn->dbc->prepare($sql);
   $sth->execute($analysis_id);
   my ($min_mem, $max_mem, $avg_mem, $resource_params) = $sth->fetchrow_array();
   my $resource_mem;
