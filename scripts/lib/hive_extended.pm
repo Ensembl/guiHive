@@ -134,12 +134,14 @@ use Bio::EnsEMBL::Hive::Utils qw/stringify destringify/;
   # This way we don't create an orphan resource_class
   die "It is not allowed to create a class without parameters\n" unless (defined $parameters);
 
+  print STDERR "$rc_name, $meadow_type, $parameters\n";
+
   for my $rc (@{$self->fetch_all}) {
     # if ($rc_name eq $rc->name) {
     #   throw("This resource name exists in the database\n");
     # }
   }
-  my $rc = $self->create_new(-NAME => $rc_name);
+  my ($rc) = $self->create_new(-NAME => $rc_name);
   my $rc_id = $rc->dbID();
 
   $self->db->get_ResourceDescriptionAdaptor->create_new(
