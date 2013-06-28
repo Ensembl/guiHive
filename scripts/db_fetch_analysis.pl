@@ -149,6 +149,12 @@ sub formAnalysisInfo {
 				   id      => $analysis_id
 				   }];
 
+  $info->{unblock_jobs} = [{
+			    method  => "unblock_jobs",
+			    adaptor => "AnalysisJob",
+			    id      => $analysis_id
+			   }];
+
   my $template = HTML::Template->new(filename => $details_template);
   $template->param(%$info);
 

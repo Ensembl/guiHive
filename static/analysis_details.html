@@ -286,6 +286,15 @@
 	       data-analysisID="<TMPL_VAR NAME=id>">Forgive</a> jobs semaphored by FAILED jobs</td>
       </TMPL_LOOP>
     </tr>
+    <tr>
+      <TMPL_LOOP NAME=unblock_jobs>
+	<td><a style="cursor:pointer;"
+	       class="job_command"
+	       data-method="<TMPL_VAR NAME=method>"
+	       data-adaptor="<TMPL_VAR NAME=adaptor>"
+	       data-analysisID="<TMPL_VAR NAME=id>">Unblock</a> semaphored jobs</td>
+      </TMPL_LOOP>
+    </tr>
   </table>
 </div>
 

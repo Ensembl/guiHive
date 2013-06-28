@@ -282,6 +282,17 @@ use Bio::EnsEMBL::Hive::Utils qw/stringify destringify/;
   return;
 };
 
+## This method unblocks semaphored jobs of a given analysis
+*Bio::EnsEMBL::Hive::DBSQL::AnalysisJobAdaptor::unblock_jobs = sub {
+  my ($self, $analysis_id) = @_;
+
+  for my $job (@{$self->fetch_all_by_analysis_id_status($analysis_id, 'SEMAPHORED')}) {
+    my $semaphore_count = $job->semaphore_count;
+    $self->decrease_semaphore_count_for_jobid($job->dbID, $semaphore_count);
+  }
+
+  return;
+};
 
 1;
 
