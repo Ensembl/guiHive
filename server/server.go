@@ -84,14 +84,14 @@ func guessProjectDir() (string, error) {
 	// First, we try to find the project dir in the working directory
 	serverPath := os.Args[0]
 	serverDir := filepath.Dir(serverPath)
-	pathToIndex := serverDir + "/../static/index.html"
+	pathToIndex := serverDir + "/../index.html"
 	absPathToIndex, err := filepath.Abs(pathToIndex)
 	if err != nil {
+		debug("ABSPATHTOINDEX: %s\n", absPathToIndex)
 		return "", err
 	}
 	if pathExists(absPathToIndex) {
-		debug("ABSPATHTOINDEX: %s\n", absPathToIndex)
-		return path.Clean(absPathToIndex + "/../.."), nil
+		return path.Clean(absPathToIndex + "/.."), nil
 	}
 	for _, srcdir := range build.Default.SrcDirs() {
 		dirName := path.Join(srcdir, projectDirName)
@@ -147,7 +147,7 @@ func main() {
 	checkError("Problem setting environmental variables: ", errV)
 
 	relPath := os.Getenv("GUIHIVE_BASEDIR")
-	http.Handle("/static/", http.FileServer(http.Dir(relPath)))
+	http.Handle("/", http.FileServer(http.Dir(relPath)))
 	http.Handle("/styles/", http.FileServer(http.Dir(relPath)))
 	http.Handle("/javascript/", http.FileServer(http.Dir(relPath)))
 	http.Handle("/images/", http.FileServer(http.Dir(relPath)))
