@@ -20,6 +20,10 @@ body {
     text-align : left;
 }
 
+.tiny_font {
+    font-size : 10px;
+}
+
 #connexion_msg {
 /*    width            : 960px;*/
     height           : 190px;

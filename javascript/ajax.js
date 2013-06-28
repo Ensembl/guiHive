@@ -20,6 +20,7 @@ var guiHive = {
 
 // wait for the DOM to be loaded 
 $(document).ready(function() {
+
     // There are elements that have to be hidden by default
     // and only show after connection
     // TODO: Maybe there is a better way to handle this
@@ -59,7 +60,8 @@ $(document).ready(function() {
     guiHive.refresh_data_timer = setup_timer().timer(guiHive.monitorTimeout/1000);
 
     // Default value. Only for testing. TODO: Remove the following line
-    $("#db_url").val("mysql://ensadmin:xxxxxx@127.0.0.1:2912/mp12_long_mult");
+    $("#db_url").val(guess_database_url());
+    // $("#db_url").val("mysql://ensadmin:xxxxxx@127.0.0.1:2912/mp12_long_mult");
 
 
     $("#Connect").click(function() {
@@ -73,9 +75,37 @@ $(document).ready(function() {
     });
 });
 
+function guess_database_url () {
+    var default_url = "mysql://ensadmin:xxxxxx@127.0.0.1:2912/mp12_long_mult";
+
+    var mysql_url = default_url;
+    // Get the URL in case we have something there
+    var url = $.url();
+    var loc = {};
+    loc.user   = url.param("username");
+    loc.passwd = url.param("passwd");
+    loc.port   = url.param("port");
+    loc.dbname = url.param("dbname");
+    loc.server = url.param("host");
+
+    if (loc.dbname !== undefined && loc.server !== undefined && loc.dbname !== undefined) {
+	var loc_url = "mysql://" + loc.user;
+	if (loc.passwd !== undefined) {
+	    loc_url = loc_url + ":" + loc.passwd;
+	}
+	loc_url = loc_url + "@" + loc.server;
+	if (loc.port !== undefined) {
+	    loc_url = loc_url + ":" + loc.port;
+	}
+	loc_url = loc_url + "/" + loc.dbname;
+	mysql_url = loc_url;
+    }
+	
+    return mysql_url;
+}
+
 function clearPreviousPipeline() {
     guiHive.analysis_board = undefined;
-    // guiHive.views          = undefined;
  
     $("#jobs_table").remove();
 }

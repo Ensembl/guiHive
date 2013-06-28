@@ -5,13 +5,14 @@ use warnings;
 
 use Bio::EnsEMBL::Hive::Utils::Graph;
 use Bio::EnsEMBL::Hive::URLFactory;
+#use Bio::EnsEMBL::Hive::DBSQL::DBAdaptor;
 use JSON;
 use HTML::Template;
 
 use lib ("./scripts/lib");
 use msg;
 
-my $json_url = shift @ARGV || '{"url":["mysql://ensro@127.0.0.1:2912/mp12_long_mult"]}';
+my $json_url = shift @ARGV || '{"url":["mysql://ensro@127.0.0.1:2913/mp12_compara_homology_72"]}';
 my $connexion_template = $ENV{GUIHIVE_BASEDIR} . "static/connexion_details.html";
 my $hive_config_file = $ENV{GUIHIVE_BASEDIR} . "config/hive_config.json";
 
@@ -19,6 +20,7 @@ my $hive_config_file = $ENV{GUIHIVE_BASEDIR} . "config/hive_config.json";
 my $url = decode_json($json_url)->{url}->[0];
 
 # Initialization
+#my $dbConn = Bio::EnsEMBL::Hive::DBSQL::DBAdaptor->new( -no_sql_schema_version_check => 1, -url => $url );
 my $dbConn = Bio::EnsEMBL::Hive::URLFactory->fetch($url);
 my $response = msg->new();
 
@@ -46,11 +48,12 @@ sub formResponse {
     my ($dbConn) = @_;
     my $info;
 
-    $info->{db_name}  = $dbConn->dbc->dbname;
-    $info->{host}     = $dbConn->dbc->host;
-    $info->{port}     = $dbConn->dbc->port;
-    $info->{driver}   = $dbConn->dbc->driver;
-    $info->{username} = $dbConn->dbc->username;
+    $info->{db_name}   = $dbConn->dbc->dbname;
+    $info->{host}      = $dbConn->dbc->host;
+    $info->{port}      = $dbConn->dbc->port;
+    $info->{driver}    = $dbConn->dbc->driver;
+    $info->{username}  = $dbConn->dbc->username;
+    # $info->{mysql_url} = "?username=" . $dbConn->dbc->username . "&host=" . $dbConn->dbc->host . "&dbname=" . $dbConn->dbc->dbname . "&port=" . $dbConn->dbc->port;
 
     my $template = HTML::Template->new(filename => $connexion_template);
     $template->param(%$info);
