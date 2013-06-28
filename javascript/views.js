@@ -46,11 +46,15 @@ var basicViews = function() {
 	}
     };
 
+    views.getAllCharts = function () {
+	return charts;
+    };
+
     views.getChart = function (name) {
 	return charts[name];
     };
 
-    views.updateOneChart = function(name) {
+    views.updateOneChart = function (name) {
 	var chart = charts[name].chart;
 	var update = charts[name].update;
 	update(chart);
@@ -60,6 +64,16 @@ var basicViews = function() {
 }
 
 function initialize_views_and_refresh() {
+    // We remove all the previous charts (if any):
+    if (guiHive.views !== undefined) {
+	var allCharts = guiHive.views.getAllCharts();
+	for (var i in allCharts) {
+	    if (allCharts.hasOwnProperty(i)) {
+		guiHive.views.removeChart(i);
+	    }
+	}
+    }
+
     // Create the new refresh timer
     $("#refresh_time").html("<p>Time to refresh: </p>");
 

@@ -1,4 +1,5 @@
 // Globally defined
+"use strict";
 var guiHive = {
     pipeline_url              : "",        // The url to connect to the pipeline
                                            // This is the value of $("#db_url") i.e. it is entered by the user
@@ -72,9 +73,17 @@ $(document).ready(function() {
     });
 });
 
+function clearPreviousPipeline() {
+    guiHive.analysis_board = undefined;
+    // guiHive.views          = undefined;
+ 
+    $("#jobs_table").remove();
+}
+
 function connect() {
     // We first remove the analysis_board
-    analysis_board = undefined;
+    clearPreviousPipeline();
+
     $.ajax({url        : "/scripts/db_connect.pl",
 	    type       : "post",
 	    data       : "url=" + $("#db_url").val(),

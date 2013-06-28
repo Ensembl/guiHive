@@ -1,6 +1,6 @@
 function initialize_bubbles_cloud() {
     // We first remove previous diagrams;
-//    $("#bubbles").empty();
+    $("#bubbles_vis").remove();
 
     var width = parseInt($("#views").css("width"));
     var height = parseInt($("#views").css("height"));
@@ -8,7 +8,8 @@ function initialize_bubbles_cloud() {
     var vis = d3.select("#bubbles")
 	.append("svg")
 	.attr("width",width)
-	.attr("height",height);
+	.attr("height",height)
+	.attr("id", "bubbles_vis");
 
     var myCloud = bubbleCloud()
 	.width(width)
