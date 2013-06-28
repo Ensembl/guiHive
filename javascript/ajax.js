@@ -58,26 +58,39 @@ $(document).ready(function() {
     guiHive.refresh_data_timer = setup_timer().timer(guiHive.monitorTimeout/1000);
 
     // Default value. Only for testing. TODO: Remove the following line
-    $("#db_url").val("mysql://ensadmin:ensembl@127.0.0.1:2912/mp12_long_mult");
+    $("#db_url").val("mysql://ensadmin:xxxxxx@127.0.0.1:2912/mp12_long_mult");
+
+
     $("#Connect").click(function() {
-	// We first remove the analysis_board
-	analysis_board = undefined;
-	$.ajax({url        : "/scripts/db_connect.pl",
-		type       : "post",
-		data       : "url=" + $("#db_url").val(),
-		dataType   : "json",
-		timeout    : guiHive.databaseConnectionTimeout,
-		beforeSend : function() {showProcessing($("#connexion_msg"))},
-		success    : onSuccess_dbConnect,
-		error      : function (x, t, m) {
-		    if(t==="timeout") {
-			log({err_msg : "No response from mysql sever for 10s. Try it later"});
-			$("#connexion_msg").empty();
-		    }
-		}
-	       });
+	connect();
+    }); 
+
+    $("#db_url").keyup(function(e) {
+	if (e.keyCode === 13) {
+	    connect();
+	}
     });
-}); 
+});
+
+function connect() {
+    // We first remove the analysis_board
+    analysis_board = undefined;
+    $.ajax({url        : "/scripts/db_connect.pl",
+	    type       : "post",
+	    data       : "url=" + $("#db_url").val(),
+	    dataType   : "json",
+	    timeout    : guiHive.databaseConnectionTimeout,
+	    beforeSend : function() {showProcessing($("#connexion_msg"))},
+	    success    : onSuccess_dbConnect,
+	    error      : function (x, t, m) {
+		if(t==="timeout") {
+		    log({err_msg : "No response from mysql sever for 10s. Try it later"});
+		    $("#connexion_msg").empty();
+		}
+	    }
+	   });
+}
+
 
 function fetch_resources() {
     var fetch_url = "/scripts/db_fetch_resource.pl";
