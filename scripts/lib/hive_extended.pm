@@ -289,6 +289,10 @@ use Bio::EnsEMBL::Hive::Utils qw/stringify destringify/;
   for my $job (@{$self->fetch_all_by_analysis_id_status($analysis_id, 'SEMAPHORED')}) {
     my $semaphore_count = $job->semaphore_count;
     $self->decrease_semaphore_count_for_jobid($job->dbID, $semaphore_count);
+
+    # Update the status
+    $job->status('READY');
+    $self->update_status($job);
   }
 
   return;
