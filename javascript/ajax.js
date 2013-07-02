@@ -59,26 +59,56 @@ $(document).ready(function() {
     // We initialize the refresh_data_timer
     guiHive.refresh_data_timer = setup_timer().timer(guiHive.monitorTimeout/1000);
 
-    // Default value. Only for testing. TODO: Remove the following line
-    $("#db_url").val(guess_database_url());
-    // $("#db_url").val("mysql://ensadmin:xxxxxx@127.0.0.1:2912/mp12_long_mult");
-
+    // If the url contains database information...
+    guess_database_url();
 
     $("#Connect").click(function() {
-	connect();
+	// connect();
+	go_to_full_url();
     }); 
 
     $("#db_url").keyup(function(e) {
 	if (e.keyCode === 13) {
-	    connect();
+	    // connect();
+	    go_to_full_url();
 	}
     });
 });
 
-function guess_database_url () {
-    var default_url = "mysql://ensadmin:xxxxxx@127.0.0.1:2912/mp12_long_mult";
+function go_to_full_url () {
+    var full_url = $("#db_url").val();
 
-    var mysql_url = default_url;
+    $.ajax({
+	url      : "/scripts/url_parser.pl",
+	type     : "post",
+	data     : "url=" + full_url,
+	dataType : "json",
+	async    : false,
+	success  : function(dbConn) {
+	    if (dbConn.status !== "FAILED") {
+		var http_url = $.url();
+		var new_http_url = "http://" + http_url.attr("host") + ":" + http_url.attr("port") + "/?username=" + dbConn.out_msg.user + "&host=" + dbConn.out_msg.host + "&dbname=" + dbConn.out_msg.dbname + "&port=" + dbConn.out_msg.port;
+		if (dbConn.out_msg.passwd !== undefined && dbConn.out_msg.passwd !== '') {
+		    new_http_url = new_http_url + "&passwd=xxxxx";
+		}
+		window.location.href = new_http_url;
+	    } else {
+		log(dbConn);
+	    }
+	},
+	error      : function (x, t, m) {
+	    if(t==="timeout") {
+		log({err_msg : "No response from mysql sever for 10s. Try it later"});
+		$("#connexion_msg").empty();
+	    } else {
+		log({err_msg : m});
+	    }
+	}
+    });
+}
+
+function guess_database_url () {
+
     // Get the URL in case we have something there
     var url = $.url();
     var loc = {};
@@ -88,20 +118,54 @@ function guess_database_url () {
     loc.dbname = url.param("dbname");
     loc.server = url.param("host");
 
-    if (loc.dbname !== undefined && loc.server !== undefined && loc.dbname !== undefined) {
+    if (loc.user !== undefined && loc.server !== undefined && loc.dbname !== undefined) {
+	var autoconnect = false;
 	var loc_url = "mysql://" + loc.user;
 	if (loc.passwd !== undefined) {
 	    loc_url = loc_url + ":" + loc.passwd;
+
+	    $("#password-id").modal("show");
+	    $("#password-id").on("shown", function(){
+		$("#mysql_password").focus();
+	    });
+
+	    $("#mysql_password").keyup(function(e) {
+		if (e.keyCode === 13) {
+		    get_mysql_password(loc_url);
+		}
+	    });
+
+	    $("#set_mysql_passwd").on("click", function(){
+		get_mysql_password(loc_url);
+	    });
+	} else {
+	    autoconnect = true;
 	}
 	loc_url = loc_url + "@" + loc.server;
 	if (loc.port !== undefined) {
 	    loc_url = loc_url + ":" + loc.port;
 	}
 	loc_url = loc_url + "/" + loc.dbname;
-	mysql_url = loc_url;
+	$("#db_url").val(loc_url);
+	if (autoconnect) {
+	    guiHive.pipeline_url = loc_url;
+	    connect();
+	}
+    } else {
+	// Default value. Only for testing
+	$("#db_url").val("mysql://ensro@127.0.0.1:2912/mp12_long_mult");
     }
-	
-    return mysql_url;
+    
+}
+
+function get_mysql_password(loc_url) {
+    
+    var passwd = $("#mysql_password").val();
+    loc_url = loc_url.replace("xxxxx", passwd);
+
+    $("#password-id").modal("hide");
+    guiHive.pipeline_url = loc_url;
+    connect();
 }
 
 function clearPreviousPipeline() {
@@ -116,7 +180,7 @@ function connect() {
 
     $.ajax({url        : "/scripts/db_connect.pl",
 	    type       : "post",
-	    data       : "url=" + $("#db_url").val(),
+	    data       : "url=" + guiHive.pipeline_url, //$("#db_url").val(),
 	    dataType   : "json",
 	    timeout    : guiHive.databaseConnectionTimeout,
 	    beforeSend : function() {showProcessing($("#connexion_msg"))},
@@ -125,6 +189,8 @@ function connect() {
 		if(t==="timeout") {
 		    log({err_msg : "No response from mysql sever for 10s. Try it later"});
 		    $("#connexion_msg").empty();
+		} else {
+		    log({err_msg : m});
 		}
 	    }
 	   });
@@ -151,7 +217,7 @@ function refresh_data_and_views(callback) {
     console.log("UPDATING DATA AND VIEWS");
     $.ajax({url      : "/scripts/db_fetch_all_analysis.pl",
 	    type     : "post",
-	    data     : "url=" + $("#db_url").val(),
+	    data     : "url=" + guiHive.pipeline_url, //$("#db_url").val(),
 	    async    : guiHive.analysis_board != undefined,
 	    timeout  : guiHive.databaseConnectionTimeout,
 	    dataType : "json",
@@ -197,7 +263,7 @@ function onSuccess_dbConnect(res) {
     log(res);
 
     // the url for the rest of the queries is set (url var is global)
-    guiHive.pipeline_url = $("#db_url").val();
+    // guiHive.pipeline_url = $("#db_url").val();
 
     // Showing the resources
     $("#show_resources").trigger('click');  // TODO: Best way to handle?

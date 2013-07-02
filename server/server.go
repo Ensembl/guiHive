@@ -55,6 +55,7 @@ func scriptHandler(w http.ResponseWriter, r *http.Request) {
 	checkError("Can't Marshal JSON:", err)
 
 	debug("EXECUTING SCRIPT: %s", fname)
+	debug("ARGS: %s", string(args))
 	cmd := exec.Command(fname, string(args))
 	cmd.Stdout = &outMsg
 	cmd.Stderr = &errMsg

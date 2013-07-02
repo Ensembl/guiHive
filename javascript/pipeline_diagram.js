@@ -116,9 +116,9 @@ function pipeline_diagram_update(allCharts) {
 	var breakout_elem = allCharts[i].breakout_label;
 	var curr_x = $(breakout_elem).attr("x");
 	var curr_l = $(breakout_elem).text().length;
-	var font_size = $(breakout_elem).attr("font-size");
-	var old_size = curr_l * font_size;
-	var new_size = breakout_label.length * font_size;
+	// var font_size = $(breakout_elem).attr("font-size");
+	var old_size = curr_l * 8; // magic number?
+	var new_size = breakout_label.length * 8; // magic number?
 	var new_x = parseFloat(curr_x) + old_size - new_size;
 	$(breakout_elem).attr("x", new_x);
 	$(breakout_elem).text(breakout_label);

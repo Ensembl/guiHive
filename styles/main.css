@@ -10,6 +10,12 @@ body {
 }
 
 /* DIVs */
+
+/* mysql password modal */
+#password-id {
+    width : 250px
+}
+
 /* Connexion Div */
 #db_connexion {
     width            : 960px
@@ -143,7 +149,7 @@ body {
 
 input[type="text"], select {
     margin           : 0;
-    padding          : 0;
+    /* padding          : 0; */
     font-size        : 12px;
 }
 
