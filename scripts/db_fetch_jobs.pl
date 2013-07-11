@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Bio::EnsEMBL::Hive::URLFactory;
+use Bio::EnsEMBL::Hive::DBSQL::DBAdaptor;
 use JSON;
 use HTML::Template;
 use Data::Dumper;
@@ -27,7 +27,7 @@ my $iSortingCols   = $var->{iSortingCols}->[0];
 my $sEcho          = $var->{sEcho}->[0];
 
 # Initialization
-my $dbConn = Bio::EnsEMBL::Hive::URLFactory->fetch($url);
+my $dbConn = Bio::EnsEMBL::Hive::DBSQL::DBAdaptor->new( -no_sql_schema_version_check => 1, -url => $url );
 my $response = msg->new();
 
 if (defined $dbConn) {

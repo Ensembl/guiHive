@@ -4,8 +4,7 @@ use strict;
 use warnings;
 
 use Bio::EnsEMBL::Hive::Utils::Graph;
-use Bio::EnsEMBL::Hive::URLFactory;
-#use Bio::EnsEMBL::Hive::DBSQL::DBAdaptor;
+use Bio::EnsEMBL::Hive::DBSQL::DBAdaptor;
 use JSON;
 use HTML::Template;
 
@@ -22,10 +21,9 @@ my $url = decode_json($json_url)->{url}->[0];
 my $response = msg->new();
 
 # Initialization
-#my $dbConn = Bio::EnsEMBL::Hive::DBSQL::DBAdaptor->new( -no_sql_schema_version_check => 1, -url => $url );
 my $dbConn;
 eval {
-  $dbConn = Bio::EnsEMBL::Hive::URLFactory->fetch($url);
+  $dbConn = Bio::EnsEMBL::Hive::DBSQL::DBAdaptor->new( -no_sql_schema_version_check => 1, -url => $url );
 };
 if ($@) {
   $response->err_msg($@);

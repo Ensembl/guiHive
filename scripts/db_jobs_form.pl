@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Bio::EnsEMBL::Hive::URLFactory;
+use Bio::EnsEMBL::Hive::DBSQL::DBAdaptor;
 use JSON;
 use HTML::Template;
 use Data::Dumper;
@@ -19,7 +19,7 @@ my $var = decode_json($json_data);
 my $url = $var->{url}->[0];
 
 # Initialization
-my $dbConn = Bio::EnsEMBL::Hive::URLFactory->fetch($url);
+my $dbConn = Bio::EnsEMBL::Hive::DBSQL::DBAdaptor->new( -no_sql_schema_version_check => 1, -url => $url );
 
 if (defined $dbConn) {
   my $form = formJobsForm($dbConn);

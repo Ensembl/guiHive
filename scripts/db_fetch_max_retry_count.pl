@@ -4,17 +4,17 @@ use strict;
 use warnings;
 use JSON::PP;
 use Data::Dumper;
-use Bio::EnsEMBL::Hive::URLFactory;
+use Bio::EnsEMBL::Hive::DBSQL::DBAdaptor;
 
 my $json_data = shift @ARGV || '{"url":["mysql://ensadmin:ensembl@127.0.0.1:2912/mp12_compara_nctrees_69d"], "job_id":["5"]}';
 
 my $var = decode_json($json_data);
-print STDERR Dumper $var;
 my $url = $var->{url}->[0];
 my $job_id = $var->{job_id}->[0];
 $job_id =~ s/job_//;
 
-my $dbConn = Bio::EnsEMBL::Hive::URLFactory->fetch($url);
+#my $dbConn = Bio::EnsEMBL::Hive::URLFactory->fetch($url);
+my $dbConn = Bio::EnsEMBL::Hive::DBSQL::DBAdaptor->new(-no_sql_schema_version_check => 1, -url => $url);
 
 my $resp;
 if (defined $dbConn) {

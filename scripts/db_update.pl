@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use Data::Dumper;
 
-use Bio::EnsEMBL::Hive::URLFactory;
+use Bio::EnsEMBL::Hive::DBSQL::DBAdaptor;
 
 use JSON;
 
@@ -28,7 +28,7 @@ if ((scalar @args == 1) && ($args[0] eq "NULL")) {
   @args = undef;
 }
 
-my $dbConn = Bio::EnsEMBL::Hive::URLFactory->fetch($url);
+my $dbConn = Bio::EnsEMBL::Hive::DBSQL::DBAdaptor->new( -no_sql_schema_version_check => 1, -url => $url );
 
 my $response = msg->new();
 

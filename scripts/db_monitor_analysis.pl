@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Bio::EnsEMBL::Hive::URLFactory;
+use Bio::EnsEMBL::Hive::DBSQL::DBAdaptor;
 use Bio::EnsEMBL::Hive::Utils::Graph;
 use JSON;
 use Data::Dumper;
@@ -27,7 +27,7 @@ my $var         = decode_json($json_data);
 my $url         = $var->{url}->[0];
 my $analysis_id = $var->{analysis_id}->[0];
 
-my $dbConn = Bio::EnsEMBL::Hive::URLFactory->fetch($url);
+my $dbConn = Bio::EnsEMBL::Hive::DBSQL::DBAdaptor->new( -no_sql_schema_version_check => 1, -url => $url );
 my $response = msg->new();
 
 if (defined $dbConn) {

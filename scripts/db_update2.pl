@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Bio::EnsEMBL::Hive::URLFactory;
+use Bio::EnsEMBL::Hive::DBSQL::DBAdaptor;
 use Bio::EnsEMBL::Hive::Queen;
 
 use JSON;
@@ -44,7 +44,7 @@ my @args  = split(/,/,$args); ### TODO: JEditable only gives one value, so it is
 unshift (@args, $addArg) if (defined $addArg);
 
 my $response = msg->new();
-my $dbConn = Bio::EnsEMBL::Hive::URLFactory->fetch($url);
+my $dbConn = Bio::EnsEMBL::Hive::DBSQL::DBAdaptor->new( -no_sql_schema_version_check => 1, -url => $url );
 
 if (defined $dbConn) {
 

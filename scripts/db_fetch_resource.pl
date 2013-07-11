@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Bio::EnsEMBL::Hive::URLFactory;
+use Bio::EnsEMBL::Hive::DBSQL::DBAdaptor;
 use JSON;
 use HTML::Template;
 use HTML::Entities;
@@ -20,7 +20,7 @@ my $url = decode_json($json_url)->{url}->[0];
 
 # Initialization
 my $resources_template = $ENV{GUIHIVE_BASEDIR} . 'static/resources.html';
-my $dbConn = Bio::EnsEMBL::Hive::URLFactory->fetch($url);
+my $dbConn = Bio::EnsEMBL::Hive::DBSQL::DBAdaptor->new( -no_sql_schema_version_check => 1, -url => $url );
 my $response = msg->new();
 
 if (defined $dbConn) {
