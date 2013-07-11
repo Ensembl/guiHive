@@ -86,6 +86,7 @@ function go_to_full_url () {
 	async    : false,
 	success  : function(dbConn) {
 	    if (dbConn.status !== "FAILED") {
+		console.log(dbConn.out_msg);
 		var http_url = $.url();
 		var new_http_url = "http://" + http_url.attr("host") + ":" + http_url.attr("port") + "/?username=" + dbConn.out_msg.user + "&host=" + dbConn.out_msg.host + "&dbname=" + dbConn.out_msg.dbname + "&port=" + dbConn.out_msg.port;
 		if (dbConn.out_msg.passwd !== undefined && dbConn.out_msg.passwd !== '') {
@@ -142,7 +143,7 @@ function guess_database_url () {
 	    autoconnect = true;
 	}
 	loc_url = loc_url + "@" + loc.server;
-	if (loc.port !== undefined) {
+	if (loc.port !== "null") {
 	    loc_url = loc_url + ":" + loc.port;
 	}
 	loc_url = loc_url + "/" + loc.dbname;
