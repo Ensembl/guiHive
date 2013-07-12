@@ -265,7 +265,7 @@
 	       class="job_command"
 	       data-method="<TMPL_VAR NAME=method>"
 	       data-adaptor="<TMPL_VAR NAME=adaptor>"
-	       data-analysisID="<TMPL_VAR NAME=id>">Reset</a> FAILED jobs</td>
+	       data-analysisID="<TMPL_VAR NAME=id>">Reset</a> FAILED jobs (setting them to READY)</td>
       </TMPL_LOOP>
     </tr>
     <tr>
@@ -278,12 +278,12 @@
       </TMPL_LOOP>
     </tr>
     <tr>
-      <TMPL_LOOP NAME=forgive_semaphored_jobs>
+      <TMPL_LOOP NAME=forgive_failed_jobs>
 	<td><a style="cursor:pointer;"
 	       class="job_command"
 	       data-method="<TMPL_VAR NAME=method>"
 	       data-adaptor="<TMPL_VAR NAME=adaptor>"
-	       data-analysisID="<TMPL_VAR NAME=id>">Forgive</a> jobs semaphored by FAILED jobs</td>
+	       data-analysisID="<TMPL_VAR NAME=id>">Forgive</a> FAILED jobs (updating semaphores)</td>
       </TMPL_LOOP>
     </tr>
     <tr>

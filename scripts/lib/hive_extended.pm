@@ -204,23 +204,25 @@ use Bio::EnsEMBL::Hive::Utils qw/stringify destringify/;
   return $n;
 };
 
-## When some jobs within the range of the failed_job_tolerance limit fail for an analysis
-## and that jobs control a semaphore, the semaphored job never unblocks.
-## This method decreases the semaphore_count for jobs blocked by these failed jobs.
-## WARNING!! If the method is run twice on the same failed jobs will be decreasing the count twice and we
-## don't want this. This SHOULD BE FIXED!
-*Bio::EnsEMBL::Hive::DBSQL::AnalysisJobAdaptor::forgive_dependent_jobs_semaphored_by_failed_jobs = sub {
+## forgive_failed_jobs sets FAILED jobs to DONE updating the semaphore count of dependent jobs
+## This method is safer than the previous "forgive_dependent_jobs_semaphored_by_failed_jobs"
+## because if the latter is run twice on the same analysis it would be decreasing the count twice on the same FAILED jobs
+## because those jobs were not reset.
+*Bio::EnsEMBL::Hive::DBSQL::AnalysisJobAdaptor::forgive_failed_jobs = sub {
   my ($self, $analysis_id) = @_;
+
   my $jobs = $self->fetch_all_by_analysis_id_status($analysis_id, 'FAILED');
 
   my %semaphored_analysis_ids = ();
-  for my $job(@$jobs) {
+
+  for my $job (@$jobs) {
     $self->decrease_semaphore_count_for_jobid($job->semaphored_job_id());
+    $job->update_status('DONE');
     my $semaphored_job = $self->fetch_by_dbID($job->semaphored_job_id());
-    $semaphored_analysis_ids{$semaphored_job->analysis_id}++ if (defined $semaphored_job);
+    $semaphored_analysis_ids{$semaphored_job->analysis_id}++ if (defined $semaphored_job)
   }
 
-  # We sync the analysis_stats table:
+  # We sync the analysis_stats table (TODO: I think this is not really working)
   my @analysis_ids = ($analysis_id, keys %semaphored_analysis_ids);
   for my $analysis_id (@analysis_ids) {
     $self->db->get_Queen()->synchronize_AnalysisStats($self->db->get_AnalysisAdaptor->fetch_by_dbID($analysis_id)->stats);

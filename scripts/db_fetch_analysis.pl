@@ -143,8 +143,8 @@ sub formAnalysisInfo {
 				   id      => $analysis_id
 				   }];
 
-  $info->{forgive_semaphored_jobs} = [{
-				   method  => "forgive_dependent_jobs_semaphored_by_failed_jobs",
+  $info->{forgive_failed_jobs} = [{
+				   method  => "forgive_failed_jobs",
 				   adaptor => "AnalysisJob",
 				   id      => $analysis_id
 				   }];
