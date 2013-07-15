@@ -133,15 +133,19 @@
   <div id="views" class="tab-pane">
     <div id="bubbles">
 
-      <input type=button id="job-counts" value="Job Counts"></input>
-      <input type=button id="job-time" value="Avg Job Time"></input>
-      <input type=button id="mem" value="Memory used"></input>
-      <input type=button id="mem-resource" value="Used vs reserved Mem"></input>
+      <p>Bubble size represents:  <select id="bubble-size">
+	  <option value="total_job_count">Job counts</option>
+	  <option value="avg_msec_per_job">Avg Job Time</option>
+	  <option value="mem">Job memory usage (Min/Avg/Max)</option>
+	  <option value="resource_mem">Job memory usage VS reserved mem</option>
+	</select>
+      </p>
+      <p>Display by meadow type: <select id="display_by_meadow_type">
+	  <option value="one-sun">No</option>
+	  <option value="two-suns">Yes</option>
+	</select>
+      </p>
 	     
-      <div>
-        <input type=button id="one-sun" value="All"></input>
-        <input type=button id="two-suns" value="Display by meadow type"></input>
-      </div>
       <div>
         Bubble size: 
         <input type=range  id="max-size" value=50 min=20 max=80 step=1></input>

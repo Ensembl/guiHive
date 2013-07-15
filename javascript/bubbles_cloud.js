@@ -20,12 +20,19 @@ function initialize_bubbles_cloud() {
     myCloud(vis);
     myCloud.start().group_all();
 
-    $("#job-counts").on("click", function() {myCloud.attribute("total_job_count"); myCloud.update()});
-    $("#job-time").on("click", function() {myCloud.attribute("avg_msec_per_job"); myCloud.update()});
-    $("#mem").on("click", function() {myCloud.attribute("mem"); myCloud.update()});
-    $("#mem-resource").on("click", function() {myCloud.attribute("resource_mem"); myCloud.update()});
-    $("#one-sun").on("click", function() {myCloud.group_all()});
-    $("#two-suns").on("click", function() {myCloud.display_by_meadow()});
+    $("#bubble-size").change(function() {
+	myCloud.attribute($(this).val()); myCloud.update();
+    });
+
+    $("#display_by_meadow_type").change(function() {
+	var val = $(this).val();
+	if (val === "one-sun") {
+	    myCloud.group_all();
+	} else {
+	    myCloud.display_by_meadow();
+	}
+    });
+
     $("#max-size").on("change", function() {var v = $("#max-size").val(); myCloud.max_bubble_size($("#max-size").val()); myCloud.update()});
 
     return myCloud;
