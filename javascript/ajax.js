@@ -805,8 +805,6 @@ function buildURL(obj) {
 	URL = URL.concat("&analysis_id="+$(obj).attr("data-analysisID"));
     }
 
-    console.log(URL);
-
     return(URL);
 }
 
