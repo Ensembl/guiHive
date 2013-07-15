@@ -1,3 +1,8 @@
+d3.selection.prototype.moveToFront = function() { 
+  return this.each(function() { 
+    this.parentNode.appendChild(this); 
+  }); 
+};
 
 // Compile the analysis_id regexp once
 var analysis_id_regexp = /^analysis_(\d+)/;
@@ -30,6 +35,9 @@ function draw_diagram(xmlStr) {
     	.append("g");
     
     g.node().appendChild(importedNode);
+
+    // We move to front all the nodes to avoid being hidden behind other elements
+    d3.selectAll("#pipeline_diagram .node").moveToFront();
 }
 
 // This is creating the pie charts in the pipeline diagram
@@ -64,6 +72,7 @@ function initialize_pipeline_diagram() {
 		.attr("data-analysis_id", analysis_id)
 		.attr("rel", "tooltip-it")
 		.on("click", function() {
+		    console.log("ANALYSIS " + analysis_id + " CLICKED!");
 		    display(analysis_id, "/scripts/db_fetch_analysis.pl", onSuccess_fetchAnalysis);
 		    //		    display(analysis_id, "/scripts/db_fetch_jobs.pl", onSuccess_fetchJobs);
 		});
@@ -140,3 +149,4 @@ function redraw(viz) {
 	     "translate(" + d3.event.translate + ")"
 	     + " scale("  + d3.event.scale + ")");
 }
+
