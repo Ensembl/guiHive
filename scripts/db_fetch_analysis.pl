@@ -132,7 +132,7 @@ sub formAnalysisInfo {
 				   }];
 
   $info->{failed_jobs_to_ready} = [{
-				   method  => "reset_jobs_for_analysis_id",
+				   method  => "reset_jobs_for_analysis_id_and_sync",
 				   adaptor => "AnalysisJob",
 				   id      => $analysis_id
 				   }];

@@ -300,5 +300,15 @@ use Bio::EnsEMBL::Hive::Utils qw/stringify destringify/;
   return;
 };
 
+## This method is equivalent to reset_jobs_for_analysis_id but syncing
+*Bio::EnsEMBL::Hive::DBSQL::AnalysisJobAdaptor::reset_jobs_for_analysis_id_and_sync = sub {
+  my ($self, $analysis_id) = @_;
+
+  $self->reset_jobs_for_analysis_id($analysis_id);
+  $self->db->get_Queen()->synchronize_AnalysisStats($self->db->get_AnalysisAdaptor->fetch_by_dbID($analysis_id)->stats);
+
+  return;
+};
+
 1;
 
