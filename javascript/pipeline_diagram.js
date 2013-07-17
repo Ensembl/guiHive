@@ -73,7 +73,7 @@ function initialize_pipeline_diagram() {
 		.attr("rel", "tooltip-it")
 		.on("click", function() {
 		    display(analysis_id, "/scripts/db_fetch_analysis.pl", onSuccess_fetchAnalysis);
-		    //		    display(analysis_id, "/scripts/db_fetch_jobs.pl", onSuccess_fetchJobs);
+    //		    display(analysis_id, "/scripts/db_fetch_jobs.pl", onSuccess_fetchJobs);
 		});
 	}
     });
@@ -106,7 +106,6 @@ function pipeline_diagram_update(allCharts) {
 	// removing an entry (ID) there).
 	// A more robust version of this code would index the analysis_board by analysis_id, but this would
 	// require an extra data structure (a ids=>index hash table or similar).
-//	var node_color = guiHive.analysis_board[analysis_id-1].status[1];
 	var node_color = guiHive.node_colors(analysis_id-1);
 	var nodes = $(allCharts[i].root_node).siblings("path,polygon,polyline");
 	d3.selectAll(nodes).transition().duration(1500).delay(0).attr("fill",node_color).attr("stroke",function() {if($(this).attr("stroke") === "black") {return "black"} else {return node_color}});
@@ -127,7 +126,7 @@ function pipeline_diagram_update(allCharts) {
 	// var font_size = $(breakout_elem).attr("font-size");
 	var old_size = curr_l * 8; // magic number?
 	var new_size = breakout_label.length * 8; // magic number?
-	var new_x = parseFloat(curr_x) + old_size - new_size;
+	var new_x = parseFloat(curr_x) - ~~(new_size/2) + ~~(old_size/2);
 	$(breakout_elem).attr("x", new_x);
 	$(breakout_elem).text(breakout_label);
 
@@ -139,7 +138,6 @@ function pipeline_diagram_update(allCharts) {
 	}
 	tooltip_msg = tooltip_msg + "<br/>Breakout label: " + d.breakout_label + "<br/>Status: " + d.status[0];
 	$(allCharts[i].root_node).parent().attr("title",tooltip_msg);
-//	$(allCharts[i].root_node).text(tooltip_msg);
     }
 }
 
