@@ -38,7 +38,7 @@
 
             "JobStatus"   : {
                 "SEMAPHORED"    : { "Colour" : "grey"        },
-                "READY"         : { "Colour" : "green"       },
+                "READY"         : { "Colour" : "#00FF00"       },
                 "INPROGRESS"    : { "Colour" : "yellow"      },
                 "DONE"          : { "Colour" : "DeepSkyBlue" },
                 "FAILED"        : { "Colour" : "red"         }
@@ -47,10 +47,10 @@
             "AnalysisStatus"   : {
                 "EMPTY"       : { "Colour" : "white"       },
                 "BLOCKED"     : { "Colour" : "grey"        },
-                "LOADING"     : { "Colour" : "green"       },
+                "LOADING"     : { "Colour" : "#00FF00"       },
                 "ALL_CLAIMED" : { "Colour" : "grey"        },
-                "SYNCHING"    : { "Colour" : "green"       },
-                "READY"       : { "Colour" : "green"       },
+                "SYNCHING"    : { "Colour" : "#00FF00"       },
+                "READY"       : { "Colour" : "#00FF00"       },
                 "WORKING"     : { "Colour" : "yellow"      },
                 "DONE"        : { "Colour" : "DeepSkyBlue" },
                 "FAILED"      : { "Colour" : "red"         }

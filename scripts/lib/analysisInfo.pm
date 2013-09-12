@@ -17,7 +17,7 @@ my $hive_config_file = $ENV{GUIHIVE_BASEDIR} . "config/hive_config.json";
 ## This is issue#17
 my $job_colors = {
 		  'semaphored' => 'grey',
-		  'ready'      => 'green',
+		  'ready'      => '#00FF00', # green
 		  'inprogress' => 'yellow',
 		  'failed'     => 'red',
 		  'done'       => 'DeepSkyBlue',
