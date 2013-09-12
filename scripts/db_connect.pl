@@ -5,6 +5,7 @@ use warnings;
 
 use Bio::EnsEMBL::Hive::Utils::Graph;
 use Bio::EnsEMBL::Hive::DBSQL::DBAdaptor;
+use Bio::EnsEMBL::Hive::Utils::Config;
 use JSON;
 use HTML::Template;
 
@@ -13,7 +14,7 @@ use msg;
 
 my $json_url = shift @ARGV || '{"url":["mysql://ensro@127.0.0.1:2912/mp12_long_mult"]}';
 my $connexion_template = $ENV{GUIHIVE_BASEDIR} . "static/connexion_details.html";
-my $hive_config_file = $ENV{GUIHIVE_BASEDIR} . "config/hive_config.json";
+my $hive_config_file = Bio::EnsEMBL::Hive::Utils::Config->default_config_files();
 
 # Input data
 my $url = decode_json($json_url)->{url}->[0];
