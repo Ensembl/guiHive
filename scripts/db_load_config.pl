@@ -31,7 +31,7 @@ if ((-e $hive_config_file) && (-r $hive_config_file)) {
 
 } else {
   $response->status('FAILED');
-  $response->err_msg("Hive config file: $hive_config_file doesn't exists or is not readable");
+  $response->err_msg("Hive config file: $hive_config_file doesn't exist or is not readable");
 }
 
 print $response->toJSON;
