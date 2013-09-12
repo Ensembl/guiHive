@@ -16,11 +16,16 @@ my $hive_config_file = $ENV{GUIHIVE_BASEDIR} . "config/hive_config.json";
 ## I need to sit down with Leo and try to define a better/comprehensive coloring schema.
 ## This is issue#17
 my $job_colors = {
-		  'semaphored' => 'red',
-		  'ready'      => 'orange',
+		  'semaphored' => 'grey',
+		  'ready'      => 'green',
 		  'inprogress' => 'yellow',
-		  'failed'     => 'grey',
-		  'done'       => 'green',
+		  'failed'     => 'red',
+		  'done'       => 'DeepSkyBlue',
+		  # 'semaphored' => 'red',
+		  # 'ready'      => 'orange',
+		  # 'inprogress' => 'yellow',
+		  # 'failed'     => 'grey',
+		  # 'done'       => 'green',
 		  'background' => 'white',
 		 };
 
