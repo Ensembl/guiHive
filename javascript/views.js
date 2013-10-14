@@ -77,9 +77,9 @@ function initialize_views_and_refresh() {
     // Create the new refresh timer
     $("#refresh_time").html("<p>Time to refresh: </p>");
 
-    // We need some initial data, so we first call update_analysis_board with an empty callback
+    // We need some initial data, so we first call this method with an empty callback
     // At this point, the board is empty, so
-    // update_analysis_board will run in "sync" mode
+    // refresh_data_and_views will run in "sync" mode
     // and the views will not be updated (they are not created yet)
     // TODO: We are retrieving data twice (see below in this function). But this is
     // not easy to avoid because for some of the views we need to have initial values to work with
