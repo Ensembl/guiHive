@@ -10,7 +10,7 @@ function jobs_chart(analysis_id) {
 	.attr("height", 60)
 	.attr("width", 500)
 	.append("svg:g");
-    var gChart = hStackedBarChart(guiHive.analysis_board[analysis_id-1]).height(50).width(300).barsmargin(120).fontsize(12).id(1);
+    var gChart = hStackedBarChart(guiHive.analysis_board[analysis_id]).height(50).width(300).barsmargin(120).fontsize(12).id(1);
     gChart.analysis_id = analysis_id;
     gChart(g);
     guiHive.views.addChart("jobs_chart",gChart, live_analysis_chart);
@@ -21,6 +21,6 @@ function live_analysis_chart(gChart) {
     var analysis_id = gChart.analysis_id;
     var t = gChart.transition();
 
-    gChart.update(guiHive.analysis_board[analysis_id - 1], t);
+    gChart.update(guiHive.analysis_board[analysis_id], t);
 //    setTimeout(function() {live_analysis_chart(gChart, analysis_id)}, guiHive.monitorTimeout);
 }
