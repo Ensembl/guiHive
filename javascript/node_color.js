@@ -7,7 +7,6 @@ function nodeColor() {
 
     var node_range = function(index) {
 	if (attr === "status") {
-	    console.log("INDEX: " + index);
 	    return color_status[guiHive.analysis_board[index].status[0]].Colour;
 	}
 	node_range.range();
