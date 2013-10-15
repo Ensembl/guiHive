@@ -104,13 +104,7 @@ function pipeline_diagram_update(allCharts) {
 	var analysis_id = allCharts[i].analysis_id;
 
 	// Update the color status of the node
-	// TODO: This is assuming that the analysis_id corresponds to indexes in the analysis_board (-1)
-	// but this may not be the case if we have missing analysis_ids
-	// (i.e. if we have updated manually the analysis_base table
-	// removing an entry (ID) there).
-	// A more robust version of this code would index the analysis_board by analysis_id, but this would
-	// require an extra data structure (a ids=>index hash table or similar).
-	var node_color = guiHive.node_colors(analysis_id-1);
+	var node_color = guiHive.node_colors(analysis_id);
 	var nodes = $(allCharts[i].root_node).siblings("path,polygon,polyline");
 	d3.selectAll(nodes).transition().duration(1500).delay(0).attr("fill",node_color).attr("stroke",function() {if($(this).attr("stroke") === "black") {return "black"} else {return node_color}});
 
@@ -118,12 +112,12 @@ function pipeline_diagram_update(allCharts) {
 	var chart = allCharts[i].chart;
 	chart.max_counts(max_counts);
 	var t = allCharts[i].transition;
-	var data = guiHive.analysis_board[analysis_id-1].jobs_counts;
+	var data = guiHive.analysis_board[analysis_id].jobs_counts;
 	chart.update(data, t);
 
 	// Update the breakout_label
 	// TODO: The breakout label should be re-located in the node as it grows
-	var breakout_label = guiHive.analysis_board[analysis_id-1].breakout_label;
+	var breakout_label = guiHive.analysis_board[analysis_id].breakout_label;
 	var breakout_elem = allCharts[i].breakout_label;
 	var curr_x = $(breakout_elem).attr("x");
 	var curr_l = $(breakout_elem).text().length;
@@ -135,7 +129,7 @@ function pipeline_diagram_update(allCharts) {
 	$(breakout_elem).text(breakout_label);
 
 	// Update the tooltips
-	var d = guiHive.analysis_board[analysis_id-1];
+	var d = guiHive.analysis_board[analysis_id];
 	var tooltip_msg = "Analysis ID: " + analysis_id + "<br/>Logic name: " + d.logic_name + "<br/>Number of jobs:" + d.total_job_count + "<br/>Avg time per job: " + d.avg_msec_per_job_parsed;
 	if (d.mem !== undefined) {
             tooltip_msg = tooltip_msg + "<br/>Min memory used: " + d.mem[0] + "<br/>Mean memory used: " + d.mem[1] + "<br/>Max memory used:" + d.mem[2];

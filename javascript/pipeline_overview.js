@@ -1,6 +1,6 @@
 function get_totals() {
     var totals = new Array();
-    for (var k = 0; k<guiHive.analysis_board[0].jobs_counts.counts.length; k++) {
+    for (var k = 0; k<guiHive.analysis_board[1].jobs_counts.counts.length; k++) {
 	totals[k] = 0;
     }
     for (var i = 0; i<guiHive.analysis_board.length; i++) {
@@ -20,8 +20,8 @@ function form_data() {
     totals.pop();
     var data = {};
     data.counts = totals;
-    data.colors = guiHive.analysis_board[0].jobs_counts.colors;
-    data.names  = guiHive.analysis_board[0].jobs_counts.names;
+    data.colors = guiHive.analysis_board[1].jobs_counts.colors;
+    data.names  = guiHive.analysis_board[1].jobs_counts.names;
     data.total  = d3.sum(totals);
 
     return data;
