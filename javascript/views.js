@@ -8,9 +8,9 @@ var basicViews = function() {
     overviewChart.chart = pipeline_overview();
     overviewChart.update = pipeline_overview_update; // a closure;
 
-    var allAnalysisCharts = {};
-    allAnalysisCharts.chart = initialize_analysis_summary();
-    allAnalysisCharts.update = analysis_summary_update; // a closure;
+    // var allAnalysisCharts = {};
+    // allAnalysisCharts.chart = initialize_analysis_summary();
+    // allAnalysisCharts.update = analysis_summary_update; // a closure;
 
     var allAnalysisPies = {};
     allAnalysisPies.chart = initialize_pipeline_diagram();
@@ -22,7 +22,7 @@ var basicViews = function() {
     // more...
 
     var charts = { overview     : overviewChart,
-		   allAnalysis  : allAnalysisCharts,
+		   // allAnalysis  : allAnalysisCharts,
 		   allAnalysisP : allAnalysisPies,
 		   bubblesCloud : allBubbles,
 		 };
@@ -97,6 +97,7 @@ function initialize_views_and_refresh() {
     // We now refresh data and views
     // We need the analysis_board to be populated by now
     guiHive.refresh_data_timer.now();
+    // refresh_data_and_views(guiHive.views.update);
 
     // We listen to the timer controls    
     $(".refresh_now").click(guiHive.refresh_data_timer.now);
