@@ -85,7 +85,6 @@ function initialize_pipeline_diagram() {
     // Apart from pies we need to setup and listen node_colors
     guiHive.node_colors = nodeColor();
     $("#select_analysis_colors").change(function(){
-	console.log("COLOR SCHEMA HAS CHANGED TO: " + $(this).val());
 	guiHive.node_colors.attr($(this).val())
 	var pChart = guiHive.views.updateOneChart("allAnalysisP");
     });
