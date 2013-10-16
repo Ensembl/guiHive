@@ -85,6 +85,7 @@ function initialize_pipeline_diagram() {
     // Apart from pies we need to setup and listen node_colors
     guiHive.node_colors = nodeColor();
     $("#select_analysis_colors").change(function(){
+	console.log("COLOR SCHEMA HAS CHANGED TO: " + $(this).val());
 	guiHive.node_colors.attr($(this).val())
 	var pChart = guiHive.views.updateOneChart("allAnalysisP");
     });
@@ -97,7 +98,7 @@ function initialize_pipeline_diagram() {
 }
 
 function pipeline_diagram_update(allCharts) {
-    var max_counts = d3.max(guiHive.analysis_board, function(v){return d3.sum(v.jobs_counts.counts)});
+    var max_counts = d3.max(guiHive.analysis_board, function(v){if (v === null) {return 0} return d3.sum(v.jobs_counts.counts)});
 //    var node_colors = nodeColor(); // closure
 //    node_colors.attr("avg_msec_per_job");
     for (var i = 0; i < allCharts.length; i++) {

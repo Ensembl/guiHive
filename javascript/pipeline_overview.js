@@ -4,8 +4,11 @@ function get_totals() {
 	totals[k] = 0;
     }
     for (var i = 0; i<guiHive.analysis_board.length; i++) {
-	for (var j = 0; j<guiHive.analysis_board[i].jobs_counts.counts.length; j++) {
-	    totals[j] += guiHive.analysis_board[i].jobs_counts.counts[j]
+	console.log("ANALYSIS_BOARD[ " + i + "] IS: " + guiHive.analysis_board[i]);
+	if (guiHive.analysis_board[i] !== null) {
+	    for (var j = 0; j<guiHive.analysis_board[i].jobs_counts.counts.length; j++) {
+		totals[j] += guiHive.analysis_board[i].jobs_counts.counts[j]
+	    }
 	}
     }
 
