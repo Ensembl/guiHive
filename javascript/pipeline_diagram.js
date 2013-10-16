@@ -25,9 +25,9 @@ function draw_diagram(xmlStr) {
     var width = $("#pipeline_diagram").css("width");
     var height = $("#pipeline_diagram").css("height");
 
-    // d3.select(importedNode)
-    // 	.attr("width", width)
-    // 	.attr("height", height);
+    d3.select(importedNode)
+    	.attr("width", width)
+    	.attr("height", height);
 
     var g = d3.select("#pipeline_diagram")
     	.append("svg")
