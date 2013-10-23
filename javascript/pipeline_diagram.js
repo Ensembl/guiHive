@@ -70,6 +70,23 @@ function initialize_pipeline_diagram() {
 			  root_node      : v,
 			 });
 
+
+	    // Let's add a label with the analysis_id (should accommodate 3 digits)
+	    var analysis_box_x = parseInt(d3.select(gRoot).select("polygon").attr("points").split(",")[0]);
+	    d3.select(gRoot)
+		.append("rect")
+		.attr("x", analysis_box_x)
+		.attr("y", posy - 15)
+		.attr("width", 25)
+		.attr("height", 15)
+		.attr("stroke", "black")
+		.attr("fill", "white");
+	    d3.select(gRoot)
+		.append("text")
+		.text(analysis_id)
+		.attr("x", analysis_box_x+3)
+		.attr("y", posy - 2);
+
 	    // Links to the analysis_details
 	    // and makes the gRoots tooltip-able
 	    d3.select(gRoot)
@@ -105,8 +122,9 @@ function pipeline_diagram_update(allCharts) {
 
 	// Update the color status of the node
 	var node_color = guiHive.node_colors(analysis_id);
-	var nodes = $(allCharts[i].root_node).siblings("path,polygon,polyline");
+	var nodes = $(allCharts[i].root_node).siblings("path,polygon,polyline,rect");
 	d3.selectAll(nodes).transition().duration(1500).delay(0).attr("fill",node_color).attr("stroke",function() {if($(this).attr("stroke") === "black") {return "black"} else {return node_color}});
+
 
 	// Update the pie charts
 	var chart = allCharts[i].chart;
