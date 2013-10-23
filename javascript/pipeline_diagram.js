@@ -25,6 +25,10 @@ function draw_diagram(xmlStr) {
     var width = $("#pipeline_diagram").css("width");
     var height = $("#pipeline_diagram").css("height");
 
+    d3.select(importedNode)
+    	.attr("width", width)
+    	.attr("height", height);
+
     var g = d3.select("#pipeline_diagram")
     	.append("svg")
     	.attr("width",width)
@@ -66,6 +70,23 @@ function initialize_pipeline_diagram() {
 			  root_node      : v,
 			 });
 
+
+	    // Let's add a label with the analysis_id (should accommodate 3 digits)
+	    var analysis_box_x = parseInt(d3.select(gRoot).select("polygon").attr("points").split(",")[0]);
+	    d3.select(gRoot)
+		.append("rect")
+		.attr("x", analysis_box_x)
+		.attr("y", posy - 15)
+		.attr("width", 25)
+		.attr("height", 15)
+		.attr("stroke", "black")
+		.attr("fill", "white");
+	    d3.select(gRoot)
+		.append("text")
+		.text(analysis_id)
+		.attr("x", analysis_box_x+3)
+		.attr("y", posy - 2);
+
 	    // Links to the analysis_details
 	    // and makes the gRoots tooltip-able
 	    d3.select(gRoot)
@@ -93,33 +114,28 @@ function initialize_pipeline_diagram() {
 }
 
 function pipeline_diagram_update(allCharts) {
-    var max_counts = d3.max(guiHive.analysis_board, function(v){return d3.sum(v.jobs_counts.counts)});
+    var max_counts = d3.max(guiHive.analysis_board, function(v){if (v === null) {return 0} return d3.sum(v.jobs_counts.counts)});
 //    var node_colors = nodeColor(); // closure
 //    node_colors.attr("avg_msec_per_job");
     for (var i = 0; i < allCharts.length; i++) {
 	var analysis_id = allCharts[i].analysis_id;
 
 	// Update the color status of the node
-	// TODO: This is assuming that the analysis_id corresponds to indexes in the analysis_board (-1)
-	// but this may not be the case if we have missing analysis_ids
-	// (i.e. if we have updated manually the analysis_base table
-	// removing an entry (ID) there).
-	// A more robust version of this code would index the analysis_board by analysis_id, but this would
-	// require an extra data structure (a ids=>index hash table or similar).
-	var node_color = guiHive.node_colors(analysis_id-1);
-	var nodes = $(allCharts[i].root_node).siblings("path,polygon,polyline");
+	var node_color = guiHive.node_colors(analysis_id);
+	var nodes = $(allCharts[i].root_node).siblings("path,polygon,polyline,rect");
 	d3.selectAll(nodes).transition().duration(1500).delay(0).attr("fill",node_color).attr("stroke",function() {if($(this).attr("stroke") === "black") {return "black"} else {return node_color}});
+
 
 	// Update the pie charts
 	var chart = allCharts[i].chart;
 	chart.max_counts(max_counts);
 	var t = allCharts[i].transition;
-	var data = guiHive.analysis_board[analysis_id-1].jobs_counts;
+	var data = guiHive.analysis_board[analysis_id].jobs_counts;
 	chart.update(data, t);
 
 	// Update the breakout_label
 	// TODO: The breakout label should be re-located in the node as it grows
-	var breakout_label = guiHive.analysis_board[analysis_id-1].breakout_label;
+	var breakout_label = guiHive.analysis_board[analysis_id].breakout_label;
 	var breakout_elem = allCharts[i].breakout_label;
 	var curr_x = $(breakout_elem).attr("x");
 	var curr_l = $(breakout_elem).text().length;
@@ -131,7 +147,7 @@ function pipeline_diagram_update(allCharts) {
 	$(breakout_elem).text(breakout_label);
 
 	// Update the tooltips
-	var d = guiHive.analysis_board[analysis_id-1];
+	var d = guiHive.analysis_board[analysis_id];
 	var tooltip_msg = "Analysis ID: " + analysis_id + "<br/>Logic name: " + d.logic_name + "<br/>Number of jobs:" + d.total_job_count + "<br/>Avg time per job: " + d.avg_msec_per_job_parsed;
 	if (d.mem !== undefined) {
             tooltip_msg = tooltip_msg + "<br/>Min memory used: " + d.mem[0] + "<br/>Mean memory used: " + d.mem[1] + "<br/>Max memory used:" + d.mem[2];

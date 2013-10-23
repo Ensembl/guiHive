@@ -246,3 +246,7 @@ input[type="text"], select {
 #log-tab {
     color  : #B8B8B8;
 }
+
+.graph {
+    cursor : move;
+}

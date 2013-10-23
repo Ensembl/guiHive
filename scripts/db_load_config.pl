@@ -3,7 +3,6 @@
 use strict;
 use warnings;
 
-use Bio::EnsEMBL::Hive::Utils::Config;
 use JSON;
 use Data::Dumper;
 
@@ -11,7 +10,7 @@ use lib ("./scripts/lib"); ## Only needed for local testing
 use msg;
 
 my $response = msg->new();
-my ($hive_config_file) = Bio::EnsEMBL::Hive::Utils::Config->default_config_files();
+my $hive_config_file = $ENV{GUIHIVE_BASEDIR} . "config/hive_config.json";
 
 if ((-e $hive_config_file) && (-r $hive_config_file)) {
   ## Slurp the file
@@ -31,7 +30,7 @@ if ((-e $hive_config_file) && (-r $hive_config_file)) {
 
 } else {
   $response->status('FAILED');
-  $response->err_msg("Hive config file: $hive_config_file doesn't exists or is not readable");
+  $response->err_msg("Hive config file: $hive_config_file doesn't exist or is not readable");
 }
 
 print $response->toJSON;

@@ -12,7 +12,7 @@ use lib ("./scripts/lib");
 use hive_extended;
 use msg;
 
-my $json_data = shift @ARGV || '{"url":["mysql://ensadmin:ensembl@127.0.0.1:2911/mp12_long_mult"],"analysis_id":["2"],"sSortDir_0":["asc"],"iDisplayLength":["10"],"iDisplayStart":["0"],"iSortCol_0":["0"],"iSortingCols":["1"]}';
+my $json_data = shift @ARGV || '{"url":["mysql://ensadmin:ensembl@127.0.0.1:2899/tm6_qc_pipeline_chicken_72_full_pipeline"],"analysis_id":["1"],"sSortDir_0":["asc"],"iDisplayLength":["10"],"iDisplayStart":["0"],"iSortCol_0":["0"],"iSortingCols":["1"]}';
 my $jobs_template = $ENV{GUIHIVE_BASEDIR} . "static/jobs.html";
 my $input_ids_template = $ENV{GUIHIVE_BASEDIR} . "static/jobs_input_ids.html";
 
@@ -122,7 +122,7 @@ sub formInputIDs {
 	$inputPair->{adaptor}          = $adaptor;
 	$inputPair->{method}           = "add_input_id";
 	$inputPair->{key}              = $inputKeyID;
-	$inputPair->{inputValID}       = $input_id_hash->{$inputKeyID};
+	$inputPair->{inputValID}       = stringify_if_needed($input_id_hash->{$inputKeyID});
 	$inputPair->{del_input_id_method} = "delete_input_id";
 #	$inputPair->{add_input_id_key_method} = "add_input_id_key";
 	push @$existing_ids, $inputPair;
@@ -133,7 +133,7 @@ sub formInputIDs {
 	add_input_id_key_method => "add_input_id_key",
 	JOB_EXISTING_INPUT_ID   => $existing_ids,
     }];
- 
+
    return $input_ids;
 }
 
@@ -215,3 +215,15 @@ sub get_final_clause {
   return   "ORDER BY $order_by $dir LIMIT $iDisplayStart, $iDisplayLength";
 }
 
+## TODO: There is more than 1 instance of this sub in the scripts. Factor out
+sub stringify_if_needed {
+  my ($scalar) = @_;
+  if (ref $scalar) {
+    local $Data::Dumper::Indent    = 0;  # we want everything on one line
+    local $Data::Dumper::Terse     = 1;  # and we want it without dummy variable names
+    local $Data::Dumper::Sortkeys  = 1;  # make stringification more deterministic
+
+    return Dumper($scalar);
+  }
+  return $scalar;
+}

@@ -169,7 +169,12 @@ function bubbleCloud() {
     };
     
     bCloud.domain = function() {
-        var max = d3.max(data, function(d){if (typeof(d[attr]) !== "object") {return parseInt(d[attr]) } else { return parseInt(d[attr][2])} });
+        var max = d3.max(data, function(d){
+	    if (typeof(d[attr]) !== "object") {
+		return parseInt(d[attr])
+	    } else { 
+		return parseInt(d[attr][2])}
+	});
 	//        var min = d3.min(nodes, function(d){if (typeof(d[attr]) !== "object") { return d[attr] } else {return d[attr][0]}});
         var min=0;
         return ([min,max]);
@@ -212,9 +217,9 @@ function bubbleCloud() {
         
     bCloud.data = function(d) {
         if (!arguments.length) {
-            return data  
+            return data
         }
-        data = d;
+        data = d.filter(function(d){return d !== null});
         return bCloud;
     };
     

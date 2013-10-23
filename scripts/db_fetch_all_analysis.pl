@@ -39,7 +39,7 @@ print $response->toJSON;
 
 sub formAnalysisInfo {
     my ($all_analysis) = @_;
-    my @all_analysis_info = ();
+    my %all_analysis_info = ();
     my $resourceClassAdaptor = $dbConn->get_ResourceClassAdaptor();
     for my $analysis (@$all_analysis) {
       my $new_analysis = analysisInfo->fetch($analysis);
@@ -50,9 +50,14 @@ sub formAnalysisInfo {
       }
 
       $new_analysis->meadow_type($resourceClassAdaptor->fetch_by_dbID($analysis->resource_class_id)->description->meadow_type());
-      push @all_analysis_info, $new_analysis;
+      $all_analysis_info{$new_analysis->{analysis_id}} = $new_analysis;
+#      push @all_analysis_info, $new_analysis;
     }
 
+    my @all_analysis_info = ();
+    for my $pos (keys %all_analysis_info) {
+      $all_analysis_info[$pos] = $all_analysis_info{$pos};
+    }
 
     return [@all_analysis_info];
 }

@@ -1,11 +1,13 @@
 function get_totals() {
     var totals = new Array();
-    for (var k = 0; k<guiHive.analysis_board[0].jobs_counts.counts.length; k++) {
+    for (var k = 0; k<guiHive.analysis_board[1].jobs_counts.counts.length; k++) {
 	totals[k] = 0;
     }
     for (var i = 0; i<guiHive.analysis_board.length; i++) {
-	for (var j = 0; j<guiHive.analysis_board[i].jobs_counts.counts.length; j++) {
-	    totals[j] += guiHive.analysis_board[i].jobs_counts.counts[j]
+	if (guiHive.analysis_board[i] !== null) {
+	    for (var j = 0; j<guiHive.analysis_board[i].jobs_counts.counts.length; j++) {
+		totals[j] += guiHive.analysis_board[i].jobs_counts.counts[j]
+	    }
 	}
     }
 
@@ -20,8 +22,8 @@ function form_data() {
     totals.pop();
     var data = {};
     data.counts = totals;
-    data.colors = guiHive.analysis_board[0].jobs_counts.colors;
-    data.names  = guiHive.analysis_board[0].jobs_counts.names;
+    data.colors = guiHive.analysis_board[1].jobs_counts.colors;
+    data.names  = guiHive.analysis_board[1].jobs_counts.names;
     data.total  = d3.sum(totals);
 
     return data;

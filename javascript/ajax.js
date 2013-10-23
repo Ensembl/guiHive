@@ -4,7 +4,7 @@ var guiHive = {
     pipeline_url              : "",        // The url to connect to the pipeline
                                            // This is the value of $("#db_url") i.e. it is entered by the user
     refresh_data_timer        : undefined, // The timer for the next data update
-    monitorTimeout            : 30000,     // Time for next data updaet
+    monitorTimeout            : 30000,     // Time for next data update
                                            // TODO: This has to disappear in favor of refresh_data_timer
                                            // once the pie charts get listens to the analysis_board
     analysis_board            : undefined, // The analysis data pulled from the database
@@ -215,7 +215,7 @@ function fetch_resources() {
 function refresh_data_and_views(callback) {
     // We can't run this asynchronously if analysis_board is undefined (first run of the method)
     // So, we check first and run in async/sync mode (see the async parameter)
-    console.log("UPDATING DATA AND VIEWS");
+    console.log("UPDATING DATA AND VIEWS ... ");
     $.ajax({url      : "/scripts/db_fetch_all_analysis.pl",
 	    type     : "post",
 	    data     : "url=" + guiHive.pipeline_url, //$("#db_url").val(),
@@ -561,172 +561,6 @@ function listen_Analysis(analysis_id, fetch_url) {
     });
 
 }
-
-// TODO: Currently, analysis_id and fetch_url are not being used
-// function onSuccess_fetchJobs(jobsRes, analysis_id, fetch_url) {
-//     if(jobsRes.status === "ok") {
-// 	console.log("JOBS_FETCHED");
-// 	// Datepicker format
-// 	$.datepicker.regional[""].dateFormat = 'dd/mmo/yy';
-// 	$.datepicker.setDefaults($.datepicker.regional['']);
-
-// 	var jobs_header = "<h4>Jobs</h4>";
-// 	$("#jobs").html(jobs_header + jobsRes.out_msg);
-
-// 	// Listener to delete_input_id button:
-// 	$(".delete_input_id").click(function(){var sel = this;
-// 					       $.ajax({url       : "/scripts/db_update2.pl",
-// 						       type      : "post",
-// 						       data      : jQuery.param(buildSendParams(sel)),
-// 						       dataType  : "json",
-// 						       async     : false,
-// 						       cache     : false,
-// 						       success   : function() {display(analysis_id, "/scripts/db_fetch_jobs.pl", onSuccess_fetchJobs)}
-// 						      });
-// 					      }
-// 				   );
-
-
-// 	// We convert the whole job table in a dataTable
-// 	var oTable = $('#jobs_table').dataTable({
-// 	    "sDom": 'C<"clear">lfrtip',
-// 	    "aoColumnDefs": [
-// 		{ "bVisible": false, "aTargets": [ 3,7,8,9,10 ] }
-// 	    ],
-// 	    "oColVis": {
-// 		"aiExclude": [ 0,1 ],
-// 	    },
-// 	}).columnFilter( {
-// 		aoColumns : [ { type : "number" },
-// 			      { type : "number" },
-// 			      { type : "text"   },
-// 			      { type : "number" },
-// 			      { type : "select", values: [ 'SEMAPHORED', 'READY', 'DONE', 'FAILED', 'RUN' ] },
-// 			      { type : "number-range" },
-// 			      { type : "date-range" },
-// 			      { type : "number" },
-// 			      { type : "number" },
-// 			      { type : "number" },
-// 			      { type : "number" },
-// 			      { type : "text"   }
-// 			    ],
-// 	    });
-
-// 	// We attach global updaters. Maybe this can be inserted as datatable's fnInitComplete event
-// 	// Global updaters work on all the visible fields of the dataTable.
-// 	$('.update_param_all').change(function() {
-// 	    column = $(this).attr("data-column");
-// 	    column_index = $(this).attr("data-column-index");
-
-// 	    var job_ids = [];
-// 	    $.each(oTable._('tr', {"filter":"applied"}), function(i,v) { // applied to all visible rows via the _ method
-// 		// TODO: There seems to be a bug here
-// 		// Now we have 1 extra row that is null
-// 		// I think this happens since we have introduced the tables in the input_id field.
-// 		// Take a look to debug!
-// 		if (v != null) {
-// 		    job_ids.push(v[0]); // pushed the job_ids (first column). TODO: More portable way
-// 		}
-// 	    });
-
-// 	    var sel = this;
-// 	    $.ajax({url      : "/scripts/db_update2.pl",
-// 		    type     : "post",
-// 		    data     : jQuery.param(buildSendParams(sel)) + "&dbID=" + job_ids.join() + "&value=" + $(sel).val(),
-// 		    dataType : "json",
-// 		    async    : false,
-// 		    cache    : false,
-// 		    success  : function () {
-// 			$.each(oTable.$('tr', {"filter":"applied"}), function(i,v) {
-// 			    // TODO: There seems to be a bug here
-// 			    // Now we have 1 extra row that is null (see above)
-// 			    var tr = $(v)[0];
-// 			    var aPos = oTable.fnGetPosition(tr);
-// 			    oTable.fnUpdate($(sel).val(), aPos, column_index);
-// 			});
-// 		    }
-// 		   });
-		    
-// 	    // TODO: In principle this is not needed because we re-create the table on column updates (or we should!)
-// 	    $(this).children('option:selected').removeAttr("selected");
-// 	    $(this).children('option:first-child').attr("selected","selected");
-// 	});
-
-// 	// We have individual jeditable fields specialized by columns
-// 	oTable.$("td.editableRetries").each(function() {
-// 	    var job_id = $(this).attr("data-linkTo");
-// 	    $(this).editable("/scripts/db_update2.pl", {
-// 		indicator  : "Saving...",
-// 		tooltip    : "Click to edit...",
-// 		loadurl    : "/scripts/db_fetch_max_retry_count.pl?url=" + guiHive.pipeline_url + "&job_id=" + job_id,
-// 		type       : "select",
-// 		submit     : "Ok",
-// 		event      : "dblclick",
-// 		callback   : function(response) {editableCallback.call(this, response, oTable)},
-// 		submitdata : function() { return (buildSendParams(this)) }
-// 	    });
-// 	});
-
-// 	oTable.$("td.editableInputID").editable("/scripts/db_update2.pl", {
-// 	    indicator  : "Saving...",
-// 	    tooltip    : "Click to edit...",
-// 	    event      : "dblclick",
-// 	    callback   : function(response) {
-// 		var needsReload = $(this).attr("data-needsReload");
-// 		if (needsReload === 1) {
-// 		    display(analysis_id, "/scripts/db_fetch_jobs.pl", onSuccess_fetchJobs);
-// 		} else {innerEditableCallback.call(this, response)}
-// 	    },
-// 	    submitdata : function() { return (buildSendParams(this)) }
-// 	});
-
-// 	oTable.$("td.editableStatus").editable("/scripts/db_update2.pl", {
-// 	    indicator  : "Saving...",
-// 	    tooltip    : "Click to edit...",
-// 	    data       : "{'SEMAPHORED':'SEMAPHORED','READY':'READY','RUN':'RUN','DONE':'DONE'}",
-// 	    type       : "select",
-// 	    submit     : "Ok",
-// 	    event      : "dblclick",
-// 	    callback   : function(response) {editableCallback.call(this, response, oTable)},
-// 	    submitdata : function() { return (buildSendParams(this)) }
-// 	});
-
-// 	// TODO: I think this action over td.editable is not needed because we have
-// 	// to have specialised sections above (not sure though -- double-check)
-// 	oTable.$("td.editable").editable("/scripts/db_update2.pl", {
-// 	    indicator  : 'Saving...',
-// 	    tooltip    : 'Click to edit...',
-// 	    event      : "dblclick",
-// 	    callback   : function(response) {editableCallback.call(this, response, oTable)},
-// 	    submitdata : function() { return (buildSendParams(this)) }
-// 	});
-
-//     } else {
-// 	log(jobsRes);
-// 	$("#connexion_msg").html(jobsRes.status);
-//     }
-// }
-
-// function innerEditableCallback(response) {
-//     var value = jQuery.parseJSON(response);
-//     $(this).html(value.out_msg);
-
-//     // If there exist a sibling with data-newvalueID then we activate it
-//     var val_sibling_id = $(this).attr("data-newValueID");
-//     if (val_sibling_id != undefined) {
-// 	var val_sibling = $("#" + val_sibling_id);
-// 	var key = $(this).html();
-// 	val_sibling.addClass("editableInputID");
-// 	val_sibling.attr("data-key", key);
-// 	doEditableInputID();
-//     }
-// }
-
-// function editableCallback(response, oTable) {
-//     var aPos = oTable.fnGetPosition(this);
-//     var value = jQuery.parseJSON(response);
-//     oTable.fnUpdate( value.out_msg, aPos[0], aPos[1] );
-// }
 
 function buildSendParams(obj) {
     var value = "";

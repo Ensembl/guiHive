@@ -5,6 +5,7 @@ use warnings;
 
 use Bio::EnsEMBL::Hive::Utils::Graph;
 use Bio::EnsEMBL::Hive::DBSQL::DBAdaptor;
+
 use JSON;
 use HTML::Template;
 

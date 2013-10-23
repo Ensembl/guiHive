@@ -28,7 +28,7 @@ my $adaptor_name = $var->{adaptor}->[0];
 my $method       = $var->{method}->[0];
 
 my @dbIDs = split(/,/,$dbIDs);
-my @args  = split(/,/,$args); ### TODO: JEditable only gives one value, so it is not possible to
+my @args  = ($args); #split(/,/,$args); ### TODO: JEditable only gives one value, so it is not possible to
                               ### pass extra contents here (separated with commas)
                               ### This is why I am using a new addArg parameter.
                               ### So I think we can treat @args as a single $arg
