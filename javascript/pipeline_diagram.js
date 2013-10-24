@@ -55,10 +55,16 @@ function initialize_pipeline_diagram() {
 	if (matches != null && matches.length > 1) {
 	    var analysis_id = matches[1];
 	    var gRoot = $(v).parent()[0];
-	    var node  = $(v).siblings("path,polygon,polyline");
-	    var bbox = gRoot.getBBox();
-	    var posx = bbox.x + bbox.width;
-	    var posy = bbox.y;
+
+	    var polygon_coords = points_from_string(d3.select(gRoot).select("polygon").attr("points"));
+	    console.log("COORDS: ");
+	    console.log(polygon_coords);
+// 	    var node  = $(v).siblings("path,polygon,polyline");
+//	    var bbox = gRoot.getBBox();
+//	    var posx = bbox.x + bbox.width;
+	    var posx = polygon_coords[1].x + 15;
+//	    var posy = bbox.y;
+	    var posy = polygon_coords[4].y;
 	    var pChart = pieChart().x(posx).y(posy);
 	    var gpie = d3.select(gRoot)
 		.append("g");
@@ -72,11 +78,12 @@ function initialize_pipeline_diagram() {
 
 
 	    // Let's add a label with the analysis_id (should accommodate 3 digits)
-	    var analysis_box_x = parseInt(d3.select(gRoot).select("polygon").attr("points").split(",")[0]);
+//	    var analysis_box_x = parseInt(d3.select(gRoot).select("polygon").attr("points").split(",")[0]);
 	    d3.select(gRoot)
 		.append("rect")
-		.attr("x", analysis_box_x)
-		.attr("y", posy - 15)
+//		.attr("x", analysis_box_x)
+      	    .attr("x", polygon_coords[0].x)
+		.attr("y", polygon_coords[4].y - 15)
 		.attr("width", 25)
 		.attr("height", 15)
 		.attr("stroke", "black")
@@ -84,8 +91,9 @@ function initialize_pipeline_diagram() {
 	    d3.select(gRoot)
 		.append("text")
 		.text(analysis_id)
-		.attr("x", analysis_box_x+3)
-		.attr("y", posy - 2);
+//		.attr("x", analysis_box_x+3)
+	        .attr("x", polygon_coords[0].x + 3)
+		.attr("y", polygon_coords[4].y - 2);
 
 	    // Links to the analysis_details
 	    // and makes the gRoots tooltip-able
@@ -163,3 +171,17 @@ function redraw(viz) {
 	     + " scale("  + d3.event.scale + ")");
 }
 
+
+function points_from_string(str) {
+    var points_str = str.split(" ");
+    console.log("POINTS_STR: " + points_str);
+    var points = [];
+    for (var i = 0; i < points_str.length; i++) {
+	var new_point = {};
+	var coords = points_str[i].split(",");
+	new_point.x = parseInt(coords[0]);
+	new_point.y = parseInt(coords[1]);
+	points.push(new_point);
+    }
+    return points;
+}
