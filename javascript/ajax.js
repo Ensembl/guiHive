@@ -555,9 +555,11 @@ function listen_Analysis(analysis_id, fetch_url) {
 	var sel = this;
 	$.ajax({url      : "/scripts/db_commands.pl",
 		data     : jQuery.param(buildSendParams(sel)) + "&analysis_id=" + $(sel).attr('data-analysisid'),
-		async    : true
-	       }
-	      );
+		async    : true,
+		success  : function () {
+		    guiHive.refresh_data_timer.now();
+		}
+	       });
     });
 
 }
