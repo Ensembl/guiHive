@@ -216,13 +216,15 @@ function refresh_data_and_views(callback) {
     // We can't run this asynchronously if analysis_board is undefined (first run of the method)
     // So, we check first and run in async/sync mode (see the async parameter)
     console.log("UPDATING DATA AND VIEWS ... ");
-    $.ajax({url      : "/scripts/db_fetch_all_analysis.pl",
-	    type     : "post",
-	    data     : "url=" + guiHive.pipeline_url, //$("#db_url").val(),
-	    async    : guiHive.analysis_board != undefined,
-	    timeout  : guiHive.databaseConnectionTimeout,
-	    dataType : "json",
-	    success  : function(allAnalysisRes) {
+    $.ajax({url        : "/scripts/db_fetch_all_analysis.pl",
+	    type       : "post",
+	    data       : "url=" + guiHive.pipeline_url, //$("#db_url").val(),
+	    async      : guiHive.analysis_board != undefined,
+	    timeout    : guiHive.databaseConnectionTimeout,
+	    dataType   : "json",
+	    beforeSend : function() {show_db_access();},
+	    success    : function(allAnalysisRes) {
+		no_db_access();
 		if(allAnalysisRes.status !== "ok") {
 		    log(allAnalysisRes);
 //		    $("#log").append(allAnalysisRes.err_msg); scroll_down();
@@ -234,6 +236,7 @@ function refresh_data_and_views(callback) {
 		}
 	    },
 	    error    : function (x, t, m) {
+		no_db_access();
 		if(t==="timeout") {
 		    log({err_msg : "No response from mysql sever for 10s. No refresh this time"});
 		}
@@ -648,6 +651,14 @@ function showProcessing(obj) {
     obj.html('<img src="../images/preloader.gif" width="40px" height="40px"/>');
 }
 
+function show_db_access() {
+    $("#refreshing").html('<img src="../images/485.GIF" width="25px" height="25px"></img>')
+}
+
+function no_db_access() {
+    $("#refreshing").html('');
+}
+
 function onSend(req, settings) {
     alert(JSON.stringify(this));
 }
@@ -669,3 +680,4 @@ function log(res) {
     }
     return
 }
+
