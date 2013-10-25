@@ -57,8 +57,6 @@ function initialize_pipeline_diagram() {
 	    var gRoot = $(v).parent()[0];
 
 	    var polygon_coords = points_from_string(d3.select(gRoot).select("polygon").attr("points"));
-	    console.log("COORDS: ");
-	    console.log(polygon_coords);
 // 	    var node  = $(v).siblings("path,polygon,polyline");
 //	    var bbox = gRoot.getBBox();
 //	    var posx = bbox.x + bbox.width;
@@ -174,7 +172,6 @@ function redraw(viz) {
 
 function points_from_string(str) {
     var points_str = str.split(" ");
-    console.log("POINTS_STR: " + points_str);
     var points = [];
     for (var i = 0; i < points_str.length; i++) {
 	var new_point = {};
