@@ -5,14 +5,14 @@ use warnings;
 
 use Bio::EnsEMBL::Hive::Utils::Graph;
 use Bio::EnsEMBL::Hive::DBSQL::DBAdaptor;
-
+use Bio::EnsEMBL::Hive::DBSQL::SqlSchemaAdaptor;
 use JSON;
 use HTML::Template;
 
 use lib ("./scripts/lib");
 use msg;
 
-my $json_url = shift @ARGV || '{"url":["mysql://ensro@127.0.0.1:2912/mp12_long_mult"]}';
+my $json_url = shift @ARGV || '{"url":["mysql://ensro@127.0.0.1:2912/mp12_compara_nctrees_74clean2"]}';
 my $connexion_template = $ENV{GUIHIVE_BASEDIR} . "static/connexion_details.html";
 my $hive_config_file = $ENV{GUIHIVE_BASEDIR} . "config/hive_config.json";
 
@@ -60,6 +60,8 @@ sub formResponse {
     $info->{port}      = $dbConn->dbc->port;
     $info->{driver}    = $dbConn->dbc->driver;
     $info->{username}  = $dbConn->dbc->username;
+    $info->{hive_db_version} = get_hive_db_version();
+    $info->{hive_code_version} = get_hive_code_version();
     # $info->{mysql_url} = "?username=" . $dbConn->dbc->username . "&host=" . $dbConn->dbc->host . "&dbname=" . $dbConn->dbc->dbname . "&port=" . $dbConn->dbc->port;
 
     my $template = HTML::Template->new(filename => $connexion_template);
@@ -75,4 +77,14 @@ sub formAnalyses {
     return $graphviz->as_svg;
 }
 
+sub get_hive_db_version {
+  my $metaAdaptor      = $dbConn->get_MetaAdaptor;
+  my $db_sql_schema_version   = eval { $metaAdaptor->fetch_value_by_key( 'hive_sql_schema_version' ); };
+  return $db_sql_schema_version;
+}
 
+sub get_hive_code_version {
+  # my $sqlSchemaAdaptor = $dbConn->get_SqlSchemaAdaptor;
+  my $code_sql_schema_version =  Bio::EnsEMBL::Hive::DBSQL::SqlSchemaAdaptor->get_code_sql_schema_version();
+  return $code_sql_schema_version;
+}
