@@ -320,10 +320,6 @@ use Bio::EnsEMBL::Hive::Utils qw/stringify destringify/;
 *Bio::EnsEMBL::Hive::DBSQL::AnalysisJobAdaptor::reset_jobs_and_semaphores_for_analysis_id = sub {
     my ($self, $analysis_id) = @_;
 
-    ## WARNING! There may be a data race here.
-    ## Suppose that some of the jobs are already running. Calling this method will set those jobs to READY but the current worker
-    ## will update them. I don't know if we will be leaking semaphore counts in this situation
-
     my %semaphored_analysis_ids = ();
     for my $job(@{$self->fetch_all_by_analysis_id_status($analysis_id, 'DONE')},
 		@{$self->fetch_all_by_analysis_id_status($analysis_id, 'PASSED ON')}) {
@@ -336,7 +332,7 @@ use Bio::EnsEMBL::Hive::Utils qw/stringify destringify/;
 	$self->increase_semaphore_count_for_jobid($job->semaphored_job_id());
       }
     }
-    $self->reset_jobs_for_analysis_id($analysis_id, 1);
+    $self->reset_jobs_for_analysis_id($analysis_id, ['DONE']);
 
     # We sync the analysis_stats table:
     my @analysis_ids = ($analysis_id, keys %semaphored_analysis_ids);
