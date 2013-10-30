@@ -21,11 +21,6 @@ my $job_colors = {
 		  'inprogress' => 'yellow',
 		  'failed'     => 'red',
 		  'done'       => 'DeepSkyBlue',
-		  # 'semaphored' => 'red',
-		  # 'ready'      => 'orange',
-		  # 'inprogress' => 'yellow',
-		  # 'failed'     => 'grey',
-		  # 'done'       => 'green',
 		  'background' => 'white',
 		 };
 
@@ -58,16 +53,19 @@ sub fetch {
   my $analysis_stats = $analysis->stats();
   my $config = Bio::EnsEMBL::Hive::Utils::Config->new($hive_config_file);
   my $status = $analysis_stats->status();
-  my $status_colour = $config->get('Graph', 'Node', 'AnalysisStatus', $analysis_stats->status, 'Colour');
+#  my $status_colour = $config->get('Graph', 'Node', 'AnalysisStatus', $analysis_stats->status, 'Colour');
   my ($breakout_label, $total_job_count, $job_counts) = $analysis_stats->job_count_breakout();
   my $avg_msec_per_job = $analysis_stats->avg_msec_per_job();
+  my $guiHiveStatus = getGuiHiveStatus($job_counts, $status);
 
   ## TODO: status should be only the $status string (not the color), but we need to define this here
   ## until issue#17 is solved (job's colors in json and accessible by client code -- javascript).
   ## same for the names
   my $self = bless( {analysis_id => $analysis->dbID(),
 		     logic_name => $analysis->logic_name(),
-		     status => [$status,$status_colour], ## TODO: This is not needed anymore. The Javascript colors are now taken directly from the hive_config.json
+#		     status => [$status,$status_colour], ## TODO: This is not needed anymore. The Javascript colors are now taken directly from the hive_config.json
+		     status => $status,
+		     guiHiveStatus => $guiHiveStatus,
 		     breakout_label => $breakout_label,
 		     avg_msec_per_job => $avg_msec_per_job,
 		     avg_msec_per_job_parsed => parse_msecs($avg_msec_per_job),
@@ -116,6 +114,19 @@ sub sum_jobs {
     return $res;
 }
 
+sub getGuiHiveStatus {
+  my ($jobs, $hiveStatus) = @_;
+  if ($jobs->{inprogress_job_count}) {
+    return "WORKING";
+  } elsif ($jobs->{ready_job_count}) {
+    return "READY";
+  } elsif ($jobs->{semaphored_job_count}) {
+    return "ALL_CLAIMED";
+  } else {
+    return $hiveStatus;
+  }
+}
+
 sub meadow_type {
   my ($self, $meadow_type) = @_;
   $self->{meadow_type} = $meadow_type;
@@ -140,5 +151,6 @@ sub toJSON {
 	allow_blessed->
 	convert_blessed->encode($self);
 }
+
 
 1;

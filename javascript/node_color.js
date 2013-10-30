@@ -1,13 +1,13 @@
 function nodeColor() {
-    var attr = 'status';
+    var attr = 'guiHiveStatus';
     var color_scale;
     var extent;
 
     var color_status = guiHive.config.Graph.Node.AnalysisStatus;
 
     var node_range = function(index) {
-	if (attr === "status") {
-	    return color_status[guiHive.analysis_board[index].status[0]].Colour;
+	if (attr === "status" || attr === "guiHiveStatus") {
+	    return color_status[guiHive.analysis_board[index][attr]].Colour;
 	}
 	node_range.range();
 	return color_scale(guiHive.analysis_board[index][attr]);

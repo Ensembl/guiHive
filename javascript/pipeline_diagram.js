@@ -57,11 +57,7 @@ function initialize_pipeline_diagram() {
 	    var gRoot = $(v).parent()[0];
 
 	    var polygon_coords = points_from_string(d3.select(gRoot).select("polygon").attr("points"));
-// 	    var node  = $(v).siblings("path,polygon,polyline");
-//	    var bbox = gRoot.getBBox();
-//	    var posx = bbox.x + bbox.width;
 	    var posx = polygon_coords[1].x + 15;
-//	    var posy = bbox.y;
 	    var posy = polygon_coords[4].y;
 	    var pChart = pieChart().x(posx).y(posy);
 	    var gpie = d3.select(gRoot)
@@ -76,10 +72,8 @@ function initialize_pipeline_diagram() {
 
 
 	    // Let's add a label with the analysis_id (should accommodate 3 digits)
-//	    var analysis_box_x = parseInt(d3.select(gRoot).select("polygon").attr("points").split(",")[0]);
 	    d3.select(gRoot)
 		.append("rect")
-//		.attr("x", analysis_box_x)
       	    .attr("x", polygon_coords[0].x)
 		.attr("y", polygon_coords[4].y - 15)
 		.attr("width", 25)
@@ -89,7 +83,6 @@ function initialize_pipeline_diagram() {
 	    d3.select(gRoot)
 		.append("text")
 		.text(analysis_id)
-//		.attr("x", analysis_box_x+3)
 	        .attr("x", polygon_coords[0].x + 3)
 		.attr("y", polygon_coords[4].y - 2);
 
@@ -158,7 +151,7 @@ function pipeline_diagram_update(allCharts) {
 	if (d.mem !== undefined) {
             tooltip_msg = tooltip_msg + "<br/>Min memory used: " + d.mem[0] + "<br/>Mean memory used: " + d.mem[1] + "<br/>Max memory used:" + d.mem[2];
 	}
-	tooltip_msg = tooltip_msg + "<br/>Breakout label: " + d.breakout_label + "<br/>Status: " + d.status[0];
+	tooltip_msg = tooltip_msg + "<br/>Breakout label: " + d.breakout_label + "<br/>Status: " + d.status + "<br/>guiHiveStatus: " + d.guiHiveStatus;
 	$(allCharts[i].root_node).parent().attr("title",tooltip_msg);
     }
 }
