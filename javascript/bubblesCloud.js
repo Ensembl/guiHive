@@ -13,6 +13,7 @@ function bubbleCloud() {
     var min_range = 5;
     var max_range = 50;
     var radius_scale;
+    var node_colors = nodeColor();
     
     var bCloud = function(vis) {
 	bCloud.centers();
@@ -43,7 +44,7 @@ function bubbleCloud() {
 		    return radius_scale((d[attr][2]))
 		}
 	    })
-            .style("fill", function (d) { return (d.status[1]) })
+            .style("fill", function (d) { console.log("D:"); console.log(node_colors(d.analysis_id)); return (node_colors(d.analysis_id)) })
             .style("stroke", "black")
             .style("stroke-width", 1.5);
         
@@ -52,7 +53,7 @@ function bubbleCloud() {
             .attr("cx", 0)
             .attr("cy", 0)
             .attr("r", function(d) { if (typeof(d[attr]) !== "object") {return 0} else {return (radius_scale(d[attr][1]))} })
-            .style("stroke", function(d) { return d3.rgb(d.status[1]).darker() })
+            .style("stroke", function(d) { return d3.rgb(node_colors(d.analysis_id)).darker() })
             .style("fill", "none")
             .style("stroke-width", 2);
         
@@ -61,8 +62,8 @@ function bubbleCloud() {
             .attr("cx", 0)
             .attr("cy", 0)
             .attr("r", function(d) { if (typeof(d[attr]) !== "object") {return 0} else {return (radius_scale(d[attr][0]))} })
-            .style("stroke", function (d) { return d3.rgb(d.status[1]).darker() })
-            .style("fill", function (d) { return d3.rgb(d.status[1]).darker() });
+            .style("stroke", function (d) { return d3.rgb(node_colors(d.analysis_id)).darker() })
+            .style("fill", function (d) { return d3.rgb(node_colors(d.analysis_id)).darker() });
         
         node.append("text")
             .attr("dx",-5)
@@ -79,7 +80,7 @@ function bubbleCloud() {
 		    if (d.mem !== undefined) {
 			tooltip_msg = tooltip_msg + "<br/>Min memory used: " + d.mem[0] + "<br/>Mean memory used: " + d.mem[1] + "<br/>Max memory used:" + d.mem[2];
 		    }
-		    tooltip_msg = tooltip_msg + "<br/>Breakout label: " + d.breakout_label + "<br/>Status: " + d.status[0];
+		    tooltip_msg = tooltip_msg + "<br/>Breakout label: " + d.breakout_label + "<br/>Status: " + d.status + "<br />guiHive Status: " + d.guiHiveStatus;
 		    return tooltip_msg;
 		});
 
@@ -106,7 +107,7 @@ function bubbleCloud() {
 			return "<pre>Max:" + d[attr][2] + "\nMean:" + d[attr][1] + "\nMin:" + d[attr][0] + "\n</pre>";
                     }
 		})
-		.style("fill", function(d) { return d3.rgb(d.status[1]) });
+		.style("fill", function(d) { return d3.rgb(node_colors(d.analysis_id)) });
             
             mean_circles
 		.transition()
@@ -118,7 +119,7 @@ function bubbleCloud() {
 			return radius_scale(d[attr][1])
 		    }
 		})
-		.style("stroke", function(d) { return d3.rgb(d.status[1]).darker() });
+		.style("stroke", function(d) { return d3.rgb(node_colors(d.analysis_id)).darker() });
 	    
             min_circles
 		.transition()
@@ -130,8 +131,8 @@ function bubbleCloud() {
 			return radius_scale(d[attr][0])
 		    }
 		})
-		.style("stroke", function (d) { return d3.rgb(d.status[1]).darker() })
-		.style("fill", function (d) { return d3.rgb(d.status[1]).darker() });
+		.style("stroke", function (d) { return d3.rgb(node_colors(d.analysis_id)).darker() })
+		.style("fill", function (d) { return d3.rgb(node_colors(d.analysis_id)).darker() });
             
             force.start();
         };
