@@ -44,7 +44,7 @@ function bubbleCloud() {
 		    return radius_scale((d[attr][2]))
 		}
 	    })
-            .style("fill", function (d) { console.log("D:"); console.log(node_colors(d.analysis_id)); return (node_colors(d.analysis_id)) })
+            .style("fill", function (d) { return (node_colors(d.analysis_id)) })
             .style("stroke", "black")
             .style("stroke-width", 1.5);
         

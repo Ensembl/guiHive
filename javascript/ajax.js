@@ -100,7 +100,7 @@ function go_to_full_url () {
 	error      : function (x, t, m) {
 	    if(t==="timeout") {
 		log({err_msg : "No response from mysql sever for 10s. Try it later"});
-		$("#connexion_msg").empty();
+		$("#connection_msg").empty();
 	    } else {
 		log({err_msg : m});
 	    }
@@ -184,12 +184,12 @@ function connect() {
 	    data       : "url=" + guiHive.pipeline_url, //$("#db_url").val(),
 	    dataType   : "json",
 	    timeout    : guiHive.databaseConnectionTimeout,
-	    beforeSend : function() {showProcessing($("#connexion_msg"))},
+	    beforeSend : function() {showProcessing($("#connection_msg"))},
 	    success    : onSuccess_dbConnect,
 	    error      : function (x, t, m) {
 		if(t==="timeout") {
 		    log({err_msg : "No response from mysql sever for 10s. Try it later"});
-		    $("#connexion_msg").empty();
+		    $("#connection_msg").empty();
 		} else {
 		    log({err_msg : m});
 		}
@@ -250,9 +250,9 @@ function onSuccess_dbConnect(res) {
     // Hidden elements are now displayed
     $(".hidden_by_default").show();
     
-    // Connexion message is displayed
-    var connexion_header = "<h4>Connexion Details</h4>";
-    $("#connexion_msg").html(connexion_header + res.status);
+    // Connection message is displayed
+    var connection_header = "<h4>Connection Details</h4>";
+    $("#connection_msg").html(connection_header + res.status);
 
     // We update the timer:
     guiHive.refresh_data_timer.stop();
@@ -303,8 +303,6 @@ function onSuccess_dbConnect(res) {
 	html     : true
     });
     $("[data-analysis_id=1]").tipsy('show');
-//    $("[rel=popup-it]").popover({animation:true, content:"kk", title:"kk doble"});
-
 
     return;
 }
@@ -314,7 +312,10 @@ function display(analysis_id, fetch_url, callback) {
 	    type       : "post",
 	    data       : "url=" + guiHive.pipeline_url + "&analysis_id=" + analysis_id,
 	    dataType   : "json",
-	    success    : function(resp) {callback(resp, analysis_id, fetch_url)},
+	    success    : function(resp) {
+		callback(resp, analysis_id, fetch_url)
+	    },
+	    error      : function(resp,error) {console.log(error); console.log(resp)},
 	   });
 }
 
@@ -523,7 +524,7 @@ function onSuccess_fetchAnalysis(analysisRes, analysis_id, fetch_url) {
     } else {
 	log(analysisRes);
 //	$("#log").append(analysisRes.err_msg); scroll_down();
-	$("#connexion_msg").html(analysisRes.status);
+	$("#connection_msg").html(analysisRes.status);
     }
 }
 
@@ -588,7 +589,6 @@ function buildSendParams(obj) {
 	urlHash.key = $(obj).attr("data-key");
     }
 
-    console.log(urlHash);
     return (urlHash);
 }
 
@@ -623,7 +623,6 @@ function buildURL(obj) {
 	var ids = $(obj).attr("data-linkTo").split(",");
 	var vals = jQuery.map(ids, function(e,i) {
 	    var elem = $('#'+e);
-	    console.log(elem);
 	    if ($(elem).is("span")) {
 		return $(elem).attr("data-value")
 	    } else {
@@ -637,7 +636,7 @@ function buildURL(obj) {
     }
 
     var URL = "url="+ guiHive.pipeline_url + 
-        "&args="+value + 
+        "&args="+encodeURIComponent(value) + 
         "&adaptor="+$(obj).attr("data-adaptor") + 
         "&method="+$(obj).attr("data-method");
     if ($(obj).attr("data-analysisID")) {

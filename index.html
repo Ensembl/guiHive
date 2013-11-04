@@ -70,38 +70,54 @@
     </div>
   </div>
 
-<div class"page-header">
-  <h1>guiHive</h1>
-  <h3>A Graphic User Interface for the eHive Production System</h3>
-</div>
-
-<div id="db_connexion">
-  <h4>Connect to your database</h4>
-  <p>URL: <input type="text" id="db_url" name="db_url" size="80"/>
-    <input type="button" value="Connect" id="Connect" class="btn"/></p>
-</div>
-
-<div class="row">
-  <div id="connexion_msg" class="span6">
+<div id="expandable">
+  <div class"page-header">
+    <h1>guiHive</h1>
+    <h3>A Graphic User Interface for the eHive Production System</h3>
   </div>
 
-  <div id="summary" class="span4 offset3">
+  <div id="db_connexion">
+    <h4>Connect to your database</h4>
+    <p>URL: <input type="text" id="db_url" name="db_url" size="80"/>
+      <input type="button" value="Connect" id="Connect" class="btn"/></p>
+  </div>
+
+  <div class="row">
+    <div id="connection_msg" class="span6">
+    </div>
+
+    <div id="summary" class="span4 offset3">
+    </div>
   </div>
 </div>
 
-<!-- TODO: This has to be done better once the layout is being defined -->
-<button id="show_resources"></button>
+<div id="control_pane">
+  <table>
+    <tr>
+      <td>Time to refresh:</td>
+      <td><span id="secs_to_refresh"></span>
+	<a class="btn btn-mini start_refreshing" rel="tooltip-it" title="Start refreshing"><i class="icon-play"></i></a>
+	<a class="btn btn-mini stop_refreshing" rel="tooltip-it" title="Stop refreshing"><i class="icon-stop"></i></a>
+	<a class="btn btn-mini reset_timer" rel="tooltip-it" title="Reset timer"><i class="icon-backward"></i></a>
+	<a class="btn btn-mini refresh_now" rel="tooltip-it" title="Refresh now"><i class="icon-download"></i></a></td>
+      <td><span id="refreshing"></span></td>
+    </tr>
+  </table>
+</div>
 
-<!-- TABBING -->
-<ul class="nav nav-tabs">
-  <li><a href="#main" data-toggle="tab">Diagram View</a></li>
-  <!-- <li><a href="#analysis_summary" data-toggle="tab">Analysis Summary</a></li> -->
-  <li><a href="#jobs" data-toggle="tab">Jobs</a></li>
-  <li><a href="#resource_details" data-toggle="tab">Resources</a></li>
-  <li><a href="#views" data-toggle="tab">Bubbles View</a></li>
-  <li><a href="#logContainer" data-toggle="tab" id="log-tab">Log</a></li>
-  <li><a href="#configuration" data-toggle="tab">Configuration</a></li>
-</ul>
+  <!-- TODO: This has to be done better once the layout is being defined -->
+  <button id="show_resources"></button>
+
+  <!-- TABBING -->
+  <ul class="nav nav-tabs">
+    <li><a href="#main" data-toggle="tab">Diagram View</a></li>
+    <!-- <li><a href="#analysis_summary" data-toggle="tab">Analysis Summary</a></li> -->
+    <li><a href="#jobs" data-toggle="tab">Jobs</a></li>
+    <li><a href="#resource_details" data-toggle="tab">Resources</a></li>
+    <li><a href="#views" data-toggle="tab">Bubbles View</a></li>
+    <li><a href="#logContainer" data-toggle="tab" id="log-tab">Log</a></li>
+    <li><a href="#configuration" data-toggle="tab">Configuration</a></li>
+  </ul>
 
 <!-- <div id="analysis_details"></div> -->
 

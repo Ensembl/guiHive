@@ -12,7 +12,7 @@ use lib ("./scripts/lib");
 use hive_extended;
 use msg;
 
-my $json_data = shift @ARGV || '{"url":["mysql://ensadmin:ensembl@127.0.0.1:2912/mp12_long_mult"], "analysis_id":["2"]}';
+my $json_data = shift @ARGV || '{"url":["mysql://ensadmin:ensembl@127.0.0.1:2911/mp12_long_mult"], "analysis_id":["1"]}';
 my $details_template = $ENV{GUIHIVE_BASEDIR} . "static/analysis_details.html";
 
 ## Input

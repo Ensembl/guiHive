@@ -13,7 +13,7 @@ use lib ("./scripts/lib");
 use msg;
 
 my $json_url = shift @ARGV || '{"url":["mysql://ensro@127.0.0.1:2912/mp12_compara_nctrees_74clean2"]}';
-my $connexion_template = $ENV{GUIHIVE_BASEDIR} . "static/connexion_details.html";
+my $connection_template = $ENV{GUIHIVE_BASEDIR} . "static/connection_details.html";
 my $hive_config_file = $ENV{GUIHIVE_BASEDIR} . "config/hive_config.json";
 
 # Input data
@@ -64,7 +64,7 @@ sub formResponse {
     $info->{hive_code_version} = get_hive_code_version();
     # $info->{mysql_url} = "?username=" . $dbConn->dbc->username . "&host=" . $dbConn->dbc->host . "&dbname=" . $dbConn->dbc->dbname . "&port=" . $dbConn->dbc->port;
 
-    my $template = HTML::Template->new(filename => $connexion_template);
+    my $template = HTML::Template->new(filename => $connection_template);
     $template->param(%$info);
     return $template->output();
 }

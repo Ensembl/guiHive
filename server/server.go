@@ -69,7 +69,7 @@ func scriptHandler(w http.ResponseWriter, r *http.Request) {
 
 	debug("OUTMSG: %s", outMsg.Bytes())
 	debug("ERRMSG: %s", errMsg.Bytes())
-	fmt.Fprintf(w, string(outMsg.Bytes()))
+	fmt.Fprintln(w, string(outMsg.Bytes()))
 
 }
 

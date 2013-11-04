@@ -46,10 +46,10 @@ sub TO_JSON {
 sub toJSON {
     my ($self) = @_;
     return JSON->
-	new->
+      new->
 	indent(0)->
-	allow_blessed->
-	convert_blessed->encode($self);
+	  allow_blessed->
+	    convert_blessed->encode($self);
 }
 
 1;

@@ -21,6 +21,14 @@ body {
     width            : 960px
 }
 
+#expandable {
+    display : block;
+}
+
+#control_pane {
+    margin : 10px;
+}
+
 #db_url {
     width : 600px; 
     text-align : left;
