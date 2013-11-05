@@ -18,15 +18,19 @@ body {
 
 /* Connexion Div */
 #db_connexion {
-    width            : 960px
+    width            : 800px;
 }
 
-#expandable {
+#expandable .show{
     display : block;
+}
+#expandable .hide{
+    display : none;
 }
 
 #control_pane {
-    margin : 10px;
+    /* margin : 10px; */
+    margin-top : 10px;
 }
 
 #db_url {
@@ -76,13 +80,20 @@ body {
 /* Diagram Div */
 #pipeline_diagram {
 /*    width            : 960px;*/
-    width            : 100%;
-    height           : 650px;
+    /* width            : 100%; */
+    /* height           : 650px; */
     color            : black;
     background-color : white;
     padding          : 5px;
-    resize           : both;
+    /* resize           : both; */
     overflow         : hidden;
+}
+
+/* Full-screen icon */
+#full_screen_icon {
+    position : fixed;
+    right    : 20px;
+    top      : 20px;
 }
 
 #views {
@@ -257,4 +268,8 @@ input[type="text"], select {
 
 .graph {
     cursor : move;
+}
+
+#refreshing {
+    margin-left : 50px;
 }

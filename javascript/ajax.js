@@ -15,14 +15,15 @@ var guiHive = {
                                            // Instead of storing here an array of views, we store a closure that knows how to generate them
                                            // and how to update them once the analysis_board is updated
     databaseConnectionTimeout : 60000,     // 30s
-    config                    : undefined  // The values in hive_config.json 
+    config                    : undefined, // The values in hive_config.json 
+    offsets                   : {normal : 540, fullscreen : 170}  // Offset values for normal/fullscreen displays
 };
 
 // wait for the DOM to be loaded 
 $(document).ready(function() {
 
     // There are elements that have to be hidden by default
-    // and only show after connection
+    // and only shown after connection
     // TODO: Maybe there is a better way to handle this
     $(".hide_by_default").hide();
 
@@ -55,6 +56,24 @@ $(document).ready(function() {
 		 }
 	     }
     });
+
+    // Listening to full-screen mode
+    $("#full_screen_icon")
+	.on("click", function()  {
+	    var curr_class = $("#expandable").attr("class");
+	    if (curr_class === "show") {
+		$("#expandable").removeClass("show").addClass("hide");
+		var new_height = $(window).height() - guiHive.offsets.fullscreen;
+		$("#pipeline_diagram").css("height", new_height + "px");
+		$("#pipeline_diagram > svg").attr("height", new_height);
+		
+	    } else {
+		$("#expandable").removeClass("hide").addClass("show");
+		var new_height = $(window).height() - guiHive.offsets.normal;
+		$("#pipeline_diagram").css("height", new_height + "px");
+		$("#pipeline_diagram > svg").attr("height", new_height);
+	    }
+	});
 
     // We initialize the refresh_data_timer
     guiHive.refresh_data_timer = setup_timer().timer(guiHive.monitorTimeout/1000);
@@ -651,7 +670,7 @@ function showProcessing(obj) {
 }
 
 function show_db_access() {
-    $("#refreshing").html('<img src="../images/485.GIF" width="25px" height="25px"></img>')
+    $("#refreshing").html('<img src="../images/485.GIF" width="22px" height="22px"></img>')
 }
 
 function no_db_access() {

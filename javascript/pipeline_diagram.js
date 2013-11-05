@@ -22,14 +22,18 @@ function draw_diagram(xmlStr) {
     // the width and height of the outer structure, so we need to give the width and height
     // of the inner svg (the real one).
     // I am not able to have zoom and panning capabilities without the outer svg
-    var width = $("#pipeline_diagram").css("width");
-    var height = $("#pipeline_diagram").css("height");
+    // var width = $("#pipeline_diagram").css("width");
+    // var height = $("#pipeline_diagram").css("height");
+    var width = $(window).width();
+    var height = $(window).height()-guiHive.offsets.normal;
 
     d3.select(importedNode)
     	.attr("width", width)
     	.attr("height", height);
 
     var g = d3.select("#pipeline_diagram")
+	.style("width", width-30 + "px")
+	.style("height", height + "px")
     	.append("svg")
     	.attr("width",width)
     	.attr("height",height)
