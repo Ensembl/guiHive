@@ -198,6 +198,7 @@ function bubbleCloud() {
 			  "LSF"   : {x : 2*width/3,
 				     y : height/2}
 			 };
+	return bCloud;
     }
 
     bCloud.width = function(w) {

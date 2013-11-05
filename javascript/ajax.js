@@ -62,16 +62,38 @@ $(document).ready(function() {
 	.on("click", function()  {
 	    var curr_class = $("#expandable").attr("class");
 	    if (curr_class === "show") {
+		// Hiding the header:
 		$("#expandable").removeClass("show").addClass("hide");
+
+		// Resizing different views...
 		var new_height = $(window).height() - guiHive.offsets.fullscreen;
+
+		// ... pipeline diagram
 		$("#pipeline_diagram").css("height", new_height + "px");
 		$("#pipeline_diagram > svg").attr("height", new_height);
+
+		// ... bubbles cloud
+		$("#bubbles").css("height", new_height + "px");
+		$("#bubbles_vis").attr("height", new_height);
+		guiHive.views.getAllCharts().bubblesCloud.chart.height(new_height).centers().update();
 		
 	    } else {
+		// Showing the header
 		$("#expandable").removeClass("hide").addClass("show");
+
+		// Resizing different views...
 		var new_height = $(window).height() - guiHive.offsets.normal;
+
+		// ... pipeline diagram
 		$("#pipeline_diagram").css("height", new_height + "px");
 		$("#pipeline_diagram > svg").attr("height", new_height);
+
+		// ... bubbles cloud
+		$("#bubbles").css("height", new_height + "px");
+		$("#bubbles_vis").attr("height", new_height);
+		console.log(guiHive.views.getAllCharts().bubblesCloud.chart);
+		// ... and the bubbles gracefully feels attracted to the center of the view
+		guiHive.views.getAllCharts().bubblesCloud.chart.height(new_height).centers().update();
 	    }
 	});
 

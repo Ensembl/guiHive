@@ -2,8 +2,10 @@ function initialize_bubbles_cloud() {
     // We first remove previous diagrams;
     $("#bubbles_vis").remove();
 
-    var width = parseInt($("#views").css("width"));
-    var height = parseInt($("#views").css("height"));
+    // var width = parseInt($("#views").css("width"));
+    // var height = parseInt($("#views").css("height"));
+    var width = $(window).width();
+    var height = $(window).height()-guiHive.offsets.normal;
 
     var vis = d3.select("#bubbles")
 	.append("svg")
