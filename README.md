@@ -24,6 +24,10 @@ In order to work with this application you need the following installed in your 
    * URI::Escape
    * HTML::Template
 
+There is a script in the guiHive root directory called "test_dep.pl" that tests all the dependencies. You can run it whithout arguments:
+$ perl test_dep.pl
+If you experience problems setting up guiHive you can also follow the tips printed at the end of that script.
+
 #### Compilation
 
 Once you have all the dependencies installed and up to date (specially the eHive code) follow these steps:
