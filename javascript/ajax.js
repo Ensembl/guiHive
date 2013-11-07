@@ -263,7 +263,7 @@ function refresh_data_and_views(callback) {
 	    async      : guiHive.analysis_board != undefined,
 	    timeout    : guiHive.databaseConnectionTimeout,
 	    dataType   : "json",
-	    beforeSend : function() {show_db_access();},
+	    beforeSend : show_db_access,
 	    success    : function(allAnalysisRes) {
 		no_db_access();
 		if(allAnalysisRes.status !== "ok") {
@@ -598,11 +598,19 @@ function listen_Analysis(analysis_id, fetch_url) {
 
     $(".job_command").click(function(){
 	var sel = this;
-	$.ajax({url      : "/scripts/db_commands.pl",
-		data     : jQuery.param(buildSendParams(sel)) + "&analysis_id=" + $(sel).attr('data-analysisid'),
-		async    : true,
-		success  : function () {
-		    guiHive.refresh_data_timer.now();
+	$.ajax({url        : "/scripts/db_commands.pl",
+		data       : jQuery.param(buildSendParams(sel)) + "&analysis_id=" + $(sel).attr('data-analysisid'),
+		async      : true,
+		dataType   : "json",
+		beforeSend : show_db_access,
+		success  : function (resp) {
+		    console.log(resp);
+		    no_db_access();
+		    if (resp.status !== "ok") {
+			log(resp);
+		    } else {
+			guiHive.refresh_data_timer.now();
+		    }
 		}
 	       });
     });
