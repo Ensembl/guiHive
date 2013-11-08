@@ -562,6 +562,11 @@ function onSuccess_fetchAnalysis(analysisRes, analysis_id, fetch_url) {
 	// The details can be closed
 	$("#close_analysis_details").click(function(){$("#analysis_details").empty(); guiHive.views.removeChart("jobs_chart")});
 	listen_Analysis(analysis_id, fetch_url);
+
+	// We also activate the jobs table with the current analysis_id
+	$("#jobs_select option[value='" + analysis_id + "']").prop('selected', true);
+	$("#jobs_select option[value='" + analysis_id + "']").trigger("change");
+
     } else {
 	log(analysisRes);
 //	$("#log").append(analysisRes.err_msg); scroll_down();
