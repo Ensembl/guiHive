@@ -69,7 +69,7 @@ sub formAnalysisInfo {
 							$analysis,
 							"analysis_capacity",
 							build_values({0=>["NULL"],
-								      1=>[-1,9],
+								      1=>[0,9],
 								      10=>[10,90],
 								      100=>[100,1000]}),
 						       );
@@ -90,7 +90,8 @@ sub formAnalysisInfo {
   $info->{hive_capacity}     = template_mappings_SELECT("AnalysisStats",
 							$analysis_stats,
 							"hive_capacity",
-							build_values({1=>[-1,9],
+							build_values({0=>["NULL"],
+								      1=>[0,9],
 								      10=>[10,90],
 								      100=>[100,1000]})
 						       );
