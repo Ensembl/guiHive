@@ -93,7 +93,7 @@ body {
 #full_screen_icon {
     position : fixed;
     right    : 20px;
-    top      : 0px;
+    top      : 10px;
 }
 
 #views {

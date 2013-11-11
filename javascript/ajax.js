@@ -75,9 +75,11 @@ $(document).ready(function() {
 		// ... bubbles cloud
 		$("#bubbles").css("height", new_height + "px");
 		$("#bubbles_vis").attr("height", new_height);
-		guiHive.views.getAllCharts().bubblesCloud.chart.height(new_height).centers().update();
+
+		if (guiHive.views !== undefined) {
+		    guiHive.views.getAllCharts().bubblesCloud.chart.height(new_height).centers().update();
+		}
 		
-		console.log(d3.select(this).attr("src"));
 		d3.select(this).attr("src", "/images/down.png");
 
 	    } else {
@@ -96,7 +98,9 @@ $(document).ready(function() {
 		$("#bubbles_vis").attr("height", new_height);
 
 		// ... and the bubbles gracefully feels attracted to the center of the view
-		guiHive.views.getAllCharts().bubblesCloud.chart.height(new_height).centers().update();
+		if (guiHive.views !== undefined) {
+		    guiHive.views.getAllCharts().bubblesCloud.chart.height(new_height).centers().update();
+		}
 
 		d3.select(this).attr("src", "/images/up.png");
 	    }
