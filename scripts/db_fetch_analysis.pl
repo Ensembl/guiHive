@@ -68,10 +68,15 @@ sub formAnalysisInfo {
   $info->{analysis_capacity} = template_mappings_SELECT("Analysis",
 							$analysis,
 							"analysis_capacity",
-							build_values({0=>["NULL"],
+							build_values({0=>["NULL"],  ## values
 								      1=>[0,9],
 								      10=>[10,90],
 								      100=>[100,1000]}),
+							build_values({0=>["NULL (unlimited)", "0 (blocked)"],   ## displays
+								      1=>[1,9],
+								      10=>[10,90],
+								      100=>[100,1000]
+								     })
 						       );
 
   $info->{failed_job_tolerance} = template_mappings_SELECT("Analysis",
@@ -93,7 +98,13 @@ sub formAnalysisInfo {
 							build_values({0=>["NULL"],
 								      1=>[0,9],
 								      10=>[10,90],
-								      100=>[100,1000]})
+								      100=>[100,1000]}),
+							build_values({0=>["NULL (unlimited)", "0 (blocked)"],   ## displays
+								      1=>[1,9],
+								      10=>[10,90],
+								      100=>[100,1000]
+								     })
+
 						       );
 
   $info->{priority}          = template_mappings_SELECT("Analysis",
