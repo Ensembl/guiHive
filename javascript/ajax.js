@@ -32,16 +32,6 @@ $(document).ready(function() {
     // that is read and process to make these options
     listen_config();
 
-    //  We are creating a hidden button for showing resources and 
-    //  firing it once the analysis are displayed
-    //  we are doing this to allow re-load of the resources when
-    //  they are changed (without having to reload the analysis too or re-connect to the db)
-    //  TODO: We may try to find a better solution for this
-    $("#show_resources").hide().click(function() {
-	fetch_resources();
-    });
-
-
     // We read the hive json configuration file
     $.ajax({ url      : "/scripts/db_load_config.pl",
 	     data     : "url=dummy",  // To keep the server happy (TODO: better way to handle this)
@@ -63,10 +53,12 @@ $(document).ready(function() {
 	    var curr_class = $("#expandable").attr("class");
 	    if (curr_class === "show") {
 		// Hiding the header:
-		$("#expandable").removeClass("show").addClass("hide");
+		// $("#expandable").removeClass("show").addClass("hide");
+		$("#expandable").slideUp("slow", function() {$("#expandable").removeClass("show").addClass("hide")});
 
 		// Resizing different views...
 		var new_height = $(window).height() - guiHive.offsets.fullscreen;
+		console.log("SETTING NEW HEIGHT TO: " + new_height);
 
 		// ... pipeline diagram
 		$("#pipeline_diagram").css("height", new_height + "px");
@@ -84,7 +76,8 @@ $(document).ready(function() {
 
 	    } else {
 		// Showing the header
-		$("#expandable").removeClass("hide").addClass("show");
+		// $("#expandable").removeClass("hide").addClass("show");
+		$("#expandable").slideDown("slow", function(){$("#expandable").removeClass("hide").addClass("show")});
 
 		// Resizing different views...
 		var new_height = $(window).height() - guiHive.offsets.normal;
@@ -247,18 +240,6 @@ function connect() {
 	   });
 }
 
-
-function fetch_resources() {
-    var fetch_url = "/scripts/db_fetch_resource.pl";
-    $.ajax({url        : fetch_url,
-	    type       : "post",
-	    data       : "url=" + guiHive.pipeline_url,
-	    dataType   : "json",
-	    beforeSend : function() {showProcessing($("#resource_details"))},
-	    success    : function() {display("", fetch_url, onSuccess_fetchResources)}
-	   });
-}
-
 // refresh_data_and_views retrieves the information for all the analysis
 // and post them in the analysis_board
 // callback is executed after a successful update of the analysis_info
@@ -320,7 +301,7 @@ function onSuccess_dbConnect(res) {
     // guiHive.pipeline_url = $("#db_url").val();
 
     // Showing the resources
-    $("#show_resources").trigger('click');  // TODO: Best way to handle?
+    fetch_resources();
 
     // We load the jobs form
     $.get('/scripts/db_jobs_form.pl', {url : guiHive.pipeline_url} ,function(data) {
@@ -331,13 +312,13 @@ function onSuccess_dbConnect(res) {
     $.get('/static/jobs_table.html', function(data) {
 	$("#jobs_table_div").append(data);
     });
-    
+
     // Now we start monitoring the analyses.
     initialize_views_and_refresh();
 
 // Tooltips:
 // For some reason I haven't been able to make the bootstrap's tooltips work with the force layout (bubbles view).
-// The tootips div appear too deep in the svg hierarchy and thery are not displayed (visible) at all.
+// The tootips div appear too deep in the svg hierarchy and they are not displayed (visible) at all.
 // Tipsy seems to work better, so I am using it at the moment.
 
 // Tooltips -- This should have worked with Bootstrap's tooltips, but the divs seem to be inserted in a wrong place
@@ -365,8 +346,13 @@ function display(analysis_id, fetch_url, callback) {
 	    success    : function(resp) {
 		callback(resp, analysis_id, fetch_url)
 	    },
-	    error      : function(resp,error) {console.log(error); console.log(resp)},
+	    error      : function(resp,error) {log(error)},
 	   });
+}
+
+function fetch_resources() {
+    var fetch_url = "/scripts/db_fetch_resource.pl";
+    display("", fetch_url, onSuccess_fetchResources);
 }
 
 // TODO: analysis_id is not going to be used, so maybe we should move it
@@ -374,7 +360,6 @@ function display(analysis_id, fetch_url, callback) {
 function onSuccess_fetchResources(resourcesRes, analysis_id, fetch_url) {
     if (resourcesRes.status != "ok") {
 	log(resourcesRes);
-//	$("#log").append(resourcesRes.err_msg); scroll_down();
     } else {
 	$("#resource_details").html(resourcesRes.out_msg);
     }
@@ -578,7 +563,6 @@ function onSuccess_fetchAnalysis(analysisRes, analysis_id, fetch_url) {
 
     } else {
 	log(analysisRes);
-//	$("#log").append(analysisRes.err_msg); scroll_down();
 	$("#connection_msg").html(analysisRes.status);
     }
 }
@@ -669,10 +653,8 @@ function update_db(obj) {
 	    success    : function(updateRes) {
 		if(updateRes.status != "ok") {
 		    log(updateRes);
-//		    $("#log").append(updateRes.err_msg); scroll_down();
 		};
 	    },
-//	    complete   :  function() {$(button).trigger('click')},
 	    // TODO: I think the log is populated twice... One in the success callback and one in the
 	    // onSuccess_fetchAnalysis callback. Check!
 	    complete   : function() { display(analysis_id, fetch_url, callback)}
@@ -690,7 +672,6 @@ function buildURL(obj) {
 		return $(elem).attr("data-value")
 	    } else {
 		return $(elem).val();
-		//return $(elem).attr("value")
 	    }
 	});
 	value = vals.join(",");
@@ -736,9 +717,15 @@ function scroll_down() {
 }
 
 function log(res) {
-    if (res.err_msg !== "") {
-	$("#log").append(res.err_msg); scroll_down();
-	$("#log-tab").css("color","red");
+    var msg = "";
+    if (res.err_msg === undefined) {
+	msg = res;
+    } else if (res.err_msg !== "") {
+	msg = res.err_msg
+    }
+    if (msg !== "") {
+	$("#log").append(msg); scroll_down();
+	$("#log-tab").css("color", "red");
     }
     return
 }
