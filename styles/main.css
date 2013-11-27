@@ -21,11 +21,14 @@ body {
     width            : 800px;
 }
 
-#expandable .show{
+#expandable {
     display : block;
 }
+
+/* empty but needed */
+#expandable .show{
+}
 #expandable .hide{
-    display : none;
 }
 
 #control_pane {
@@ -70,6 +73,8 @@ body {
 #analysis_advanced_options {
     display          : none;
 }
+
+
 
 /* Jobs advanced options */
 #jobs_advanced_commands {
