@@ -77,6 +77,10 @@ sub formAnalyses {
     return $graphviz->as_svg;
 }
 
+
+#######################
+#  These two methods are also defined in scripts/db_fetch_patches.pl
+#  It would be better to have them in a common base class or something?
 sub get_hive_db_version {
   my $metaAdaptor      = $dbConn->get_MetaAdaptor;
   my $db_sql_schema_version   = eval { $metaAdaptor->fetch_value_by_key( 'hive_sql_schema_version' ); };
