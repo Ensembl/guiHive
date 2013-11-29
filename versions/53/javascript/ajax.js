@@ -16,7 +16,7 @@ var guiHive = {
                                            // and how to update them once the analysis_board is updated
     databaseConnectionTimeout : 60000,     // 30s
     config                    : undefined, // The values in hive_config.json 
-    offsets                   : {normal : 540, fullscreen : 170}  // Offset values for normal/fullscreen displays
+    offsets                   : {normal : 475, fullscreen : 170}  // Offset values for normal/fullscreen displays
 };
 
 // wait for the DOM to be loaded 
@@ -32,9 +32,15 @@ $(document).ready(function() {
     // that is read and process to make these options
     listen_config();
 
+
+    //
+    var cur_http_url = $.url();
+    var dir = cur_http_url.attr("directory");
+    var parts = dir.split("/");
+
     // We read the hive json configuration file
-    $.ajax({ url      : "/scripts/db_load_config.pl",
-	     data     : "url=dummy",  // To keep the server happy (TODO: better way to handle this)
+    $.ajax({ url      : "./scripts/db_load_config.pl",
+	     data     : "version=" + parts[2],
 	     type     : "post",
 	     dataType : "json",
 	     timeout  : guiHive.databaseConnectionTimeout,
@@ -72,7 +78,7 @@ $(document).ready(function() {
 		    guiHive.views.getAllCharts().bubblesCloud.chart.height(new_height).centers().update();
 		}
 		
-		d3.select(this).attr("src", "/images/down.png");
+		d3.select(this).attr("src", "./images/down.png");
 
 	    } else {
 		// Showing the header
@@ -95,7 +101,7 @@ $(document).ready(function() {
 		    guiHive.views.getAllCharts().bubblesCloud.chart.height(new_height).centers().update();
 		}
 
-		d3.select(this).attr("src", "/images/up.png");
+		d3.select(this).attr("src", "./images/up.png");
 	    }
 	});
 
@@ -105,24 +111,24 @@ $(document).ready(function() {
     // If the url contains database information...
     guess_database_url();
 
-    $("#Connect").click(function() {
-	// connect();
-	go_to_full_url();
-    }); 
+    // $("#Connect").click(function() {
+    // 	// connect();
+    // 	go_to_full_url();
+    // }); 
 
-    $("#db_url").keyup(function(e) {
-	if (e.keyCode === 13) {
-	    // connect();
-	    go_to_full_url();
-	}
-    });
+    // $("#db_url").keyup(function(e) {
+    // 	if (e.keyCode === 13) {
+    // 	    // connect();
+    // 	    go_to_full_url();
+    // 	}
+    // });
 });
 
 function go_to_full_url () {
     var full_url = $("#db_url").val();
 
     $.ajax({
-	url      : "/scripts/url_parser.pl",
+	url      : "./scripts/url_parser.pl",
 	type     : "post",
 	data     : "url=" + full_url,
 	dataType : "json",
@@ -222,7 +228,7 @@ function connect() {
     // We first remove the analysis_board
     clearPreviousPipeline();
 
-    $.ajax({url        : "/scripts/db_connect.pl",
+    $.ajax({url        : "./scripts/db_connect.pl",
 	    type       : "post",
 	    data       : "url=" + guiHive.pipeline_url, //$("#db_url").val(),
 	    dataType   : "json",
@@ -247,7 +253,7 @@ function refresh_data_and_views(callback) {
     // We can't run this asynchronously if analysis_board is undefined (first run of the method)
     // So, we check first and run in async/sync mode (see the async parameter)
     console.log("UPDATING DATA AND VIEWS ... ");
-    $.ajax({url        : "/scripts/db_fetch_all_analysis.pl",
+    $.ajax({url        : "./scripts/db_fetch_all_analysis.pl",
 	    type       : "post",
 	    data       : "url=" + guiHive.pipeline_url, //$("#db_url").val(),
 	    async      : guiHive.analysis_board != undefined,
@@ -304,12 +310,12 @@ function onSuccess_dbConnect(res) {
     fetch_resources();
 
     // We load the jobs form
-    $.get('/scripts/db_jobs_form.pl', {url : guiHive.pipeline_url} ,function(data) {
+    $.get('./scripts/db_jobs_form.pl', {url : guiHive.pipeline_url} ,function(data) {
 	$('#jobs_form').html(data);
 	listen_jobs();
     });
     // and table
-    $.get('/static/jobs_table.html', function(data) {
+    $.get('./static/jobs_table.html', function(data) {
 	$("#jobs_table_div").append(data);
     });
 
@@ -351,7 +357,7 @@ function display(analysis_id, fetch_url, callback) {
 }
 
 function fetch_resources() {
-    var fetch_url = "/scripts/db_fetch_resource.pl";
+    var fetch_url = "./scripts/db_fetch_resource.pl";
     display("", fetch_url, onSuccess_fetchResources);
 }
 
@@ -382,13 +388,13 @@ function listen_Resources(fetch_url) {
     $(".update_resource").click(
 	{ //reload:$("#show_resources"),
 	  fetch_url:fetch_url, 
-	  script:"/scripts/db_update.pl",
+	  script:"./scripts/db_update.pl",
 	  callback:onSuccess_fetchResources},
 	update_db);
     $(".create_resource").click(
 	{ //reload:$("#show_resources"),
 	  fetch_url:fetch_url,
-	  script:"/scripts/db_create.pl",
+	  script:"./scripts/db_create.pl",
 	  callback:onSuccess_fetchResources},
 	update_db);
 }
@@ -422,7 +428,7 @@ function fetch_jobs() {
 	],
 	"bServerSide"   : true,
 	"bProcessing"   : true,
-	"sAjaxSource"   : "/scripts/db_fetch_jobs.pl?url=" + guiHive.pipeline_url + "&analysis_id=" + analysis_id,
+	"sAjaxSource"   : "./scripts/db_fetch_jobs.pl?url=" + guiHive.pipeline_url + "&analysis_id=" + analysis_id,
 	"sDom": 'C<"clear">lfrtip',
 	"bRetrieve"     : false,
 	"bDestroy"      : true,
@@ -432,7 +438,7 @@ function fetch_jobs() {
 	"fnDrawCallback" : function() {
 	    // Delete input_id key/value pairs
 	    $(".delete_input_id").click(function(){var sel = this;
-						   $.ajax({url       : "/scripts/db_update2.pl",
+						   $.ajax({url       : "./scripts/db_update2.pl",
 							   type      : "post",
 							   data      : jQuery.param(buildSendParams(sel)),
 							   dataType  : "json",
@@ -462,7 +468,7 @@ function fetch_jobs() {
 		});
 
 		var sel = this;
-		$.ajax({url      : "/scripts/db_update2.pl",
+		$.ajax({url      : "./scripts/db_update2.pl",
 			type     : "post",
 			data     : jQuery.param(buildSendParams(sel)) + "&dbID=" + job_ids.join() + "&value=" + $(sel).val(),
 			dataType : "json",
@@ -478,7 +484,7 @@ function fetch_jobs() {
 		$(this).children('option:first-child').attr("selected","selected");
 	    });
 
-	    oTable.$("td.editableInputID").editable("/scripts/db_update2.pl", {
+	    oTable.$("td.editableInputID").editable("./scripts/db_update2.pl", {
 		indicator  : "Saving...",
 		tooltip    : "Click to edit...",
 		event      : "dblclick",
@@ -490,7 +496,7 @@ function fetch_jobs() {
 		}
 	    });
 
-	    oTable.$("td.editableStatus").editable("/scripts/db_update2.pl", {
+	    oTable.$("td.editableStatus").editable("./scripts/db_update2.pl", {
 		indicator  : "Saving...",
 		tooltip    : "Click to edit...",
 		data       : "{'SEMAPHORED':'SEMAPHORED','READY':'READY','RUN':'RUN','DONE':'DONE'}",
@@ -507,10 +513,10 @@ function fetch_jobs() {
     
 	    oTable.$("td.editableRetries").each(function() {
 		var job_id = $(this).attr("data-linkTo");
-		$(this).editable("/scripts/db_update2.pl", {
+		$(this).editable("./scripts/db_update2.pl", {
 		    indicator  : "Saving...",
 		    tooltip    : "Click to edit...",
-		    loadurl    : "/scripts/db_fetch_max_retry_count.pl?url=" + guiHive.pipeline_url + "&job_id=" + job_id,
+		    loadurl    : "./scripts/db_fetch_max_retry_count.pl?url=" + guiHive.pipeline_url + "&job_id=" + job_id,
 		    type       : "select",
 		    submit     : "Ok",
 		    event      : "dblclick",
@@ -583,20 +589,20 @@ function listen_Analysis(analysis_id, fetch_url) {
     $(".update_param").change(
 	    { analysis_id:analysis_id,
 	      fetch_url:fetch_url,
-	      script:"/scripts/db_update.pl",
+	      script:"./scripts/db_update.pl",
 	      callback:onSuccess_fetchAnalysis},
 	    update_db);
 
     $(".update_param").click(
 	{analysis_id:analysis_id,
 	 fetch_url:fetch_url,
-	 script:"/scripts/db_update.pl",
+	 script:"./scripts/db_update.pl",
 	 callback:onSuccess_fetchAnalysis},
 	update_db);  // This is recursive!
 
     $(".job_command").click(function(){
 	var sel = this;
-	$.ajax({url        : "/scripts/db_commands.pl",
+	$.ajax({url        : "./scripts/db_commands.pl",
 		data       : jQuery.param(buildSendParams(sel)) + "&analysis_id=" + $(sel).attr('data-analysisid'),
 		async      : true,
 		dataType   : "json",
@@ -691,11 +697,11 @@ function buildURL(obj) {
 }
 
 function showProcessing(obj) {
-    obj.html('<img src="../images/preloader.gif" width="40px" height="40px"/>');
+    obj.html('<img src="./images/preloader.gif" width="40px" height="40px"/>');
 }
 
 function show_db_access() {
-    $("#refreshing").html('<img src="../images/485.GIF" width="22px" height="22px"></img>')
+    $("#refreshing").html('<img src="./images/485.GIF" width="22px" height="22px"></img>')
 }
 
 function no_db_access() {

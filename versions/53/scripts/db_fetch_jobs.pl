@@ -13,8 +13,8 @@ use hive_extended;
 use msg;
 
 my $json_data = shift @ARGV || '{"url":["mysql://ensadmin:ensembl@127.0.0.1:2899/tm6_qc_pipeline_chicken_72_full_pipeline"],"analysis_id":["1"],"sSortDir_0":["asc"],"iDisplayLength":["10"],"iDisplayStart":["0"],"iSortCol_0":["0"],"iSortingCols":["1"]}';
-my $jobs_template = $ENV{GUIHIVE_BASEDIR} . "static/jobs.html";
-my $input_ids_template = $ENV{GUIHIVE_BASEDIR} . "static/jobs_input_ids.html";
+my $jobs_template = $ENV{GUIHIVE_VERSION_DIR} . "static/jobs.html";
+my $input_ids_template = $ENV{GUIHIVE_VERSION_DIR} . "static/jobs_input_ids.html";
 
 # Input
 my $var = decode_json($json_data);

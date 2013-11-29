@@ -12,7 +12,7 @@ use lib ("./scripts/lib");
 #use msg;
 
 my $json_data = shift @ARGV || '{"url":["mysql://ensadmin:ensembl@127.0.0.1:2912/mp12_compara_nctrees_70hmm"]}';
-my $jobs_form_template = $ENV{GUIHIVE_BASEDIR} . "static/jobs_form.html";
+my $jobs_form_template = $ENV{GUIHIVE_VERSION_DIR} . "static/jobs_form.html";
 
 # Input
 my $var = decode_json($json_data);

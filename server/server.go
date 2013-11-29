@@ -45,7 +45,6 @@ func scriptHandler(w http.ResponseWriter, r *http.Request) {
 
 	debug("METHOD: %s", r.Method)
 	debug("URL: %s", r.URL)
-	debug("PATH: %s", r.URL.Path)
 
 	var outMsg bytes.Buffer
 	var errMsg bytes.Buffer
@@ -56,6 +55,25 @@ func scriptHandler(w http.ResponseWriter, r *http.Request) {
 
 	debug("EXECUTING SCRIPT: %s", fname)
 	debug("ARGS: %s", string(args))
+
+	if v, ok := r.Form["version"]; ok {
+		debug("VERSION : %s", r.Form["version"])
+		// First we set GUIHIVE_VERSION_DIR
+		guihiveBasedir := os.Getenv("GUIHIVE_BASEDIR")
+		guihiveVersionDir := guihiveBasedir + "/versions/" + v[0] + "/"
+		if err := os.Setenv("GUIHIVE_VERSION_DIR", guihiveVersionDir); err != nil {
+			checkError ("Can't set GUIHIVE_VERSION_DIR to " + guihiveVersionDir + ": ", err)
+		}
+		debug("GUIHIVE_VERSION_DIR: " + guihiveVersionDir)
+		newDir := guihiveBasedir + "/versions/" + v[0] + "/scripts/lib"
+		err := setPerl5Lib(newDir)
+		if err != nil {
+			checkError("Can't add " + newDir + " to set PERL5LIB: ", err)
+		}
+
+		
+	}
+
 	cmd := exec.Command(fname, string(args))
 	cmd.Stdout = &outMsg
 	cmd.Stderr = &errMsg
@@ -112,18 +130,10 @@ func setEnvVar() error {
 	debug("PROJECT_DIRECTORY: %s\n", projectDirectory)
 
 	// PER5LIB
-	perl5lib := os.Getenv("PERL5LIB")
-	pathToLibs := path.Clean(projectDirectory + "/scripts/lib")
-	if perl5lib == "" {
-		perl5lib = pathToLibs
-	} else {
-		perl5lib = perl5lib + ":" + pathToLibs
-	}
-	err = os.Setenv("PERL5LIB", perl5lib)
-	if err != nil {
+	err = setPerl5Lib(path.Clean(projectDirectory + "/scripts/lib"))
+	if (err != nil) {
 		return err
 	}
-	debug("PERL5LIB: %s\n", os.Getenv("PERL5LIB"))
 
 	//GUIHIVE_BASEDIR
 	if err := os.Setenv("GUIHIVE_BASEDIR", projectDirectory+"/"); err != nil {
@@ -134,9 +144,25 @@ func setEnvVar() error {
 	// ENSEMBL_CVS_ROOT_DIR
 	ensembl_cvs_root_dir := os.Getenv("ENSEMBL_CVS_ROOT_DIR")
 	if ensembl_cvs_root_dir == "" {
-		return errors.New("ENSEMBL_CVS_ROOT_DIR has to be set to the ensembl")
+		return errors.New("ENSEMBL_CVS_ROOT_DIR has to be set")
 	}
 	debug("ENSEMBL_CVS_ROOT_DIR: %s", ensembl_cvs_root_dir)
+
+	return nil
+}
+
+func setPerl5Lib (newDir string) error {
+	perl5lib := os.Getenv("PERL5LIB")
+	if perl5lib == "" {
+		perl5lib = newDir
+	} else {
+		perl5lib = perl5lib + ":" + newDir
+	}
+	err := os.Setenv("PERL5LIB", perl5lib)
+	if err != nil {
+		return err
+	}
+	debug("PERL5LIB: %s\n", os.Getenv("PERL5LIB"))
 
 	return nil
 }
@@ -151,8 +177,10 @@ func main() {
 	http.Handle("/", http.FileServer(http.Dir(relPath)))
 	http.Handle("/styles/", http.FileServer(http.Dir(relPath)))
 	http.Handle("/javascript/", http.FileServer(http.Dir(relPath)))
+	http.Handle("/versions/53/javascript/", http.FileServer(http.Dir(relPath)))
 	http.Handle("/images/", http.FileServer(http.Dir(relPath)))
 	http.HandleFunc("/scripts/", scriptHandler)
+	http.HandleFunc("/versions/53/scripts/", scriptHandler)
 	debug("Listening to port: %s", port)
 	err := http.ListenAndServe(":"+port, nil)
 	checkError("ListenAndServe ", err)

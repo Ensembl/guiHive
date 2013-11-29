@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<html>
+<head>
+<title>guiHive -- Take control over your eHive production system!</title>
+
+<!-- STYLES -->
+<!-- Local CSS style -->
+<link rel="stylesheet" href="./styles/main.css" type="text/css" />
+<link rel="stylesheet" href="./styles/tipsy.css" type="text/css" />
+
+
+<!-- JS CODE -->
+<!-- Remote JQuery -->
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.1/jquery-ui.min.js"></script>
+
+<!-- Local JQuery-URL-Parser -->
+<script src="/lib/jQuery-URL-Parser/purl.js"></script>
+
+<!-- tipsy -->
+<script src="/lib/jquery.tipsy.js"></script>
+
+<!-- Twitter bootstrap JS -->
+<script src="/lib/bootstrap/js/bootstrap.min.js"></script>
+
+<!-- Remote D3.js -->
+<script src="http://d3js.org/d3.v3.min.js"></script>
+
+<!-- jEditable.js -->
+<script src="http://www.appelsiini.net/download/jquery.jeditable.js"></script>
+
+<!-- Remote DataTables.js -->
+<script src="http://datatables.net/download/build/jquery.dataTables.min.js"></script>
+<!-- DataTables -- column filters -->
+<script src="http://jquery-datatables-column-filter.googlecode.com/svn/trunk/media/js/jquery.dataTables.columnFilter.js"></script>
+
+<!-- Local javascripts -->
+<script src="./javascript/node_color.js"></script>
+<script src="./javascript/views.js"></script>
+<script src="./javascript/jobs_chart.js"></script>
+<script src="./javascript/pipeline_overview.js"></script>
+<script src="./javascript/toggleDiv.js"></script>
+<script src="./javascript/timer.js"></script>
+<script src="./javascript/hBarChart.js"></script>
+<script src="./javascript/legend.js"></script>
+<script src="./javascript/pipeline_diagram.js"></script>
+<script src="./javascript/pieChart.js"></script>
+<script src="./javascript/bubblesCloud.js"></script>
+<script src="./javascript/bubbles_cloud.js"></script>
+<script src="./javascript/hStackedBarChart.js"></script>
+<script src="./javascript/ajax.js"></script>
+
+<!-- Local ColVis (Hide/Show columns for dataTables  -->
+<script src="/lib/ColVis.min.js"></script>
+
+</head>
+<body>
+
+  <img src="./images/up.png" width="50px" id="full_screen_icon"></img>
+
+  <div class="modal hide fade" id="password-id">
+    <div class="modal-header">
+      <p>Insert your mysql password:</p>
+    </div>
+    <div class="modal-body">
+      <input id="mysql_password" type="password"></input>
+    </div>
+    <div class="modal-footer">
+      <button id="set_mysql_passwd" class="btn btn-primary">Ok</button>
+    </div>
+  </div>
+
+<div id="expandable" class="show">
+  <div class"page-header">
+    <h1>guiHive</h1>
+    <h3>A Graphic User Interface for the eHive Production System</h3>
+  </div>
+
+  <!-- <div id="db_connexion"> -->
+  <!--   <h4>Connect to your database</h4> -->
+  <!--   <p>URL: <input type="text" id="db_url" name="db_url" size="80"/> -->
+  <!--     <input type="button" value="Connect" id="Connect" class="btn"/></p> -->
+  <!-- </div> -->
+
+  <div class="row">
+    <div id="connection_msg" class="span6">
+    </div>
+
+    <div id="summary" class="span4 offset3">
+    </div>
+  </div>
+</div>
+
+<div id="control_pane">
+  <table>
+    <tr>
+      <td>Time to refresh:</td>
+      <td><span id="secs_to_refresh"></span>
+	<a class="btn btn-mini start_refreshing" rel="tooltip-it" title="Start refreshing"><i class="icon-play"></i></a>
+	<a class="btn btn-mini stop_refreshing" rel="tooltip-it" title="Stop refreshing"><i class="icon-stop"></i></a>
+	<a class="btn btn-mini reset_timer" rel="tooltip-it" title="Reset timer"><i class="icon-backward"></i></a>
+	<a class="btn btn-mini refresh_now" rel="tooltip-it" title="Refresh now"><i class="icon-download"></i></a></td>
+      <td><span id="refreshing"></span></td>
+    </tr>
+  </table>
+</div>
+
+  <!-- TABBING -->
+  <ul class="nav nav-tabs">
+    <li><a href="#main" data-toggle="tab">Diagram View</a></li>
+    <li><a href="#jobs" data-toggle="tab">Jobs</a></li>
+    <li><a href="#resource_details" data-toggle="tab">Resources</a></li>
+    <li><a href="#views" data-toggle="tab">Bubbles View</a></li>
+    <li><a href="#logContainer" data-toggle="tab" id="log-tab">Log</a></li>
+    <li><a href="#configuration" data-toggle="tab">Configuration</a></li>
+  </ul>
+
+<div class="tab-content">
+
+  <div id="main" class="tab-pane active">
+    <p>Analysis colors represent:<select id="select_analysis_colors">
+	<option value="guiHiveStatus" selected=1>Analysis status (guiHive)</option>
+	<option value="status">Analysis status (Hive)</option>
+	<option value="total_job_count">Job counts</option>
+	<option value="avg_msec_per_job">Avg time per job</option>
+	</select>
+    </p>
+    <div class="row">
+      <div id="pipeline_diagram" class="span12">
+      </div>
+      <div id="analysis_details"></div>
+    </div>
+  </div>
+
+  <div id="jobs" class="tab-pane">
+    <div id="jobs_form"></div>
+    <div id="jobs_table_div"></div>
+  </div>
+
+  <div id="resource_details" class="tab-pane"></div>
+
+  <div id="views" class="tab-pane">
+    <div id="bubbles">
+
+      <p>Bubble size represents:  <select id="bubble-size">
+	  <option value="total_job_count">Job counts</option>
+	  <option value="avg_msec_per_job">Avg Job Time</option>
+	  <option value="mem">Job memory usage (Min/Avg/Max)</option>
+	  <option value="resource_mem">Job memory usage VS reserved mem</option>
+	</select>
+      </p>
+      <p>Display by meadow type: <select id="display_by_meadow_type">
+	  <option value="one-sun">No</option>
+	  <option value="two-suns">Yes</option>
+	</select>
+      </p>
+	     
+      <div>
+        Bubble size: 
+        <input type=range  id="max-size" value=50 min=20 max=80 step=1></input>
+      </div>
+    </div>
+  </div>
+
+  <div id="logContainer" class="tab-pane">
+    <pre id="log">Log</pre>
+    <p><input type="button" value="Clear" id="ClearLog" class="btn" /></p>
+  </div>
+
+  <div id="configuration" class="tab-pane">
+    <p>Set time to refresh data:<select id="select_refresh_time">
+	<option value="5000">5 secs</option>
+	<option value="30000" selected=1>30 seg</option>
+	<option value="60000">1 min</option>
+	<option value="120000">2 min</option>
+    </select></p>
+  </div>
+</div>
+
+<footer>
+    Development version. Send comments to mp@ebi.ac.uk
+</footer>
+</body>
+
+</html>

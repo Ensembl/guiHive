@@ -19,7 +19,7 @@ my $json_url = shift @ARGV || '{"url":["mysql://ensro@127.0.0.1:2912/mp12_long_m
 my $url = decode_json($json_url)->{url}->[0];
 
 # Initialization
-my $resources_template = $ENV{GUIHIVE_BASEDIR} . 'static/resources.html';
+my $resources_template = $ENV{GUIHIVE_VERSION_DIR} . 'static/resources.html';
 my $dbConn = Bio::EnsEMBL::Hive::DBSQL::DBAdaptor->new( -no_sql_schema_version_check => 1, -url => $url );
 my $response = msg->new();
 

@@ -7,7 +7,7 @@ use Data::Dumper;
 use Bio::EnsEMBL::Hive::Utils::URL;
 
 use JSON;
-use lib ("../lib");
+use lib ("./scripts/lib");
 use msg;
 
 my $json_url = shift @ARGV || '{"url":["mysql://ensro@127.0.0.1:2914/mp12_compara_nctrees_72"]}';

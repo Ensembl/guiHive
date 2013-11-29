@@ -9,11 +9,12 @@ use Bio::EnsEMBL::Hive::DBSQL::SqlSchemaAdaptor;
 use JSON;
 use HTML::Template;
 
-use lib ("./scripts/lib");
+use lib ("./lib");
+
 use msg;
 
 my $json_url = shift @ARGV || '{"url":["mysql://ensro@127.0.0.1:2912/mp12_compara_nctrees_74clean2"]}';
-my $connection_template = $ENV{GUIHIVE_BASEDIR} . "static/connection_details.html";
+my $connection_template = $ENV{GUIHIVE_VERSION_DIR} . "static/connection_details.html";
 my $hive_config_file = $ENV{GUIHIVE_BASEDIR} . "config/hive_config.json";
 
 # Input data
