@@ -17,7 +17,7 @@ var guiHive = {
                                            // and how to update them once the analysis_board is updated
     databaseConnectionTimeout : 60000,     // 30s
     config                    : undefined, // The values in hive_config.json 
-    offsets                   : {normal : 475, fullscreen : 170}  // Offset values for normal/fullscreen displays
+    offset                    : 140,
 };
 
 // wait for the DOM to be loaded 
@@ -32,7 +32,6 @@ $(document).ready(function() {
     // TODO: This can be done via a config file (json?)
     // that is read and process to make these options
     listen_config();
-
 
     //
     var cur_http_url = $.url();
@@ -55,63 +54,78 @@ $(document).ready(function() {
 	     }
     });
 
-    // Listening to full-screen mode
-    $("#full_screen_icon")
-	.on("click", function()  {
-	    var curr_class = $("#expandable").attr("class");
-	    if (curr_class === "show") {
-		// Hiding the header:
-		// $("#expandable").removeClass("show").addClass("hide");
-		$("#expandable").slideUp("slow", function() {$("#expandable").removeClass("show").addClass("hide")});
+    $(".myHeader").on("click", function() {
+	var curr = $.url();
+	window.location.href="http://" + curr.attr("host") + ":" + curr.attr("port");
+    });
 
-		// Resizing different views...
-		var new_height = $(window).height() - guiHive.offsets.fullscreen;
-		console.log("SETTING NEW HEIGHT TO: " + new_height);
+    // Listening to changes in the height of the window
+    $(window).on("resize", function(){
+	var new_height = $(window).height() - guiHive.offset;
+	$("#pipeline_diagram").css("height", new_height + "px");
+	$("#pipeline_diagram > svg").attr("height", new_height);
+	if (guiHive.views !== undefined) {
+	    guiHive.views.getAllCharts().bubblesCloud.chart.height(new_height).centers().update();
+	}
+    });
 
-		// ... pipeline diagram
-		$("#pipeline_diagram").css("height", new_height + "px");
-		$("#pipeline_diagram > svg").attr("height", new_height);
+    // $("#full_screen_icon")
+    // 	.on("click", function()  {
+    // 	    var curr_class = $("#expandable").attr("class");
+    // 	    if (curr_class === "show") {
+    // 		// Hiding the header:
+    // 		$("#expandable").slideUp("slow", function() {$("#expandable").removeClass("show").addClass("hide")});
 
-		// ... bubbles cloud
-		$("#bubbles").css("height", new_height + "px");
-		$("#bubbles_vis").attr("height", new_height);
+    // 		// Resizing different views...
+    // 		var new_height = $(window).height() - guiHive.offsets.fullscreen;
+    // 		console.log("SETTING NEW HEIGHT TO: " + new_height);
 
-		if (guiHive.views !== undefined) {
-		    guiHive.views.getAllCharts().bubblesCloud.chart.height(new_height).centers().update();
-		}
+    // 		// ... pipeline diagram
+    // 		$("#pipeline_diagram").css("height", new_height + "px");
+    // 		$("#pipeline_diagram > svg").attr("height", new_height);
+
+    // 		// ... bubbles cloud
+    // 		$("#bubbles").css("height", new_height + "px");
+    // 		$("#bubbles_vis").attr("height", new_height);
+
+    // 		if (guiHive.views !== undefined) {
+    // 		    guiHive.views.getAllCharts().bubblesCloud.chart.height(new_height).centers().update();
+    // 		}
 		
-		d3.select(this).attr("src", "./images/down.png");
+    // 		d3.select(this).attr("src", "./images/down.png");
 
-	    } else {
-		// Showing the header
-		// $("#expandable").removeClass("hide").addClass("show");
-		$("#expandable").slideDown("slow", function(){$("#expandable").removeClass("hide").addClass("show")});
+    // 	    } else {
+    // 		// Showing the header
+    // 		$("#expandable").slideDown("slow", function(){$("#expandable").removeClass("hide").addClass("show")});
 
-		// Resizing different views...
-		var new_height = $(window).height() - guiHive.offsets.normal;
+    // 		// Resizing different views...
+    // 		var new_height = $(window).height() - guiHive.offsets.normal;
 
-		// ... pipeline diagram
-		$("#pipeline_diagram").css("height", new_height + "px");
-		$("#pipeline_diagram > svg").attr("height", new_height);
+    // 		// ... pipeline diagram
+    // 		$("#pipeline_diagram").css("height", new_height + "px");
+    // 		$("#pipeline_diagram > svg").attr("height", new_height);
 
-		// ... bubbles cloud
-		$("#bubbles").css("height", new_height + "px");
-		$("#bubbles_vis").attr("height", new_height);
+    // 		// ... bubbles cloud
+    // 		$("#bubbles").css("height", new_height + "px");
+    // 		$("#bubbles_vis").attr("height", new_height);
 
-		// ... and the bubbles gracefully feels attracted to the center of the view
-		if (guiHive.views !== undefined) {
-		    guiHive.views.getAllCharts().bubblesCloud.chart.height(new_height).centers().update();
-		}
+    // 		// ... and the bubbles gracefully feels attracted to the center of the view
+    // 		if (guiHive.views !== undefined) {
+    // 		    guiHive.views.getAllCharts().bubblesCloud.chart.height(new_height).centers().update();
+    // 		}
 
-		d3.select(this).attr("src", "./images/up.png");
-	    }
-	});
+    // 		d3.select(this).attr("src", "./images/up.png");
+    // 	    }
+    // 	});
 
     // We initialize the refresh_data_timer
     guiHive.refresh_data_timer = setup_timer().timer(guiHive.monitorTimeout/1000);
 
     // If the url contains database information...
     guess_database_url();
+
+    // We populate the URL bit on the header
+    $("#guiHive_url").text(guiHive.pipeline_url + " (v" + guiHive.version + ")");
 
     // $("#Connect").click(function() {
     // 	// connect();

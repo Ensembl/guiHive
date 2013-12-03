@@ -5,7 +5,7 @@ function initialize_bubbles_cloud() {
     // var width = parseInt($("#views").css("width"));
     // var height = parseInt($("#views").css("height"));
     var width = $(window).width();
-    var height = $(window).height()-guiHive.offsets.normal;
+    var height = $(window).height()-guiHive.offset;
 
     var vis = d3.select("#bubbles")
 	.append("svg")

@@ -25,7 +25,7 @@ function draw_diagram(xmlStr) {
     // var width = $("#pipeline_diagram").css("width");
     // var height = $("#pipeline_diagram").css("height");
     var width = $(window).width();
-    var height = $(window).height()-guiHive.offsets.normal;
+    var height = $(window).height()-guiHive.offset;
 
     d3.select(importedNode)
     	.attr("width", width)
