@@ -1,6 +1,7 @@
 // Globally defined
 "use strict";
 var guiHive = {
+    version                   : undefined, // The guiHive/Hive version
     pipeline_url              : "",        // The url to connect to the pipeline
                                            // This is the value of $("#db_url") i.e. it is entered by the user
     refresh_data_timer        : undefined, // The timer for the next data update
@@ -37,6 +38,7 @@ $(document).ready(function() {
     var cur_http_url = $.url();
     var dir = cur_http_url.attr("directory");
     var parts = dir.split("/");
+    guiHive.version = parts[2];
 
     // We read the hive json configuration file
     $.ajax({ url      : "./scripts/db_load_config.pl",
@@ -124,38 +126,38 @@ $(document).ready(function() {
     // });
 });
 
-function go_to_full_url () {
-    var full_url = $("#db_url").val();
+// function go_to_full_url () {
+//     var full_url = $("#db_url").val();
 
-    $.ajax({
-	url      : "./scripts/url_parser.pl",
-	type     : "post",
-	data     : "url=" + full_url,
-	dataType : "json",
-	async    : false,
-	success  : function(dbConn) {
-	    if (dbConn.status !== "FAILED") {
-		console.log(dbConn.out_msg);
-		var http_url = $.url();
-		var new_http_url = "http://" + http_url.attr("host") + ":" + http_url.attr("port") + "/?username=" + dbConn.out_msg.user + "&host=" + dbConn.out_msg.host + "&dbname=" + dbConn.out_msg.dbname + "&port=" + dbConn.out_msg.port;
-		if (dbConn.out_msg.passwd !== undefined && dbConn.out_msg.passwd !== '') {
-		    new_http_url = new_http_url + "&passwd=xxxxx";
-		}
-		window.location.href = new_http_url;
-	    } else {
-		log(dbConn);
-	    }
-	},
-	error      : function (x, t, m) {
-	    if(t==="timeout") {
-		log({err_msg : "No response from mysql sever for 10s. Try it later"});
-		$("#connection_msg").empty();
-	    } else {
-		log({err_msg : m});
-	    }
-	}
-    });
-}
+//     $.ajax({
+// 	url      : "./scripts/url_parser.pl",
+// 	type     : "post",
+// 	data     : "url=" + full_url,
+// 	dataType : "json",
+// 	async    : false,
+// 	success  : function(dbConn) {
+// 	    if (dbConn.status !== "FAILED") {
+// 		console.log(dbConn.out_msg);
+// 		var http_url = $.url();
+// 		var new_http_url = "http://" + http_url.attr("host") + ":" + http_url.attr("port") + "/?username=" + dbConn.out_msg.user + "&host=" + dbConn.out_msg.host + "&dbname=" + dbConn.out_msg.dbname + "&port=" + dbConn.out_msg.port;
+// 		if (dbConn.out_msg.passwd !== undefined && dbConn.out_msg.passwd !== '') {
+// 		    new_http_url = new_http_url + "&passwd=xxxxx";
+// 		}
+// 		window.location.href = new_http_url;
+// 	    } else {
+// 		log(dbConn);
+// 	    }
+// 	},
+// 	error      : function (x, t, m) {
+// 	    if(t==="timeout") {
+// 		log({err_msg : "No response from mysql sever for 10s. Try it later"});
+// 		$("#connection_msg").empty();
+// 	    } else {
+// 		log({err_msg : m});
+// 	    }
+// 	}
+//     });
+// }
 
 function guess_database_url () {
 
@@ -202,8 +204,9 @@ function guess_database_url () {
 	    connect();
 	}
     } else {
+	alert("Not enough information to connect to db");
 	// Default value. Only for testing
-	$("#db_url").val("mysql://ensro@127.0.0.1:2912/mp12_long_mult");
+	// $("#db_url").val("mysql://ensro@127.0.0.1:2912/mp12_long_mult");
     }
     
 }
@@ -218,6 +221,8 @@ function get_mysql_password(loc_url) {
     connect();
 }
 
+// TODO: This is probably not needed anymore since the pipelines
+// are reloaded
 function clearPreviousPipeline() {
     guiHive.analysis_board = undefined;
  
@@ -225,12 +230,12 @@ function clearPreviousPipeline() {
 }
 
 function connect() {
-    // We first remove the analysis_board
+    // We first remove the analysis_board. TODO: Probably not needed anymore
     clearPreviousPipeline();
 
     $.ajax({url        : "./scripts/db_connect.pl",
 	    type       : "post",
-	    data       : "url=" + guiHive.pipeline_url, //$("#db_url").val(),
+	    data       : "url=" + guiHive.pipeline_url + "&version=" + guiHive.version,
 	    dataType   : "json",
 	    timeout    : guiHive.databaseConnectionTimeout,
 	    beforeSend : function() {showProcessing($("#connection_msg"))},
@@ -255,7 +260,7 @@ function refresh_data_and_views(callback) {
     console.log("UPDATING DATA AND VIEWS ... ");
     $.ajax({url        : "./scripts/db_fetch_all_analysis.pl",
 	    type       : "post",
-	    data       : "url=" + guiHive.pipeline_url, //$("#db_url").val(),
+	    data       : "url=" + guiHive.pipeline_url + "&version=" + guiHive.version, //$("#db_url").val(),
 	    async      : guiHive.analysis_board != undefined,
 	    timeout    : guiHive.databaseConnectionTimeout,
 	    dataType   : "json",
@@ -303,14 +308,11 @@ function onSuccess_dbConnect(res) {
     // If there has been an error, it is reported in the "log" div
     log(res);
 
-    // the url for the rest of the queries is set (url var is global)
-    // guiHive.pipeline_url = $("#db_url").val();
-
     // Showing the resources
     fetch_resources();
 
     // We load the jobs form
-    $.get('./scripts/db_jobs_form.pl', {url : guiHive.pipeline_url} ,function(data) {
+    $.get('./scripts/db_jobs_form.pl', {url : guiHive.pipeline_url, version : guiHive.version} ,function(data) {
 	$('#jobs_form').html(data);
 	listen_jobs();
     });
@@ -347,7 +349,7 @@ function onSuccess_dbConnect(res) {
 function display(analysis_id, fetch_url, callback) {
     $.ajax({url        : fetch_url,
 	    type       : "post",
-	    data       : "url=" + guiHive.pipeline_url + "&analysis_id=" + analysis_id,
+	    data       : "url=" + guiHive.pipeline_url + "&analysis_id=" + analysis_id + "&version=" + guiHive.version,
 	    dataType   : "json",
 	    success    : function(resp) {
 		callback(resp, analysis_id, fetch_url)
@@ -428,7 +430,7 @@ function fetch_jobs() {
 	],
 	"bServerSide"   : true,
 	"bProcessing"   : true,
-	"sAjaxSource"   : "./scripts/db_fetch_jobs.pl?url=" + guiHive.pipeline_url + "&analysis_id=" + analysis_id,
+	"sAjaxSource"   : "./scripts/db_fetch_jobs.pl?url=" + guiHive.pipeline_url + "&analysis_id=" + analysis_id + "&version=" + guiHive.version,
 	"sDom": 'C<"clear">lfrtip',
 	"bRetrieve"     : false,
 	"bDestroy"      : true,
@@ -484,6 +486,8 @@ function fetch_jobs() {
 		$(this).children('option:first-child').attr("selected","selected");
 	    });
 
+	    // WARNING: We need to send the version here but it looks as if I can't
+	    // The same may happen with the other editable entries that uses db_update2.pl
 	    oTable.$("td.editableInputID").editable("./scripts/db_update2.pl", {
 		indicator  : "Saving...",
 		tooltip    : "Click to edit...",
@@ -516,7 +520,7 @@ function fetch_jobs() {
 		$(this).editable("./scripts/db_update2.pl", {
 		    indicator  : "Saving...",
 		    tooltip    : "Click to edit...",
-		    loadurl    : "./scripts/db_fetch_max_retry_count.pl?url=" + guiHive.pipeline_url + "&job_id=" + job_id,
+		    loadurl    : "./scripts/db_fetch_max_retry_count.pl?url=" + guiHive.pipeline_url + "&job_id=" + job_id + "&version=" + guiHive.version,
 		    type       : "select",
 		    submit     : "Ok",
 		    event      : "dblclick",
@@ -603,7 +607,7 @@ function listen_Analysis(analysis_id, fetch_url) {
     $(".job_command").click(function(){
 	var sel = this;
 	$.ajax({url        : "./scripts/db_commands.pl",
-		data       : jQuery.param(buildSendParams(sel)) + "&analysis_id=" + $(sel).attr('data-analysisid'),
+		data       : jQuery.param(buildSendParams(sel)) + "&analysis_id=" + $(sel).attr('data-analysisid') + "&version=" + guiHive.version,
 		async      : true,
 		dataType   : "json",
 		beforeSend : show_db_access,
@@ -642,6 +646,8 @@ function buildSendParams(obj) {
 	urlHash.key = $(obj).attr("data-key");
     }
 
+    urlHash.version = guiHive.version;
+
     return (urlHash);
 }
 
@@ -650,7 +656,7 @@ function update_db(obj) {
     var url = obj.data.script;
     var fetch_url = obj.data.fetch_url;
     var analysis_id = obj.data.analysis_id;
-    $.ajax({url        : url, //guiHive.pipeline_url,
+    $.ajax({url        : url,
 	    type       : "post",
 	    data       : buildURL(this),
 	    dataType   : "json",
@@ -688,7 +694,8 @@ function buildURL(obj) {
     var URL = "url="+ guiHive.pipeline_url + 
         "&args="+encodeURIComponent(value) + 
         "&adaptor="+$(obj).attr("data-adaptor") + 
-        "&method="+$(obj).attr("data-method");
+        "&method="+$(obj).attr("data-method") +
+	"&version="+guiHive.version;
     if ($(obj).attr("data-analysisID")) {
 	URL = URL.concat("&analysis_id="+$(obj).attr("data-analysisID"));
     }

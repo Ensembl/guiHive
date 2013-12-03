@@ -3,21 +3,32 @@
 use strict;
 use warnings;
 
-use Bio::EnsEMBL::Hive::DBSQL::DBAdaptor;
 use JSON;
 use Data::Dumper;
 
-use lib ("./scripts/lib");
-use analysisInfo;
-use hive_extended;
-use msg;
+#use lib ("./scripts/lib");
+# use analysisInfo;
+# use hive_extended;
+# use msg;
 
-my $json_data = shift @ARGV || '{"url":["mysql://ensadmin:ensembl@127.0.0.1:2912/mp12_compara_nctrees_69p"]}';
+my $json_data = shift @ARGV || '{"version":["53"],"url":["mysql://ensadmin:ensembl@127.0.0.1:2914/mp12_compara_nctrees_74sheep"]}';
 
 my $var = decode_json($json_data);
 my $url = $var->{url}->[0];
+my $version = $var->{version}->[0];
+
+my $project_dir = $ENV{GUIHIVE_BASEDIR} . "versions/$version/";
+
+unshift @INC, $project_dir. "scripts/lib";
+require msg;
+require analysisInfo;
+require hive_extended;
+
+unshift @INC, $project_dir, "ensembl-hive/modules/";
+require Bio::EnsEMBL::Hive::DBSQL::DBAdaptor;
 
 my $dbConn = Bio::EnsEMBL::Hive::DBSQL::DBAdaptor->new( -no_sql_schema_version_check => 1, -url => $url );
+
 my $response = msg->new();
 
 if (defined $dbConn) {

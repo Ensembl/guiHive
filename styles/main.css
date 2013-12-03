@@ -11,29 +11,9 @@ body {
 
 /* DIVs */
 
-/* mysql password modal */
-#password-id {
-    width : 250px
-}
-
 /* Connexion Div */
-#db_connexion {
+#db_connection, #cached_connections {
     width            : 800px;
-}
-
-#expandable {
-    display : block;
-}
-
-/* empty but needed */
-#expandable .show{
-}
-#expandable .hide{
-}
-
-#control_pane {
-    /* margin : 10px; */
-    margin-top : 10px;
 }
 
 #db_url {
@@ -45,175 +25,6 @@ body {
     font-size : 10px;
 }
 
-#connexion_msg {
-/*    width            : 960px;*/
-    height           : 220px;
-    background-color : white;
-    padding          : 5px;
-}
-
-/* Log Container div */ 
-#logContainer {
-    width            : 700px;
-    height           : 560px;
-    /* color            : white; */
-    /* background-color : black; */
-    overflow         : auto;
-    position         : relative;
-    padding          : 5px;
-    max-height       : 300px;
-}
-
-#log {
-    background-color : black;
-    color            : white;
-}
-
-/* Analysis advanced options */
-#analysis_advanced_options {
-    display          : none;
-}
-
-
-
-/* Jobs advanced options */
-#jobs_advanced_commands {
-    display          : none;
-}
-
-
-/* Diagram Div */
-#pipeline_diagram {
-/*    width            : 960px;*/
-    /* width            : 100%; */
-    /* height           : 650px; */
-    color            : black;
-    background-color : white;
-    padding          : 5px;
-    /* resize           : both; */
-    overflow         : hidden;
-}
-
-/* Full-screen icon */
-#full_screen_icon {
-    position : fixed;
-    right    : 20px;
-    top      : 10px;
-}
-
-#views {
-    width            : 100%;
-    /* height           : 650px; */
-    color            : black;
-    background-color : white;
-    overflow         : hidden;
-}
-
-/* Analysis Div */
-#analysis_details {
-
-    font-size        : 12px;
-    width            : 450px;
-    color            : black;
-    background-color : #E6EBF0;
-    padding          : active;
-
-    position         : absolute;
-    z-index          : 24;
-    overflow         : hidden;
-    right            : 5px;
-}
-
-/******************/
-/* resources table /
-/******************/
-#resources_table {
-    font-size        : 12px;
-    width            : 850px;
-    background-color : #E6EBF0;
-    padding          : active;
-}
-
-.short-field {
-    display          : inline-block;
-    width            : 80px;
-}
-.short-input {
-    width            : 80px;
-}
-
-.large-field {
-    display          : inline-block;
-    width            : 300px;
-}
-
-.large-input {
-    width            : 300px;
-}
-/******************/
-
-/* jobs_chart div */
-.jobs_chart {
-    margin-left      : 0px;
-    margin-right     : 0px;
-    margin-bottom    : 20px;
-    margin-top       : 20px;
-}
-
-/* Tables located in table fields */
-
-#moduleName {
-    width            : 266px;
-}
-
-.input-row, .input-key {
-    margin           : 0;
-    padding          : 0;
-}
-
-input[type="text"], select {
-    margin           : 0;
-    /* padding          : 0; */
-    font-size        : 12px;
-}
-
-.td-input-key {
-    width            : 110px;
-    overflow         : hidden;
-    display          : inline-block;
-    margin           : 0;
-    padding          : 0;
-}
-
-.td-input-value {
-    width            : 160px;
-    overflow         : hidden;
-    display          : inline-block;
-    margin           : 0;
-    padding          : 0;
-}
-
-.button-cell {
-    background-color : gray;
-    width            : 20px;
-    text-align       : center;
-}
-
-/* .input-field { */
-/*     background-color : cyan; */
-/*     width            : 40px; */
-/*     overflow         : hidden; */
-/* } */
-
-
-/* .parameters_table td { */
-/*     Background-color : red; */
-/*     width            : 120px; */
-/*     border           : solid; */
-/*     overflow         : hidden; */
-/*     display          : inline-block; */
-/*     white-space      : nowrap; */
-/* } */
 
 /* Specific non-container elements */
 #Connect {
@@ -222,59 +33,20 @@ input[type="text"], select {
     box-shadow: 1px 1px 0;
 }
 
-/* date-range */
-.date_range_filter {
-    width            : 5.5em;
-}
-.ui-widget-content {
-    background-color : white;
+.center {
+    text-align : center;
 }
 
-.header-table {
-    width           : 100%;
+.centered_div {
+    display : block;
+    margin-left : auto;
+    margin-right : auto;
+    margin-top : 30px;
 }
 
-.td-right {
-    text-align     : right;
-}
-
-#jobs_table {
-    width          : 100%;
-    font-size      : 12px;
-}
-
-.number_filter {
-    width          : 50px;
-}
-
-.select_filter {
-    width          : 80px;
-}
-
-.update_param_all {
-    width          : 80px;
-}
-
-.number_range_filter {
-    width          : 20px;
-}
-
-.inner_table {
-    padding : 0px;
-    margin  : 0;
-    border  : 0;
-    background-color : "gray";
-    width   : 100%;
-}
-
-#log-tab {
-    color  : #B8B8B8;
-}
-
-.graph {
-    cursor : move;
-}
-
-#refreshing {
-    margin-left : 50px;
+#container {
+    width      : 100%;
+    position   : absolute;
+    top        : 50%;
+    margin-top : -20em;
 }

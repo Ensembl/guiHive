@@ -3,18 +3,13 @@
 use strict;
 use warnings;
 
-use Bio::EnsEMBL::Hive::DBSQL::DBAdaptor;
 use JSON;
 use HTML::Template;
 use Data::Dumper;
 
 use lib ("./scripts/lib");
-use hive_extended;
-use msg;
 
-my $json_data = shift @ARGV || '{"url":["mysql://ensadmin:ensembl@127.0.0.1:2899/tm6_qc_pipeline_chicken_72_full_pipeline"],"analysis_id":["1"],"sSortDir_0":["asc"],"iDisplayLength":["10"],"iDisplayStart":["0"],"iSortCol_0":["0"],"iSortingCols":["1"]}';
-my $jobs_template = $ENV{GUIHIVE_VERSION_DIR} . "static/jobs.html";
-my $input_ids_template = $ENV{GUIHIVE_VERSION_DIR} . "static/jobs_input_ids.html";
+my $json_data = shift @ARGV || '{"version":["53"],"url":["mysql://ensadmin:ensembl@127.0.0.1:2899/tm6_qc_pipeline_chicken_72_full_pipeline"],"analysis_id":["1"],"sSortDir_0":["asc"],"iDisplayLength":["10"],"iDisplayStart":["0"],"iSortCol_0":["0"],"iSortingCols":["1"]}';
 
 # Input
 my $var = decode_json($json_data);
@@ -25,6 +20,18 @@ my $sSearch        = $var->{sSearch}->[0];
 my $bRegex         = $var->{bRegex}->[0];
 my $iSortingCols   = $var->{iSortingCols}->[0];
 my $sEcho          = $var->{sEcho}->[0];
+my $version        = $var->{version}->[0];
+
+my $project_dir = $ENV{GUIHIVE_BASEDIR} . "versions/$version/";
+my $jobs_template = $project_dir . "static/jobs.html";
+my $input_ids_template = $project_dir . "static/jobs_input_ids.html";
+
+unshift @INC, $project_dir . "scripts/lib";
+require msg;
+require hive_extended;
+
+unshift @INC, $project_dir . "ensembl-hive/modules";
+require Bio::EnsEMBL::Hive::DBSQL::DBAdaptor;
 
 # Initialization
 my $dbConn = Bio::EnsEMBL::Hive::DBSQL::DBAdaptor->new( -no_sql_schema_version_check => 1, -url => $url );

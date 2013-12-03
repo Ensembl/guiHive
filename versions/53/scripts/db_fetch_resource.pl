@@ -11,15 +11,24 @@ use HTML::Entities;
 use Data::Dumper;
 
 use lib ("./scripts/lib");
-use hive_extended;
-use msg;
+# use hive_extended;
+# use msg;
 
 # Input data
-my $json_url = shift @ARGV || '{"url":["mysql://ensro@127.0.0.1:2912/mp12_long_mult"]}';
+my $json_url = shift @ARGV || '{"version":["53"],"url":["mysql://ensro@127.0.0.1:2911/mp12_long_mult"]}';
 my $url = decode_json($json_url)->{url}->[0];
+my $version = decode_json($json_url)->{version}->[0];
 
 # Initialization
-my $resources_template = $ENV{GUIHIVE_VERSION_DIR} . 'static/resources.html';
+my $project_dir = $ENV{GUIHIVE_BASEDIR} . "versions/$version/";
+my $resources_template = $project_dir . 'static/resources.html';
+
+unshift @INC, $project_dir . "scripts/lib";
+require msg;
+require hive_extended;
+
+unshift @INC, $project_dir . "ensembl-hive/modules";
+
 my $dbConn = Bio::EnsEMBL::Hive::DBSQL::DBAdaptor->new( -no_sql_schema_version_check => 1, -url => $url );
 my $response = msg->new();
 

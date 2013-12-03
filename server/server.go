@@ -56,24 +56,6 @@ func scriptHandler(w http.ResponseWriter, r *http.Request) {
 	debug("EXECUTING SCRIPT: %s", fname)
 	debug("ARGS: %s", string(args))
 
-	if v, ok := r.Form["version"]; ok {
-		debug("VERSION : %s", r.Form["version"])
-		// First we set GUIHIVE_VERSION_DIR
-		guihiveBasedir := os.Getenv("GUIHIVE_BASEDIR")
-		guihiveVersionDir := guihiveBasedir + "/versions/" + v[0] + "/"
-		if err := os.Setenv("GUIHIVE_VERSION_DIR", guihiveVersionDir); err != nil {
-			checkError ("Can't set GUIHIVE_VERSION_DIR to " + guihiveVersionDir + ": ", err)
-		}
-		debug("GUIHIVE_VERSION_DIR: " + guihiveVersionDir)
-		newDir := guihiveBasedir + "/versions/" + v[0] + "/scripts/lib"
-		err := setPerl5Lib(newDir)
-		if err != nil {
-			checkError("Can't add " + newDir + " to set PERL5LIB: ", err)
-		}
-
-		
-	}
-
 	cmd := exec.Command(fname, string(args))
 	cmd.Stdout = &outMsg
 	cmd.Stderr = &errMsg

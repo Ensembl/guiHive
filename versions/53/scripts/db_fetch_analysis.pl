@@ -3,22 +3,31 @@
 use strict;
 use warnings;
 
-use Bio::EnsEMBL::Hive::DBSQL::DBAdaptor;
 use JSON;
 use HTML::Template;
 use Data::Dumper;
 
 use lib ("./scripts/lib");
-use hive_extended;
-use msg;
+#use hive_extended;
+#use msg;
 
-my $json_data = shift @ARGV || '{"url":["mysql://ensadmin:ensembl@127.0.0.1:2911/mp12_long_mult"], "analysis_id":["1"]}';
-my $details_template = $ENV{GUIHIVE_VERSION_DIR} . "static/analysis_details.html";
+my $json_data = shift @ARGV || '{"version":["53"],"url":["mysql://ensadmin:ensembl@127.0.0.1:2911/mp12_long_mult"], "analysis_id":["1"]}';
 
 ## Input
 my $var = decode_json($json_data);
 my $url = $var->{url}->[0];
 my $analysis_id = $var->{analysis_id}->[0];
+my $version = $var->{version}->[0];
+
+my $project_dir = $ENV{GUIHIVE_BASEDIR} . "versions/$version/";
+my $details_template = $project_dir . "static/analysis_details.html";
+
+unshift @INC, $project_dir . "scripts/lib";
+require msg;
+require hive_extended;
+
+unshift @INC, $project_dir, "ensembl-hive/modules";
+require Bio::EnsEMBL::Hive::DBSQL::DBAdaptor;
 
 ## Initialization
 my $dbConn = Bio::EnsEMBL::Hive::DBSQL::DBAdaptor->new( -no_sql_schema_version_check => 1, -url => $url );

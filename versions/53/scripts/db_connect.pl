@@ -3,22 +3,33 @@
 use strict;
 use warnings;
 
-use Bio::EnsEMBL::Hive::Utils::Graph;
-use Bio::EnsEMBL::Hive::DBSQL::DBAdaptor;
-use Bio::EnsEMBL::Hive::DBSQL::SqlSchemaAdaptor;
+# use Bio::EnsEMBL::Hive::Utils::Graph;
+# use Bio::EnsEMBL::Hive::DBSQL::DBAdaptor;
+# use Bio::EnsEMBL::Hive::DBSQL::SqlSchemaAdaptor;
 use JSON;
 use HTML::Template;
 
 use lib ("./lib");
+#use msg;
 
-use msg;
-
-my $json_url = shift @ARGV || '{"url":["mysql://ensro@127.0.0.1:2912/mp12_compara_nctrees_74clean2"]}';
-my $connection_template = $ENV{GUIHIVE_VERSION_DIR} . "static/connection_details.html";
+my $json_url = shift @ARGV || '{"version":["53"],"url":["mysql://ensro@127.0.0.1:2912/mp12_compara_nctrees_74clean2"]}';
 my $hive_config_file = $ENV{GUIHIVE_BASEDIR} . "config/hive_config.json";
 
 # Input data
 my $url = decode_json($json_url)->{url}->[0];
+my $version = decode_json($json_url)->{version}->[0];
+
+# Set up @INC and paths for static content
+my $project_dir = $ENV{GUIHIVE_BASEDIR} . "versions/$version/";
+my $connection_template = "${project_dir}static/connection_details.html";
+
+unshift @INC, $project_dir . "scripts/lib";
+require msg;
+
+unshift @INC, $project_dir . "ensembl-hive/modules";
+require Bio::EnsEMBL::Hive::Utils::Graph;
+require Bio::EnsEMBL::Hive::DBSQL::DBAdaptor;
+require Bio::EnsEMBL::Hive::DBSQL::SqlSchemaAdaptor;
 
 my $response = msg->new();
 

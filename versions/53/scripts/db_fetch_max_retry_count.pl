@@ -4,16 +4,19 @@ use strict;
 use warnings;
 use JSON::PP;
 use Data::Dumper;
-use Bio::EnsEMBL::Hive::DBSQL::DBAdaptor;
 
-my $json_data = shift @ARGV || '{"url":["mysql://ensadmin:ensembl@127.0.0.1:2912/mp12_compara_nctrees_69d"], "job_id":["5"]}';
+my $json_data = shift @ARGV || '{"version":["53"],"url":["mysql://ensadmin:ensembl@127.0.0.1:2912/mp12_compara_nctrees_69d"], "job_id":["5"]}';
 
 my $var = decode_json($json_data);
 my $url = $var->{url}->[0];
 my $job_id = $var->{job_id}->[0];
 $job_id =~ s/job_//;
+my $version = $var->{version}->[0];
 
-#my $dbConn = Bio::EnsEMBL::Hive::URLFactory->fetch($url);
+my $project_dir = $ENV{GUIHIVE_BASEDIR} . "versions/$version/";
+unshift @INC, $project_dir . "ensembl-hive/modules";
+require Bio::EnsEMBL::Hive::DBSQL::DBAdaptor;
+
 my $dbConn = Bio::EnsEMBL::Hive::DBSQL::DBAdaptor->new(-no_sql_schema_version_check => 1, -url => $url);
 
 my $resp;

@@ -7,7 +7,13 @@ use JSON;
 use Data::Dumper;
 
 use lib ("./scripts/lib"); ## Only needed for local testing
-use msg;
+#use msg;
+
+my $json_url = shift @ARGV || '{"version":["53"]}';
+my $version = decode_json($json_url)->{version}->[0];
+
+unshift @INC, $ENV{GUIHIVE_BASEDIR} . "versions/$version/scripts/lib";
+require msg;
 
 my $response = msg->new();
 my $hive_config_file = $ENV{GUIHIVE_BASEDIR} . "config/hive_config.json";
