@@ -3,7 +3,6 @@
 use strict;
 use warnings;
 
-use Bio::EnsEMBL::Hive::DBSQL::DBAdaptor;
 use JSON;
 use HTML::Template;
 use HTML::Entities;
@@ -11,8 +10,6 @@ use HTML::Entities;
 use Data::Dumper;
 
 use lib ("./scripts/lib");
-# use hive_extended;
-# use msg;
 
 # Input data
 my $json_url = shift @ARGV || '{"version":["53"],"url":["mysql://ensro@127.0.0.1:2911/mp12_long_mult"]}';
@@ -28,6 +25,7 @@ require msg;
 require hive_extended;
 
 unshift @INC, $project_dir . "ensembl-hive/modules";
+require Bio::EnsEMBL::Hive::DBSQL::DBAdaptor;
 
 my $dbConn = Bio::EnsEMBL::Hive::DBSQL::DBAdaptor->new( -no_sql_schema_version_check => 1, -url => $url );
 my $response = msg->new();

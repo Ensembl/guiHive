@@ -1,0 +1,58 @@
+<!-- TODO: Avoid formatting references here (size of the columns, etc...) -->
+<table id="resources_table" class="table">
+
+  <tr>
+    <th>ID</th>
+    <th>Name</th>
+    <th></th>
+    <th>Meadow type</th>
+    <th>Parameters</th>
+    <th></th>
+  </tr>
+
+  <TMPL_LOOP NAME=resources>
+    <tr>
+      <td><TMPL_VAR NAME=rcID></td>
+      <TMPL_LOOP NAME=resourceName>
+  	<td>
+  	  <input type="text"
+  		 id="<TMPL_VAR NAME=rcName>"
+  		 size=10
+  		 value="<TMPL_VAR NAME=name>" />
+  	</td>
+  	<td> <button class="update_resource"
+  		     data-analysisID="<TMPL_VAR NAME=id>"
+  		     data-adaptor="<TMPL_VAR NAME=adaptor>"
+  		     data-method="<TMPL_VAR NAME=method>"
+  		     data-linkTo="<TMPL_VAR NAME=rcName>">+</button></td>
+      </TMPL_LOOP>
+      <td><TMPL_VAR NAME=meadow></td>
+      <TMPL_LOOP NAME=resourceParams>
+  	<td class="large-field"><input class="large-input" type="text"
+  		   id="<TMPL_VAR NAME=rcParams>"
+  		   size=80
+  		   value="<TMPL_VAR NAME=params>"></td>
+  	<td><button class="update_resource"
+  		  data-analysisID="<TMPL_VAR NAME=id>"
+  		  data-adaptor="<TMPL_VAR NAME=adaptor>"
+  		  data-method="<TMPL_VAR NAME=method>"
+  		  data-linkTo="<TMPL_VAR NAME=rcParams>">+</button></td>
+      </TMPL_LOOP>
+    </tr>
+  </TMPL_LOOP>
+
+  <TMPL_LOOP NAME=create_resource>
+    <tr>
+      <td>ID</td>
+      <td><input type="text" size=30 id="r_new_name" /></td>
+      <td></td>
+      <td><input class="short-input" type="text" id="r_new_meadow"></td>
+      <td class="large-field"><input class="large-input" type="text" size=50 id="r_new_parameters"></td>
+      <td><button class="create_resource"
+  		  data-adaptor="<TMPL_VAR NAME=adaptor>"
+  		  data-method="<TMPL_VAR NAME=method>"
+  		  data-linkTo="r_new_name,r_new_meadow,r_new_parameters">+</button>
+      </td>
+    </tr>
+  </TMPL_LOOP>
+</table>

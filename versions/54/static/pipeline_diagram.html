@@ -1,0 +1,19 @@
+<table border=0>
+  <TMPL_LOOP NAME=analyses>
+    <tr>
+      <td>
+	<table border=1>
+	  <tr>
+	    <td><TMPL_VAR NAME=logic_name></td>
+	    <td>
+	      <button class="analysis_link" type="button" id="<TMPL_VAR NAME=logic_name>">SHOW</button>
+	    </td>
+	    <td>
+	      <div class="progress_monitor" data-analysisID="<TMPL_VAR NAME=id>"></div>
+	    </td>
+	  </tr>
+	</table>
+      </td>
+    </tr>
+  </TMPL_LOOP>
+</table>

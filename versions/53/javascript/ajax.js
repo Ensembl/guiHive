@@ -125,7 +125,9 @@ $(document).ready(function() {
     guess_database_url();
 
     // We populate the URL bit on the header
-    $("#guiHive_url").text(guiHive.pipeline_url + " (v" + guiHive.version + ")");
+    $("#guiHive_url").text(guiHive.pipeline_url);
+    $(".myHeader").text("guiHive (v" + guiHive.version + ")");
+			   
 
     // $("#Connect").click(function() {
     // 	// connect();
@@ -184,8 +186,8 @@ function guess_database_url () {
     loc.dbname = url.param("dbname");
     loc.server = url.param("host");
 
+    var autoconnect = false;
     if (loc.user !== undefined && loc.server !== undefined && loc.dbname !== undefined) {
-	var autoconnect = false;
 	var loc_url = "mysql://" + loc.user;
 	if (loc.passwd !== undefined) {
 	    loc_url = loc_url + ":" + loc.passwd;
@@ -212,9 +214,8 @@ function guess_database_url () {
 	    loc_url = loc_url + ":" + loc.port;
 	}
 	loc_url = loc_url + "/" + loc.dbname;
-	$("#db_url").val(loc_url);
+	guiHive.pipeline_url = loc_url;
 	if (autoconnect) {
-	    guiHive.pipeline_url = loc_url;
 	    connect();
 	}
     } else {

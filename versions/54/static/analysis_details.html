@@ -1,0 +1,301 @@
+<table class="header-table">
+  <tr>
+    <td id="analysis-header"><h4>Analysis Details</h4></td>
+    <td class="td-right"><a id="close_analysis_details" class="btn" data-target="analysis_details"><i class="icon-remove"></i></a></td>
+  </tr>
+</table>
+
+<table id="analysis_table"> <!-- class="table table-hover table-condensed">-->
+  <tr> <!-- ANALYSIS ID -->
+    <td> Analysis ID:</td><td><TMPL_VAR NAME=id> </td>
+  </tr>
+
+  <tr> <!-- ANALYSIS NAME -->
+    <td> Analysis name:</td><td><TMPL_VAR NAME=logic_name> </td>
+  </tr>
+
+  <tr> <!-- MODULE -->
+    <td> Module:</td>
+    <td>
+      <table class="field-table">
+	<TMPL_LOOP NAME=module>
+	  <tr>
+	    <td><input type="text"
+		       id="moduleName"
+		       value="<TMPL_VAR NAME=module>"
+		       data-value="<TMPL_VAR NAME=module>"></td>
+	    <td class="button-cell"><a class="update_param btn btn-mini"
+				       data-analysisID="<TMPL_VAR NAME=id>"
+				       data-adaptor="<TMPL_VAR NAME=adaptor>"
+				       data-method="<TMPL_VAR NAME=method>"
+				       data-linkTo="moduleName"><i class="icon-plus-sign"></i></a>
+	    </td>
+	  </tr>
+	</TMPL_LOOP>
+      </table>
+    </td>
+  </tr>
+
+  <tr> <!-- PARAMETERS -->
+    <td> Parameters:</td>
+    <td>
+      <table class="field-table">
+	<TMPL_LOOP NAME=parameters>
+	  <TMPL_LOOP NAME=existing_parameters>
+	    <tr class="input-row">
+	      <td class="td-input-key"><span id="<TMPL_VAR NAME=parameterKeyID>"
+		      data-value="<TMPL_VAR NAME=key>">
+		  <TMPL_VAR NAME=key>
+		</span></td>
+	      <td class="td-input-value"><input class="input-value" id="<TMPL_VAR NAME=parameterValueID>"
+			 type="text" 
+			 data-value="<TMPL_VAR NAME=value>"
+			 value="<TMPL_VAR NAME=value>">
+	      </td>
+	      <TMPL_LOOP NAME=change_parameter>
+		<td class="button-cell"><a class="update_param btn btn-mini"
+			    data-analysisID="<TMPL_VAR NAME=id>"
+			    data-adaptor="<TMPL_VAR NAME=adaptor>"
+			    data-method="<TMPL_VAR NAME=method>"
+			    data-linkTo="<TMPL_VAR NAME=parameterKeyID>,<TMPL_VAR NAME=parameterValueID>"><i class="icon-plus-sign"></i></a>
+		</td>
+	      </TMPL_LOOP> <!-- change_paramter -->
+	      <TMPL_LOOP NAME=delete_parameter>
+		<td class="button-cell"><a class="update_param btn btn-mini"
+			    data-analysisID="<TMPL_VAR NAME=id>"
+			    data-adaptor="<TMPL_VAR NAME=adaptor>"
+			    data-method="<TMPL_VAR NAME=method>"
+			    data-linkTo="<TMPL_VAR NAME=parameterKeyID>"><i class="icon-minus-sign"></i></a>
+		</td>
+	      </TMPL_LOOP> <!-- delete_parameter -->
+	    </tr>
+	  </TMPL_LOOP> <!-- existing_parameters -->
+	  <TMPL_LOOP NAME=new_parameter>
+	    <tr class="input-row">
+	      <td class="td-input-key"><input class="input-key" type="text" id="p_new_key"></td>
+	      <td class="td-input-value"><input class="input-value" type="text" id="p_new_value"></td>
+	      <td class="button-cell"><a class="update_param btn btn-mini"
+			  data-analysisID="<TMPL_VAR NAME=id>"
+			  data-adaptor="<TMPL_VAR NAME=adaptor>"
+			  data-method="<TMPL_VAR NAME=method>"
+			  data-linkTo="p_new_key,p_new_value"><i class="icon-plus-sign"></i></a>
+	      </td>
+	    </tr>
+	  </TMPL_LOOP> <!-- new parameter -->
+	</TMPL_LOOP> <!-- parameters -->
+      </table>
+    </td>
+  </tr>
+
+  <tr> <!-- RESOURCE CLASS ID -->
+    <td> Resource class ID:</td>
+    <td>
+      <TMPL_LOOP NAME=resource_class_id>
+	<select size="1"
+		class="update_param"
+		data-analysisID="<TMPL_VAR NAME=id>"
+		data-adaptor="<TMPL_VAR NAME=adaptor>"
+		data-method="<TMPL_VAR NAME=method>">
+	  <TMPL_LOOP NAME=values>
+	    <option <TMPL_IF NAME=is_current>selected </TMPL_IF>value="<TMPL_VAR NAME=resource_class_id_value>"><TMPL_VAR NAME=resource_class_id_display></option>
+	  </TMPL_LOOP>
+      </TMPL_LOOP>
+    </td>
+  </tr>
+
+  <tr> <!-- ANALISYS CAPACITY -->
+    <td> Analysis capacity: </td>
+    <td><TMPL_LOOP NAME=analysis_capacity>
+	<select size="1"
+		class="update_param"
+		data-analysisID="<TMPL_VAR NAME=id>"
+		data-adaptor="<TMPL_VAR NAME=adaptor>"
+		data-method="<TMPL_VAR NAME=method>">
+	  <TMPL_LOOP NAME=values>
+	    <option <TMPL_IF NAME=is_current>selected</TMPL_IF> value="<TMPL_VAR NAME=analysis_capacity_value>"> <TMPL_VAR NAME=analysis_capacity_display> </option>
+	  </TMPL_LOOP>
+	</select>
+    </TMPL_LOOP></td>
+  </tr>
+</table>
+
+<div><a style="cursor:pointer;" class="toggle-div" data-target="analysis_advanced_options">Show</a> advanced options</div>
+<div id="analysis_advanced_options">
+<table>
+  <tr> <!-- FAILED JOB TOLERANCE -->
+    <td> Failed job tolerance: </td>
+    <td><TMPL_LOOP NAME=failed_job_tolerance>
+	<select size="1"
+		class="update_param"
+		data-analysisID="<TMPL_VAR NAME=id>"
+		data-adaptor="<TMPL_VAR NAME=adaptor>"
+		data-method="<TMPL_VAR NAME=method>">
+	  <TMPL_LOOP NAME=values>
+	    <option <TMPL_IF NAME=is_current>selected</TMPL_IF> value="<TMPL_VAR NAME=failed_job_tolerance_value>"> <TMPL_VAR NAME=failed_job_tolerance_display></option>
+	  </TMPL_LOOP>
+	</select>
+    </TMPL_LOOP></td>
+  </tr>
+
+  <tr> <!-- MAX RETRY COUNT -->
+    <td> Max retry count: </td>
+    <td><TMPL_LOOP NAME=max_retry_count>
+	<select size="1"
+		class="update_param"
+		data-analysisID="<TMPL_VAR NAME=id>"
+		data-adaptor="<TMPL_VAR NAME=adaptor>"
+		data-method="<TMPL_VAR NAME=method>">
+	  <TMPL_LOOP NAME=values>
+	    <option <TMPL_IF NAME=is_current>selected</TMPL_IF> value="<TMPL_VAR NAME=max_retry_count_value>"> <TMPL_VAR NAME=max_retry_count_display></option>
+	  </TMPL_LOOP>
+	</select>
+    </TMPL_LOOP></td>
+  </tr>
+
+  <tr> <!-- HIVE CAPACITY -->
+    <td> Hive capacity:</td>
+    <td>
+      <TMPL_LOOP NAME=hive_capacity>
+	<select size="1"
+		class="update_param"
+		data-analysisID="<TMPL_VAR NAME=id>"
+		data-adaptor="<TMPL_VAR NAME=adaptor>"
+		data-method="<TMPL_VAR NAME=method>">
+	  <TMPL_LOOP NAME=values>
+	    <option <TMPL_IF NAME=is_current>selected</TMPL_IF> value="<TMPL_VAR NAME=hive_capacity_value>"> <TMPL_VAR NAME=hive_capacity_display> </option>
+	  </TMPL_LOOP>
+	</select>
+      </TMPL_LOOP>
+    </td>
+  </tr>
+
+  <tr> <!-- PRIORITY -->
+    <td> Priority:</td>
+    <td>
+      <TMPL_LOOP NAME=priority>
+	<select size="1"
+		class="update_param"
+		data-analysisID="<TMPL_VAR NAME=id>"
+		data-adaptor="<TMPL_VAR NAME=adaptor>"
+		data-method="<TMPL_VAR NAME=method>">
+	  <TMPL_LOOP NAME=values>
+	    <option <TMPL_IF NAME=is_current>selected</TMPL_IF>
+		    value="<TMPL_VAR NAME=priority_value>">
+	      <TMPL_VAR NAME=priority_display></option>
+	  </TMPL_LOOP>
+	</select>
+      </TMPL_LOOP>
+    </td>
+  </tr>
+
+  <tr> <!-- BATCH SIZE -->
+    <td> Batch size:</td>
+    <td>
+      <TMPL_LOOP NAME=batch_size>
+	<select size="1" 
+		class="update_param"
+		data-analysisID="<TMPL_VAR NAME=id>"
+		data-adaptor="<TMPL_VAR NAME=adaptor>"
+		data-method="<TMPL_VAR NAME=method>">
+	  <TMPL_LOOP NAME=values>
+	    <option <TMPL_IF NAME=is_current>selected </TMPL_IF>value="<TMPL_VAR NAME=batch_size_value>"><TMPL_VAR NAME=batch_size_display></option>
+	  </TMPL_LOOP>
+	</select>
+      </TMPL_LOOP>
+    </td>
+  </tr>
+
+  <tr>  <!-- CAN BE EMPTY --> <!-- We can implement CAN_BE_EMPTY as a radio button -->
+    <td> Can be empty:</td>
+    <td>
+      <TMPL_LOOP NAME=can_be_empty>
+	<select size="1"
+		class="update_param"
+		data-analysisID="<TMPL_VAR NAME=id>"
+		data-adaptor="<TMPL_VAR NAME=adaptor>"
+		data-method="<TMPL_VAR NAME=method>">
+	  <TMPL_LOOP NAME=values>
+	    <option <TMPL_IF NAME=is_current>selected </TMPL_IF>value="<TMPL_VAR NAME=can_be_empty_value>"><TMPL_VAR NAME=can_be_empty_display></option>
+	  </TMPL_LOOP>
+	</select>
+      </TMPL_LOOP>
+    </td>
+  </tr>
+
+  <tr>  <!-- MEADOW TYPE -->
+    <td> Meadow type:</td>
+    <td>
+      <TMPL_LOOP NAME=meadow_type>
+	<select size="1"
+		class="update_param"
+		data-analysisID="<TMPL_VAR NAME=id>"
+		data-adaptor="<TMPL_VAR NAME=adaptor>"
+		data-method="<TMPL_VAR NAME=method>">
+	  <TMPL_LOOP NAME=values>
+	    <option <TMPL_IF NAME=is_current>selected </TMPL_IF>value="<TMPL_VAR NAME=meadow_type_value>"><TMPL_VAR NAME=meadow_type_display></option>
+	  </TMPL_LOOP>
+	</select>
+      </TMPL_LOOP>
+    </td>
+  </tr>
+  
+</table>
+</div>
+
+<hr></hr>
+<div>
+<h5>Jobs</h5>
+</div>
+<div><a style="cursor:pointer;" class="toggle-div" data-target="jobs_advanced_commands">Show</a> commands on jobs</div>
+<!-- ADVANCED JOB COMMANDS -->
+<div id="jobs_advanced_commands">
+  <table>
+    <tr>
+      <TMPL_LOOP NAME=discard_ready_jobs>
+	<td><a style="cursor:pointer;"
+	       class="job_command"
+	       data-method="<TMPL_VAR NAME=method>"
+	       data-adaptor="<TMPL_VAR NAME=adaptor>"
+	       data-analysisID="<TMPL_VAR NAME=id>">Discard</a> READY jobs (updating semaphores)</td>
+      </TMPL_LOOP>
+    </tr>
+    <tr>
+      <TMPL_LOOP NAME=failed_jobs_to_ready>
+	<td><a style="cursor:pointer;"
+	       class="job_command"
+	       data-method="<TMPL_VAR NAME=method>"
+	       data-adaptor="<TMPL_VAR NAME=adaptor>"
+	       data-analysisID="<TMPL_VAR NAME=id>">Reset</a> FAILED jobs (setting them to READY)</td>
+      </TMPL_LOOP>
+    </tr>
+    <tr>
+      <TMPL_LOOP NAME=done_jobs_to_ready>
+	<td><a style="cursor:pointer;"
+	       class="job_command"
+	       data-method="<TMPL_VAR NAME=method>"
+	       data-adaptor="<TMPL_VAR NAME=adaptor>"
+	       data-analysisID="<TMPL_VAR NAME=id>">Set</a> DONE jobs to READY (re-establishing semaphores)</td>
+      </TMPL_LOOP>
+    </tr>
+    <tr>
+      <TMPL_LOOP NAME=forgive_failed_jobs>
+	<td><a style="cursor:pointer;"
+	       class="job_command"
+	       data-method="<TMPL_VAR NAME=method>"
+	       data-adaptor="<TMPL_VAR NAME=adaptor>"
+	       data-analysisID="<TMPL_VAR NAME=id>">Forgive</a> FAILED jobs (updating semaphores)</td>
+      </TMPL_LOOP>
+    </tr>
+    <tr>
+      <TMPL_LOOP NAME=unblock_jobs>
+	<td><a style="cursor:pointer;"
+	       class="job_command"
+	       data-method="<TMPL_VAR NAME=method>"
+	       data-adaptor="<TMPL_VAR NAME=adaptor>"
+	       data-analysisID="<TMPL_VAR NAME=id>">Unblock</a> semaphored jobs</td>
+      </TMPL_LOOP>
+    </tr>
+  </table>
+</div>
+
+

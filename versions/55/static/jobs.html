@@ -1,0 +1,162 @@
+<!-- TODO: Eliminate formatting code (borders, sizes, etc...) -->
+<table id="jobs_table" class="table table-striped table-condensed table-hover table-bordered">
+  <thead>
+    <tr>
+      <th>job_id</th>
+      <th>analysis_id</th>
+      <th>input_id</th>
+      <th>worker_id</th>
+      <th>status</th>
+      <th>retry_count</th>
+      <th>completed</th>
+      <th>runtime_msec</th>
+      <th>query_count</th>
+      <th>semaphored_count</th>
+      <th>semaphored_job_id</th>
+      <th>last_error</th>
+    </tr>
+  </thead>
+  <tbody>
+    <TMPL_LOOP NAME=JOBS>
+      <tr>
+	<td id="<TMPL_VAR NAME=unique_job_label>"><TMPL_VAR NAME=job_id></td>
+
+	<td><TMPL_VAR NAME=analysis_id></td>
+
+	<td><table class="inner_table">
+	    <TMPL_LOOP NAME=JOB_INPUT_ID>
+	      <TMPL_LOOP NAME=JOB_EXISTING_INPUT_ID>
+		<tr>
+		  <td><TMPL_VAR NAME=inputKeyID></td>
+		  <td class="editableInputID"
+		      data-linkTo="<TMPL_VAR NAME=job_label>"
+		      data-adaptor="<TMPL_VAR NAME=adaptor>"
+		      data-key="<TMPL_VAR NAME=key>"
+		      data-method="<TMPL_VAR NAME=method>"><TMPL_VAR NAME=inputValID></td>
+		  <td><button class="delete_input_id"
+			      data-linkTo="<TMPL_VAR NAME=job_label>"
+			      data-adaptor="<TMPL_VAR NAME=adaptor>"
+			      data-method="<TMPL_VAR NAME=del_input_id_method>"
+			      data-key="<TMPL_VAR NAME=key>">-</button></td>
+		</tr>
+	      </TMPL_LOOP>
+
+	      <tr>
+		<td class="editableInputID"
+		    data-linkTo="<TMPL_VAR NAME=job_label>"
+		    data-adaptor="<TMPL_VAR NAME=adaptor>"
+		    data-needsReload="1"
+		    data-method="<TMPL_VAR NAME=add_input_id_key_method>"></td>
+		<td></td>
+		<td></td>
+	      </tr>
+	    </TMPL_LOOP>
+
+	  </table></td>
+
+	<td><TMPL_VAR NAME=worker_id></td>
+
+	<TMPL_LOOP NAME=JOB_STATUS>
+	<td class="editableStatus"
+	    data-linkTo="<TMPL_VAR NAME=job_label>"
+	    data-adaptor="<TMPL_VAR NAME=adaptor>"
+	    data-method="<TMPL_VAR NAME=method>">
+	  <TMPL_VAR name=status>
+	</td>
+	</TMPL_LOOP>
+
+	<TMPL_LOOP NAME=JOB_RETRY_COUNT>
+	  <td class="editableRetries"
+	      data-linkTo="<TMPL_VAR NAME=job_label>"
+	      data-adaptor="<TMPL_VAR NAME=adaptor>"
+	      data-method="<TMPL_VAR NAME=method>">
+	    <TMPL_VAR NAME=retry_count>
+	  </td>
+	</TMPL_LOOP>
+
+	<td><TMPL_VAR NAME=completed></td>
+
+	<td><TMPL_VAR NAME=runtime_msec></td>
+
+	<td><TMPL_VAR NAME=query_count></td>
+
+	<TMPL_LOOP NAME=JOB_SEMAPHORE_COUNT>
+	  <td class="editable"
+	      data-linkTo="<TMPL_VAR NAME=job_label>"
+	      data-adaptor="<TMPL_VAR NAME=adaptor>"
+	      data-method="<TMPL_VAR NAME=method>">
+	    <TMPL_VAR NAME=semaphore_count></td>
+	</TMPL_LOOP>
+
+	<TMPL_LOOP NAME=JOB_SEMAPHORED_JOB_ID>
+	  <td class="editable"
+	      data-linkTo="<TMPL_VAR NAME=job_label>"
+	      data-adaptor="<TMPL_VAR NAME=adaptor>"
+	      data-method="<TMPL_VAR NAME=method>">
+	    <TMPL_VAR name=semaphored_job_id>
+	  </td>
+	</TMPL_LOOP>
+
+	<td><TMPL_VAR NAME=msg></td>
+
+      </tr>
+    </TMPL_LOOP>
+  </tbody>
+  <tfoot>
+    <tr>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td>
+	<TMPL_LOOP NAME=STATUS_COL_EDIT>
+	  <select size="1"
+		  class="update_param_all"
+		  data-column="<TMPL_VAR NAME=field>"
+		  data-column-index="4"
+		  data-adaptor="<TMPL_VAR name=adaptor>"
+		  data-method="<TMPL_VAR name=method>">
+	    <option selected="1" value=""></option>
+	    <option value="SEMAPHORED">SEMAPHORED</option>
+	    <option value="READY">READY</option>
+	    <option value="DONE">DONE</option>
+	  </select>
+	</TMPL_LOOP>
+      </td>
+      <td>
+	<TMPL_LOOP NAME=RETRY_COUNT_COL_EDIT>
+	  <select size="1"
+		  class="update_param_all"
+		  data-column="<TMPL_VAR NAME=field>"
+		  data-column-index="5"
+		  data-adaptor="<TMPL_VAR NAME=adaptor>"
+		  data-method="<TMPL_VAR NAME=method>">
+	    <option selected="selected" value=""></option>
+	    <option value="0">0</option>
+	    <option value="4">4</option>
+	  </select>
+	</TMPL_LOOP>
+      </td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+    </tr>
+  </tfoot>
+</table>
