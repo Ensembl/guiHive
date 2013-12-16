@@ -253,7 +253,7 @@ function connect() {
 	    data       : "url=" + guiHive.pipeline_url + "&version=" + guiHive.version,
 	    dataType   : "json",
 	    timeout    : guiHive.databaseConnectionTimeout,
-	    beforeSend : function() {showProcessing($("#connection_msg"))},
+	    beforeSend : show_db_access,
 	    success    : onSuccess_dbConnect,
 	    error      : function (x, t, m) {
 		if(t==="timeout") {

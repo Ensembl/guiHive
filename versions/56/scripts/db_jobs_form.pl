@@ -3,9 +3,14 @@
 use strict;
 use warnings;
 
+use Bio::EnsEMBL::Hive::DBSQL::DBAdaptor;
+
 use JSON;
 use HTML::Template;
 use Data::Dumper;
+
+use lib ("./lib");
+use version_check;
 
 my $json_data = shift @ARGV || '{"version":["53"],"url":["mysql://ensadmin:ensembl@127.0.0.1:2912/mp12_compara_nctrees_70hmm"]}';
 
@@ -18,13 +23,21 @@ my $version = $var->{version}->[0];
 my $project_dir = $ENV{GUIHIVE_BASEDIR} . "versions/$version/";
 my $jobs_form_template = $project_dir . "static/jobs_form.html";
 
-unshift @INC, $project_dir . "ensembl-hive/modules";
-require Bio::EnsEMBL::Hive::DBSQL::DBAdaptor;
-
 # Initialization
 my $dbConn = Bio::EnsEMBL::Hive::DBSQL::DBAdaptor->new( -no_sql_schema_version_check => 1, -url => $url );
 
 if (defined $dbConn) {
+
+  ## First check if the code version is OK
+  ## TODO: We are just exiting here if we have a version mismatch.
+  ##       I don't know if this is the best thing to do, though
+  my $code_version = get_hive_code_version();
+  my $hive_db_version = get_hive_db_version($dbConn);
+
+  if ($code_version != $hive_db_version) {
+    exit 0;
+  }
+
   my $form = formJobsForm($dbConn);
   print $form;
 }

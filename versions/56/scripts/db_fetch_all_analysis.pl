@@ -3,8 +3,16 @@
 use strict;
 use warnings;
 
+use Bio::EnsEMBL::Hive::DBSQL::DBAdaptor;
+
 use JSON;
 use Data::Dumper;
+
+use lib("./lib");
+use msg;
+use analysisInfo;
+use hive_extended;
+use version_check;
 
 my $json_data = shift @ARGV || '{"version":["53"],"url":["mysql://ensadmin:ensembl@127.0.0.1:2914/mp12_compara_nctrees_74sheep"]}';
 
@@ -14,28 +22,33 @@ my $version = $var->{version}->[0];
 
 my $project_dir = $ENV{GUIHIVE_BASEDIR} . "versions/$version/";
 
-unshift @INC, $project_dir. "scripts/lib";
-require msg;
-require analysisInfo;
-require hive_extended;
-
-unshift @INC, $project_dir, "ensembl-hive/modules/";
-require Bio::EnsEMBL::Hive::DBSQL::DBAdaptor;
-
 my $dbConn = Bio::EnsEMBL::Hive::DBSQL::DBAdaptor->new( -no_sql_schema_version_check => 1, -url => $url );
 
 my $response = msg->new();
 
+
 if (defined $dbConn) {
-    my $all_analysis;
-    eval {
-	$all_analysis = $dbConn->get_AnalysisAdaptor()->fetch_all();
-    };
-    if ($@) {
-	$response->err_msg("I can't retrieve the analysis from the database: $@");
-	$response->status("FAILED");
-    }
-    $response->out_msg(formAnalysisInfo($all_analysis));
+
+  ## First check if the code version is OK
+  my $code_version = get_hive_code_version();
+  my $hive_db_version = get_hive_db_version($dbConn);
+
+  if ($code_version != $version) {
+    $response->status("VERSION MISMATCH");
+    $response->err_msg("$code_version $hive_db_version");
+    print $response->toJSON;
+    exit 0;
+  }
+
+  my $all_analysis;
+  eval {
+    $all_analysis = $dbConn->get_AnalysisAdaptor()->fetch_all();
+  };
+  if ($@) {
+    $response->err_msg("I can't retrieve the analysis from the database: $@");
+    $response->status("FAILED");
+  }
+  $response->out_msg(formAnalysisInfo($all_analysis));
 
 } else {
     $response->err_msg("The provided URL seems to be invalid. Please check the URL and try again");

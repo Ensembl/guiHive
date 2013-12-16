@@ -3,14 +3,18 @@
 use strict;
 use warnings;
 
+use Bio::EnsEMBL::Hive::DBSQL::DBAdaptor;
+use Bio::EnsEMBL::Hive::Queen;
+
 use JSON;
 
-use lib "./scripts/lib";
-#use hive_extended;
+use lib "./lib";
+use hive_extended;
 # TODO: I am not returning the msg because the inner tables (input_id in jobs table and parameters
 # in analysis table) can't be reached by dataTables. This makes difficult to parse the msg message
 # and put the corresponding field in the inner cell
-#use msg;
+use msg;
+use version_check;
 
 my $json_data = shift @ARGV || '{"version":["53"],"adaptor":["AnalysisJob"],"method":["status"],"url":["mysql://ensadmin:ensembl@127.0.0.1:2911/mp12_long_mult"],"value":["DONE"],"dbID":["3,9"]}'; #'{"analysis_id":["2"],"adaptor":["ResourceDescription"],"method":["parameters"],"args":["-C0 -M8000000  -R\"select[mem>8000]  rusage[mem=8000]\""],"url":["mysql://ensadmin:ensembl@127.0.0.1:2912/mp12_compara_nctrees_69a2"]}'; #'{"url":["mysql://ensro@127.0.0.1:2912/mp12_compara_nctrees_69b"], "column_name":["parameters"], "analysis_id":["27"], "newval":["cmalign_exe"]}';
 
@@ -24,13 +28,6 @@ my $method       = $var->{method}->[0];
 my $version      = $var->{version}->[0];
 
 my $project_dir = $ENV{GUIHIVE_BASEDIR} . "versions/$version/";
-unshift @INC, $project_dir . "scripts/lib";
-require msg;
-require hive_extended;
-
-unshift @INC, $project_dir . "ensembl-hive/modules";
-require Bio::EnsEMBL::Hive::DBSQL::DBAdaptor;
-require Bio::EnsEMBL::Hive::Queen;
 
 my @dbIDs = split(/,/,$dbIDs);
 my @args  = ($args); #split(/,/,$args); ### TODO: JEditable only gives one value, so it is not possible to
@@ -49,9 +46,22 @@ my @args  = ($args); #split(/,/,$args); ### TODO: JEditable only gives one value
 unshift (@args, $addArg) if (defined $addArg);
 
 my $response = msg->new();
+
+
 my $dbConn = Bio::EnsEMBL::Hive::DBSQL::DBAdaptor->new( -no_sql_schema_version_check => 1, -url => $url );
 
 if (defined $dbConn) {
+
+  ## First check if the code version is OK
+  my $code_version = get_hive_code_version();
+  my $hive_db_version = get_hive_db_version($dbConn);
+
+  if ($code_version != $version) {
+    $response->status("VERSION MISMATCH");
+    $response->err_msg("$code_version $hive_db_version");
+    print $response->toJSON;
+    exit 0;
+  }
 
   $adaptor_name = "get_".$adaptor_name."Adaptor";
   my $adaptor = $dbConn->$adaptor_name;

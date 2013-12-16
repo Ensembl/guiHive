@@ -50,3 +50,8 @@ body {
     top        : 50%;
     margin-top : -20em;
 }
+
+/* mysql password modal */
+#password-id {
+    width : 250px
+}

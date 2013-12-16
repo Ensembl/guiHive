@@ -21,7 +21,7 @@ use warnings;
 use Data::Dumper;
 no warnings "once";
 
-use Bio::EnsEMBL::Hive::Utils qw/stringify destringify/;
+use Bio::EnsEMBL::Hive::Utils;
 
 # Analysis' module should check that the module exists and is compilable
 *Bio::EnsEMBL::Hive::Analysis::update_module = sub {
@@ -51,6 +51,7 @@ use Bio::EnsEMBL::Hive::Utils qw/stringify destringify/;
 # add_input_id adds/change a single input_id key/value pair in the AnalysisJob table
 # if no new value is provided, the current value is returned
 *Bio::EnsEMBL::Hive::AnalysisJob::add_input_id = sub {
+  Bio::EnsEMBL::Hive::Utils->import(qw/stringify destringify/);
     my ($self, $key, $value) = @_;
     my $curr_raw_input_id = $self->input_id;
     $curr_raw_input_id = '{}' unless ($curr_raw_input_id);
@@ -64,6 +65,7 @@ use Bio::EnsEMBL::Hive::Utils qw/stringify destringify/;
 
 # delete_input_id deletes a single input_id key/value pair in the AnalysisJob table
 *Bio::EnsEMBL::Hive::AnalysisJob::delete_input_id = sub {
+  Bio::EnsEMBL::Hive::Utils->import(qw/stringify destringify/);
     my ($self, $key) = @_;
     my $curr_raw_input_id = $self->input_id;
     my $curr_input_id = Bio::EnsEMBL::Hive::Utils::destringify($curr_raw_input_id);
@@ -77,6 +79,7 @@ use Bio::EnsEMBL::Hive::Utils qw/stringify destringify/;
 # It is injected in the Analysis object directly so it works as a 
 # native method of the object
 *Bio::EnsEMBL::Hive::Analysis::delete_param = sub {
+  Bio::EnsEMBL::Hive::Utils->import(qw/stringify destringify/);
     my ($self, $key) = @_;
     my $curr_raw_parameters = $self->parameters;
     my $curr_parameters = Bio::EnsEMBL::Hive::Utils->destringify($curr_raw_parameters);
@@ -90,6 +93,7 @@ use Bio::EnsEMBL::Hive::Utils qw/stringify destringify/;
 # It is injected in the Analysis object directly so it works as a 
 # native method of the object
 *Bio::EnsEMBL::Hive::Analysis::add_param = sub {
+  Bio::EnsEMBL::Hive::Utils->import(qw/stringify destringify/);
     my ($self, $key, $value) = @_;
     my $curr_raw_parameters = $self->parameters;
     $curr_raw_parameters = '{}' unless ($curr_raw_parameters);

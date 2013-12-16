@@ -49,7 +49,7 @@ $(document).ready(function() {
 		 if (resp.status === "ok") {
 		     guiHive.config = jQuery.parseJSON( resp.out_msg );
 		 } else {
-		     log(resp.err_msg);
+		     log(resp);
 		 }
 	     }
     });
@@ -185,10 +185,11 @@ function guess_database_url () {
     loc.port   = url.param("port");
     loc.dbname = url.param("dbname");
     loc.server = url.param("host");
+    loc.driver = url.param("driver") || "mysql";
 
     var autoconnect = false;
     if (loc.user !== undefined && loc.server !== undefined && loc.dbname !== undefined) {
-	var loc_url = "mysql://" + loc.user;
+	var loc_url = loc.driver + "://" + loc.user;
 	if (loc.passwd !== undefined) {
 	    loc_url = loc_url + ":" + loc.passwd;
 
@@ -247,13 +248,13 @@ function clearPreviousPipeline() {
 function connect() {
     // We first remove the analysis_board. TODO: Probably not needed anymore
     clearPreviousPipeline();
-
+    console.log("IN CONNECT");
     $.ajax({url        : "./scripts/db_connect.pl",
 	    type       : "post",
 	    data       : "url=" + guiHive.pipeline_url + "&version=" + guiHive.version,
 	    dataType   : "json",
 	    timeout    : guiHive.databaseConnectionTimeout,
-	    beforeSend : function() {showProcessing($("#connection_msg"))},
+	    beforeSend : show_db_access,
 	    success    : onSuccess_dbConnect,
 	    error      : function (x, t, m) {
 		if(t==="timeout") {
@@ -275,7 +276,7 @@ function refresh_data_and_views(callback) {
     console.log("UPDATING DATA AND VIEWS ... ");
     $.ajax({url        : "./scripts/db_fetch_all_analysis.pl",
 	    type       : "post",
-	    data       : "url=" + guiHive.pipeline_url + "&version=" + guiHive.version, //$("#db_url").val(),
+	    data       : "url=" + guiHive.pipeline_url + "&version=" + guiHive.version,
 	    async      : guiHive.analysis_board != undefined,
 	    timeout    : guiHive.databaseConnectionTimeout,
 	    dataType   : "json",
@@ -317,41 +318,42 @@ function refresh_data_and_views(callback) {
 
 // res is the JSON-encoded response from the server in the Ajax call
 function onSuccess_dbConnect(res) {
-
-    // Hidden elements are now displayed
-    $(".hidden_by_default").show();
+    console.log("RES.STATUS:");
+    console.log(res.status);
+    if (res.status !== "ok") {
+	log(res);
+    } else {
+	// Hidden elements are now displayed
+	$(".hidden_by_default").show();
     
-    // Connection message is displayed
-    var connection_header = "<h4>Connection Details</h4>";
-    $("#connection_msg").html(connection_header + res.status);
+	// Connection message is displayed
+	var connection_header = "<h4>Connection Details</h4>";
+	$("#connection_msg").html(connection_header + res.out_msg.html);
 
-    // We update the timer:
-    guiHive.refresh_data_timer.stop();
-    guiHive.refresh_data_timer.reset();
-    // The number of seconds to refresh is exposed
-    guiHive.refresh_data_timer.div($("#secs_to_refresh"));
+	// We update the timer:
+	guiHive.refresh_data_timer.stop();
+	guiHive.refresh_data_timer.reset();
+	// The number of seconds to refresh is exposed
+	guiHive.refresh_data_timer.div($("#secs_to_refresh"));
 
-    // We draw the pipeline diagram
-    draw_diagram(res.out_msg);
+	// We draw the pipeline diagram
+	draw_diagram(res.out_msg.graph);
 
-    // If there has been an error, it is reported in the "log" div
-    log(res);
+	// Showing the resources
+	fetch_resources();
 
-    // Showing the resources
-    fetch_resources();
+	// We load the jobs form
+	$.get('./scripts/db_jobs_form.pl', {url : guiHive.pipeline_url, version : guiHive.version} ,function(data) {
+	    $('#jobs_form').html(data);
+	    listen_jobs();
+	});
+	// and table
+	$.get('./static/jobs_table.html', function(data) {
+	    $("#jobs_table_div").append(data);
+	});
 
-    // We load the jobs form
-    $.get('./scripts/db_jobs_form.pl', {url : guiHive.pipeline_url, version : guiHive.version} ,function(data) {
-	$('#jobs_form').html(data);
-	listen_jobs();
-    });
-    // and table
-    $.get('./static/jobs_table.html', function(data) {
-	$("#jobs_table_div").append(data);
-    });
-
-    // Now we start monitoring the analyses.
-    initialize_views_and_refresh();
+	// Now we start monitoring the analyses.
+	initialize_views_and_refresh();
 
 // Tooltips:
 // For some reason I haven't been able to make the bootstrap's tooltips work with the force layout (bubbles view).
@@ -364,13 +366,14 @@ function onSuccess_dbConnect(res) {
 //    });
 
     // We activate tipsy tooltips
-    $("[rel=tooltip-it]").tipsy({
-//	gravity  : $.fn.tipsy.autoNS,
-	gravity  : 'e',
-	fade     : true,
-	html     : true
-    });
-    $("[data-analysis_id=1]").tipsy('show');
+	$("[rel=tooltip-it]").tipsy({
+	    //	gravity  : $.fn.tipsy.autoNS,
+	    gravity  : 'e',
+	    fade     : true,
+	    html     : true
+	});
+	$("[data-analysis_id=1]").tipsy('show');
+    }
 
     return;
 }
@@ -383,7 +386,7 @@ function display(analysis_id, fetch_url, callback) {
 	    success    : function(resp) {
 		callback(resp, analysis_id, fetch_url)
 	    },
-	    error      : function(resp,error) {log(error)},
+	    error      : function(resp,error) {log({err_msg : error})},
 	   });
 }
 
@@ -692,7 +695,7 @@ function update_db(obj) {
 	    async      : false,
 	    cache      : false,
 	    success    : function(updateRes) {
-		if(updateRes.status != "ok") {
+		if(updateRes.status !== "ok") {
 		    log(updateRes);
 		};
 	    },
@@ -732,12 +735,8 @@ function buildURL(obj) {
     return(URL);
 }
 
-function showProcessing(obj) {
-    obj.html('<img src="./images/preloader.gif" width="40px" height="40px"/>');
-}
-
 function show_db_access() {
-    $("#refreshing").html('<img src="./images/485.GIF" width="22px" height="22px"></img>')
+    $("#refreshing").html('<img src="./images/485.GIF" width="22px" height="22px"></img>');
 }
 
 function no_db_access() {
@@ -759,16 +758,30 @@ function scroll_down() {
 }
 
 function log(res) {
-    var msg = "";
-    if (res.err_msg === undefined) {
-	msg = res;
-    } else if (res.err_msg !== "") {
-	msg = res.err_msg
+    // We first see if we had a version error. These are treated differently
+    if (res.status === "VERSION MISMATCH") {
+	var versions = res.err_msg.split(" ");
+	alert("Code version (v" + versions[0] + ") and DB version (" + versions[1] + ") mismatch. You will be redirected to the correct code version of your hive database");
+	redirect(versions[0]);
+	return;
     }
+
+    // If not a version error, we log the error message
+    var msg = res.err_msg;
     if (msg !== "") {
-	$("#log").append(msg); scroll_down();
+	// Now, new messages substitute old ones
+	$("#log").text(msg); scroll_down();
 	$("#log-tab").css("color", "red");
     }
     return
 }
 
+function redirect() {
+    var loc_url = guiHive.pipeline_url;
+    var cur_http_url = $.url();
+    console.log(cur_http_url);
+    var new_http_url = cur_http_url.attr("base") +
+	"/?" +
+	cur_http_url.attr("query");
+    window.location.href=new_http_url;
+}

@@ -4,8 +4,6 @@ use strict;
 use warnings;
 use Data::Dumper;
 
-use Bio::EnsEMBL::Hive::Utils::Graph;
-
 my $hive_config_file = $ENV{GUIHIVE_BASEDIR} . "config/hive_config.json";
 
 ## TODO:  normalize these colors with Hive colors
@@ -49,6 +47,7 @@ sub parse_msecs {
 }
 
 sub fetch {
+  require Bio::EnsEMBL::Hive::Utils::Graph;
   my ($class, $analysis) = @_;
   my $analysis_stats = $analysis->stats();
   my $config = Bio::EnsEMBL::Hive::Utils::Config->new($hive_config_file);

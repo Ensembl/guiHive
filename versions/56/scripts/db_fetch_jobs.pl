@@ -3,11 +3,16 @@
 use strict;
 use warnings;
 
+use Bio::EnsEMBL::Hive::DBSQL::DBAdaptor;
+
 use JSON;
 use HTML::Template;
 use Data::Dumper;
 
-use lib ("./scripts/lib");
+use lib ("./lib");
+use msg;
+use hive_extended;
+use version_check;
 
 my $json_data = shift @ARGV || '{"version":["53"],"url":["mysql://ensadmin:ensembl@127.0.0.1:2899/tm6_qc_pipeline_chicken_72_full_pipeline"],"analysis_id":["1"],"sSortDir_0":["asc"],"iDisplayLength":["10"],"iDisplayStart":["0"],"iSortCol_0":["0"],"iSortingCols":["1"]}';
 
@@ -26,18 +31,24 @@ my $project_dir = $ENV{GUIHIVE_BASEDIR} . "versions/$version/";
 my $jobs_template = $project_dir . "static/jobs.html";
 my $input_ids_template = $project_dir . "static/jobs_input_ids.html";
 
-unshift @INC, $project_dir . "scripts/lib";
-require msg;
-require hive_extended;
-
-unshift @INC, $project_dir . "ensembl-hive/modules";
-require Bio::EnsEMBL::Hive::DBSQL::DBAdaptor;
-
 # Initialization
 my $dbConn = Bio::EnsEMBL::Hive::DBSQL::DBAdaptor->new( -no_sql_schema_version_check => 1, -url => $url );
 my $response = msg->new();
 
+
 if (defined $dbConn) {
+
+  ## First check if the code version is OK
+  my $code_version = get_hive_code_version();
+  my $hive_db_version = get_hive_db_version($dbConn);
+
+  if ($code_version != $version) {
+    $response->status("VERSION MISMATCH");
+    $response->err_msg("$code_version $hive_db_version");
+    print $response->toJSON;
+    exit 0;
+  }
+
     my $jobs;
     my $njobs;
     my ($constraints, $final_clause) = constraints($var);

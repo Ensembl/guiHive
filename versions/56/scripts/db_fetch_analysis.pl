@@ -3,13 +3,16 @@
 use strict;
 use warnings;
 
+use Bio::EnsEMBL::Hive::DBSQL::DBAdaptor;
+
 use JSON;
 use HTML::Template;
 use Data::Dumper;
 
-use lib ("./scripts/lib");
-#use hive_extended;
-#use msg;
+use lib ("./lib");
+use hive_extended;
+use msg;
+use version_check;
 
 my $json_data = shift @ARGV || '{"version":["53"],"url":["mysql://ensadmin:ensembl@127.0.0.1:2911/mp12_long_mult"], "analysis_id":["1"]}';
 
@@ -22,18 +25,23 @@ my $version = $var->{version}->[0];
 my $project_dir = $ENV{GUIHIVE_BASEDIR} . "versions/$version/";
 my $details_template = $project_dir . "static/analysis_details.html";
 
-unshift @INC, $project_dir . "scripts/lib";
-require msg;
-require hive_extended;
-
-unshift @INC, $project_dir, "ensembl-hive/modules";
-require Bio::EnsEMBL::Hive::DBSQL::DBAdaptor;
-
 ## Initialization
 my $dbConn = Bio::EnsEMBL::Hive::DBSQL::DBAdaptor->new( -no_sql_schema_version_check => 1, -url => $url );
 my $response = msg->new();
 
 if (defined $dbConn) {
+
+  ## First check if the code version is OK
+  my $code_version = get_hive_code_version();
+  my $hive_db_version = get_hive_db_version($dbConn);
+
+  if ($code_version != $version) {
+    $response->status("VERSION MISMATCH");
+    $response->err_msg("$code_version $hive_db_version");
+    print $response->toJSON;
+    exit 0;
+  }
+
   my $analysis;
   eval {
     $analysis = $dbConn->get_AnalysisAdaptor()->fetch_by_analysis_id($analysis_id);

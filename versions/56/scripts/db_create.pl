@@ -4,11 +4,14 @@ use strict;
 use warnings;
 use Data::Dumper;
 
+use Bio::EnsEMBL::Hive::DBSQL::DBAdaptor;
+
 use JSON;
 
-use lib "./scripts/lib";
-# use hive_extended;
-# use msg;
+use lib "./lib";
+use hive_extended;
+use msg;
+use version_check;
 
 my $json_data = shift @ARGV || '{"version":["53"],"adaptor":["ResourceClass"],"args":["new_resource_class", "LSF", "-q ok"],"method":["create_full_description"],"url":["mysql://ensadmin:ensembl@127.0.0.1:2912/mp12_compara_nctrees_69a2"]}';
 
@@ -20,12 +23,6 @@ my $method       = $var->{method}->[0];
 my $version      = $var->{version}->[0];
 
 my $project_dir = $ENV{GUIHIVE_BASEDIR} . "versions/$version/";
-unshift @INC, $project_dir . "scripts/lib";
-require msg;
-require hive_extended;
-
-unshift @INC, $project_dir . "ensembl-hive/modules";
-require Bio::EnsEMBL::Hive::DBSQL::DBAdaptor;
 
 my @args = split(/,/,$args);
 
@@ -34,6 +31,17 @@ my $dbConn = Bio::EnsEMBL::Hive::DBSQL::DBAdaptor->new( -no_sql_schema_version_c
 my $response = msg->new();
 
 if (defined $dbConn) {
+
+  ## First check if the code version is OK
+  my $code_version = get_hive_code_version();
+  my $hive_db_version = get_hive_db_version($dbConn);
+
+  if ($code_version != $version) {
+    $response->status("VERSION MISMATCH");
+    $response->err_msg("$code_version $hive_db_version");
+    print $response->toJSON;
+    exit 0;
+  }
 
     $adaptor_name = "get_".$adaptor_name."Adaptor";
     my $adaptor = $dbConn->$adaptor_name;

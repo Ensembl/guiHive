@@ -5,6 +5,7 @@
 package main
 
 import (
+	"strings"
 	"bytes"
 	"encoding/json"
 	"errors"
@@ -54,9 +55,26 @@ func scriptHandler(w http.ResponseWriter, r *http.Request) {
 	checkError("Can't Marshal JSON:", err)
 
 	debug("EXECUTING SCRIPT: %s", fname)
-	debug("ARGS: %s", string(args))
+	debug("ARGS: %s", args)
+	parts := strings.SplitN(r.URL.Path, "/", 4)
+	version := parts[2]
+	debug("VERSION: %s", version)
+	
+	versionRootDir := os.Getenv("GUIHIVE_BASEDIR") + "/versions/" + version;
+	ehiveRootDir := versionRootDir + "/ensembl-hive"
+	ehiveRootLib := ehiveRootDir + "/modules"
+	guihiveRootLib := versionRootDir + "/scripts/lib"
+	newPerl5Lib  := addPerl5Lib(ehiveRootLib + ":" + guihiveRootLib)
 
+	debug("EHIVE_ROOT_DIR: %s", ehiveRootDir)
+	debug("NEW_PERL5LIB: %s", newPerl5Lib)
 	cmd := exec.Command(fname, string(args))
+	cmd.Env = make([]string,0)
+	cmd.Env = append(cmd.Env, "PERL5LIB=" + newPerl5Lib)
+	cmd.Env = append(cmd.Env, "EHIVE_ROOT_DIR=" + ehiveRootDir)
+	cmd.Env = append(cmd.Env, "GUIHIVE_BASEDIR=" + os.Getenv("GUIHIVE_BASEDIR"))
+	cmd.Env = append(cmd.Env, "PATH=" + os.Getenv("PATH"))
+
 	cmd.Stdout = &outMsg
 	cmd.Stderr = &errMsg
 
@@ -112,7 +130,8 @@ func setEnvVar() error {
 	debug("PROJECT_DIRECTORY: %s\n", projectDirectory)
 
 	// PER5LIB
-	err = setPerl5Lib(path.Clean(projectDirectory + "/scripts/lib"))
+	newPerl5Lib := addPerl5Lib(path.Clean(projectDirectory + "/scripts/lib"))
+	err = setPerl5Lib(newPerl5Lib)
 	if (err != nil) {
 		return err
 	}
@@ -133,13 +152,17 @@ func setEnvVar() error {
 	return nil
 }
 
-func setPerl5Lib (newDir string) error {
+func addPerl5Lib (newDir string) string {
 	perl5lib := os.Getenv("PERL5LIB")
 	if perl5lib == "" {
 		perl5lib = newDir
 	} else {
-		perl5lib = perl5lib + ":" + newDir
+		perl5lib = newDir + ":" + perl5lib
 	}
+	return perl5lib
+}
+
+func setPerl5Lib (perl5lib string) error {
 	err := os.Setenv("PERL5LIB", perl5lib)
 	if err != nil {
 		return err

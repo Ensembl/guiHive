@@ -24,7 +24,7 @@ require msg;
 require analysisInfo;
 require hive_extended;
 
-unshift @INC, $project_dir, "ensembl-hive/modules/";
+unshift @INC, $project_dir. "ensembl-hive/modules/";
 require Bio::EnsEMBL::Hive::DBSQL::DBAdaptor;
 
 my $dbConn = Bio::EnsEMBL::Hive::DBSQL::DBAdaptor->new( -no_sql_schema_version_check => 1, -url => $url );
@@ -86,17 +86,12 @@ sub lsf_report_exists {
 
 sub fetch_mem {
   my ($analysis_id) = @_;
-  my $sql = "select min(mem_megs), max(mem_megs), avg(mem_megs), parameters from lsf_report join worker using(process_id) join resource_description using(resource_class_id) where analysis_id = ?";
+  my $sql = "select min(mem_megs), max(mem_megs), avg(mem_megs), submission_cmd_args from lsf_report join worker using(process_id) join resource_description using(resource_class_id) where analysis_id = ?";
   my $sth = $dbConn->dbc->prepare($sql);
 
   eval {
       $sth->execute($analysis_id);
   };
-  if ($@) {
-      my $sql = "select min(mem), max(mem), avg(mem), parameters from lsf_report join worker using(process_id) join resource_description using(resource_class_id) where analysis_id = ?";
-      $sth = $dbConn->dbc->prepare($sql);
-      $sth->execute($analysis_id);
-  }
   my ($min_mem, $max_mem, $avg_mem, $resource_params) = $sth->fetchrow_array();
   my $resource_mem;
   if (! defined $resource_params) {

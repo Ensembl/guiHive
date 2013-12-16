@@ -3,6 +3,8 @@
 use strict;
 use warnings;
 
+use Bio::EnsEMBL::Hive::DBSQL::DBAdaptor;
+
 use JSON;
 use HTML::Template;
 use HTML::Entities;
@@ -10,6 +12,9 @@ use HTML::Entities;
 use Data::Dumper;
 
 use lib ("./scripts/lib");
+use msg;
+use hive_extended;
+use version_check;
 
 # Input data
 my $json_url = shift @ARGV || '{"version":["53"],"url":["mysql://ensro@127.0.0.1:2911/mp12_long_mult"]}';
@@ -20,17 +25,21 @@ my $version = decode_json($json_url)->{version}->[0];
 my $project_dir = $ENV{GUIHIVE_BASEDIR} . "versions/$version/";
 my $resources_template = $project_dir . 'static/resources.html';
 
-unshift @INC, $project_dir . "scripts/lib";
-require msg;
-require hive_extended;
-
-unshift @INC, $project_dir . "ensembl-hive/modules";
-require Bio::EnsEMBL::Hive::DBSQL::DBAdaptor;
-
 my $dbConn = Bio::EnsEMBL::Hive::DBSQL::DBAdaptor->new( -no_sql_schema_version_check => 1, -url => $url );
 my $response = msg->new();
 
 if (defined $dbConn) {
+
+  ## First check if the code version is OK
+  my $code_version = get_hive_code_version();
+  my $hive_db_version = get_hive_db_version($dbConn);
+  if ($code_version != $version) {
+    $response->status("VERSION MISMATCH");
+    $response->err_msg("$code_version $hive_db_version");
+    print $response->toJSON;
+    exit 0;
+  }
+
     my $all_resources;
     eval {
 	$all_resources = $dbConn->get_ResourceClassAdaptor()->fetch_all();

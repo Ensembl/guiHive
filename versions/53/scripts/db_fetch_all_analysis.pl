@@ -24,7 +24,7 @@ require msg;
 require analysisInfo;
 require hive_extended;
 
-unshift @INC, $project_dir, "ensembl-hive/modules/";
+unshift @INC, $project_dir. "ensembl-hive/modules/";
 require Bio::EnsEMBL::Hive::DBSQL::DBAdaptor;
 
 my $dbConn = Bio::EnsEMBL::Hive::DBSQL::DBAdaptor->new( -no_sql_schema_version_check => 1, -url => $url );

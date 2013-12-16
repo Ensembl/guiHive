@@ -3,10 +3,20 @@
 use strict;
 use warnings;
 
+## The last added version is the one used here
+BEGIN {
+  my $last_version = `ls -t ../versions/ | head -n 1`;
+  chomp $last_version;
+  unshift @INC, $ENV{GUIHIVE_BASEDIR} . "versions/$last_version/ensembl-hive/modules";
+  require Bio::EnsEMBL::Hive::DBSQL::DBAdaptor;
+  require Bio::EnsEMBL::Hive::DBSQL::SqlSchemaAdaptor;
+  require Bio::EnsEMBL::Hive::Utils::URL;
+}
+
 ## These are probably the ones already in PERL5LIB
-use Bio::EnsEMBL::Hive::DBSQL::DBAdaptor;
-use Bio::EnsEMBL::Hive::DBSQL::SqlSchemaAdaptor;
-use Bio::EnsEMBL::Hive::Utils::URL;
+# use Bio::EnsEMBL::Hive::DBSQL::DBAdaptor;
+# use Bio::EnsEMBL::Hive::DBSQL::SqlSchemaAdaptor;
+# use Bio::EnsEMBL::Hive::Utils::URL;
 
 use JSON;
 

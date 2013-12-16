@@ -2,7 +2,6 @@ package analysisInfo;
 
 use strict;
 use warnings;
-use Data::Dumper;
 
 use Bio::EnsEMBL::Hive::Utils::Graph;
 
