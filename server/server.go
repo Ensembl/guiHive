@@ -39,6 +39,17 @@ func checkError(s string, err error, ss ...string) {
 	}
 }
 
+func version(r *http.Request) string {
+	parts := strings.SplitN(r.URL.Path, "/", 4)
+	version := parts[2]
+	return version
+}
+
+func unknown(w http.ResponseWriter, r *http.Request) {
+	version := version(r)
+	fmt.Fprintf(w, "version %s is currently not supported by guiHive\n", version)
+}
+
 func scriptHandler(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()
 	defer r.Body.Close()
@@ -56,8 +67,7 @@ func scriptHandler(w http.ResponseWriter, r *http.Request) {
 
 	debug("EXECUTING SCRIPT: %s", fname)
 	debug("ARGS: %s", args)
-	parts := strings.SplitN(r.URL.Path, "/", 4)
-	version := parts[2]
+	version := version(r);
 	debug("VERSION: %s", version)
 	
 	versionRootDir := os.Getenv("GUIHIVE_BASEDIR") + "/versions/" + version;
@@ -192,6 +202,7 @@ func main() {
 	http.HandleFunc("/versions/54/scripts/", scriptHandler)
 	http.HandleFunc("/versions/55/scripts/", scriptHandler)
 	http.HandleFunc("/versions/56/scripts/", scriptHandler)
+	http.HandleFunc("/versions/", unknown)
 	debug("Listening to port: %s", port)
 	err := http.ListenAndServe(":"+port, nil)
 	checkError("ListenAndServe ", err)
