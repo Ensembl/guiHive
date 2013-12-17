@@ -47,6 +47,7 @@ func version(r *http.Request) string {
 
 func unknown(w http.ResponseWriter, r *http.Request) {
 	version := version(r)
+	fmt.Fprintln(w, r.URL)
 	fmt.Fprintf(w, "version %s is currently not supported by guiHive\n", version)
 }
 
@@ -189,7 +190,15 @@ func main() {
 	checkError("Problem setting environmental variables: ", errV)
 
 	relPath := os.Getenv("GUIHIVE_BASEDIR")
+
 	http.Handle("/", http.FileServer(http.Dir(relPath)))
+
+	http.HandleFunc("/versions/", unknown)
+	http.Handle("/versions/53/", http.FileServer(http.Dir(relPath)))
+	http.Handle("/versions/54/", http.FileServer(http.Dir(relPath)))
+	http.Handle("/versions/55/", http.FileServer(http.Dir(relPath)))
+	http.Handle("/versions/56/", http.FileServer(http.Dir(relPath)))
+
 	http.Handle("/styles/", http.FileServer(http.Dir(relPath)))
 	http.Handle("/javascript/", http.FileServer(http.Dir(relPath)))
 	http.Handle("/versions/53/javascript/", http.FileServer(http.Dir(relPath)))
@@ -202,7 +211,6 @@ func main() {
 	http.HandleFunc("/versions/54/scripts/", scriptHandler)
 	http.HandleFunc("/versions/55/scripts/", scriptHandler)
 	http.HandleFunc("/versions/56/scripts/", scriptHandler)
-	http.HandleFunc("/versions/", unknown)
 	debug("Listening to port: %s", port)
 	err := http.ListenAndServe(":"+port, nil)
 	checkError("ListenAndServe ", err)
