@@ -36,12 +36,23 @@ eval {
 if ($@) {
   $response->err_msg($@);
   $response->status("FAILED");
+  print $response->toJSON;
+  exit(0);
 }
 
 if (defined $dbConn) {
-  ## First check if the code version is OK
+  ## Check if the code version is OK
   my $code_version = get_hive_code_version();
-  my $hive_db_version = get_hive_db_version($dbConn);
+  my $hive_db_version;
+  eval {
+    $hive_db_version = get_hive_db_version($dbConn);
+  };
+  if ($@) {
+    $response->err_msg($@);
+    $response->status("FAILED");
+    print $response->toJSON;
+    exit(0);
+  }
 
   if ($code_version != $hive_db_version) {
     $response->status("VERSION MISMATCH");

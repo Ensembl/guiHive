@@ -10,7 +10,7 @@ use lib "./scripts/lib";
 # use hive_extended;
 # use msg;
 
-my $json_data = shift @ARGV || '{"version":["53"],"adaptor":["ResourceClass"],"args":["new_resource_class", "LSF", "-q ok"],"method":["create_full_description"],"url":["mysql://ensadmin:ensembl@127.0.0.1:2912/mp12_compara_nctrees_69a2"]}';
+my $json_data = shift @ARGV || '{"version":["53"],"adaptor":["ResourceClass"],"args":["new_resource_class", "LSF", "-q ok"],"method":["create_full_description"],"url":["mysql://ensro@127.0.0.1:2912/mp12_compara_nctrees_69a2"]}';
 
 my $var = decode_json($json_data);
 my $url          = $var->{url}->[0];

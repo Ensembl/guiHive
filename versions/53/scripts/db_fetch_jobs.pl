@@ -9,7 +9,7 @@ use Data::Dumper;
 
 use lib ("./scripts/lib");
 
-my $json_data = shift @ARGV || '{"version":["53"],"url":["mysql://ensadmin:ensembl@127.0.0.1:2899/tm6_qc_pipeline_chicken_72_full_pipeline"],"analysis_id":["1"],"sSortDir_0":["asc"],"iDisplayLength":["10"],"iDisplayStart":["0"],"iSortCol_0":["0"],"iSortingCols":["1"]}';
+my $json_data = shift @ARGV || '{"version":["53"],"url":["mysql://ensro@127.0.0.1:2899/tm6_qc_pipeline_chicken_72_full_pipeline"],"analysis_id":["1"],"sSortDir_0":["asc"],"iDisplayLength":["10"],"iDisplayStart":["0"],"iSortCol_0":["0"],"iSortingCols":["1"]}';
 
 # Input
 my $var = decode_json($json_data);

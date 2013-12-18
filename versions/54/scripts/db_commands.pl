@@ -10,7 +10,7 @@ use lib ("./scripts/lib");
 # use hive_extended;
 # use msg;
 
-my $json_data = shift @ARGV || '{ "url":["version":["53"],"mysql://ensadmin:ensembl@127.0.0.1:2913/mp12_compara_homology_72"],"analysis_id":["116"], "method":["reset_jobs_for_analysis_id"] }';
+my $json_data = shift @ARGV || '{ "url":["version":["53"],"mysql://ensro@127.0.0.1:2913/mp12_compara_homology_72"],"analysis_id":["116"], "method":["reset_jobs_for_analysis_id"] }';
 
 # Input
 my $var          = decode_json($json_data);

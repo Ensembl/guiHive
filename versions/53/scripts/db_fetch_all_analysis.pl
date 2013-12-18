@@ -11,7 +11,7 @@ use Data::Dumper;
 # use hive_extended;
 # use msg;
 
-my $json_data = shift @ARGV || '{"version":["53"],"url":["mysql://ensadmin:ensembl@127.0.0.1:2914/mp12_compara_nctrees_74sheep"]}';
+my $json_data = shift @ARGV || '{"version":["53"],"url":["mysql://ensro@127.0.0.1:2914/mp12_compara_nctrees_74sheep"]}';
 
 my $var = decode_json($json_data);
 my $url = $var->{url}->[0];

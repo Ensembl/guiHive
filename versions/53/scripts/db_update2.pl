@@ -12,7 +12,7 @@ use lib "./scripts/lib";
 # and put the corresponding field in the inner cell
 #use msg;
 
-my $json_data = shift @ARGV || '{"version":["53"],"adaptor":["AnalysisJob"],"method":["status"],"url":["mysql://ensadmin:ensembl@127.0.0.1:2911/mp12_long_mult"],"value":["DONE"],"dbID":["3,9"]}'; #'{"analysis_id":["2"],"adaptor":["ResourceDescription"],"method":["parameters"],"args":["-C0 -M8000000  -R\"select[mem>8000]  rusage[mem=8000]\""],"url":["mysql://ensadmin:ensembl@127.0.0.1:2912/mp12_compara_nctrees_69a2"]}'; #'{"url":["mysql://ensro@127.0.0.1:2912/mp12_compara_nctrees_69b"], "column_name":["parameters"], "analysis_id":["27"], "newval":["cmalign_exe"]}';
+my $json_data = shift @ARGV || '{"version":["53"],"adaptor":["AnalysisJob"],"method":["status"],"url":["mysql://ensro@127.0.0.1:2911/mp12_long_mult"],"value":["DONE"],"dbID":["3,9"]}'; #'{"analysis_id":["2"],"adaptor":["ResourceDescription"],"method":["parameters"],"args":["-C0 -M8000000  -R\"select[mem>8000]  rusage[mem=8000]\""],"url":["mysql://ensro@127.0.0.1:2912/mp12_compara_nctrees_69a2"]}'; #'{"url":["mysql://ensro@127.0.0.1:2912/mp12_compara_nctrees_69b"], "column_name":["parameters"], "analysis_id":["27"], "newval":["cmalign_exe"]}';
 
 my $var          = decode_json($json_data);
 my $url          = $var->{url}->[0];

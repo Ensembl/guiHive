@@ -14,7 +14,7 @@ use analysisInfo;
 use hive_extended;
 use version_check;
 
-my $json_data = shift @ARGV || '{"version":["53"],"url":["mysql://ensadmin:ensembl@127.0.0.1:2914/mp12_compara_nctrees_74sheep"]}';
+my $json_data = shift @ARGV || '{"version":["53"],"url":["mysql://ensro@127.0.0.1:2914/mp12_compara_nctrees_74sheep"]}';
 
 my $var = decode_json($json_data);
 my $url = $var->{url}->[0];
@@ -68,9 +68,10 @@ sub formAnalysisInfo {
 	$new_analysis->stats($min_mem, $max_mem, $avg_mem, $min_cpu, $max_cpu, $avg_cpu, $resource_mem);
       }
 
-      $new_analysis->meadow_type($resourceClassAdaptor->fetch_by_dbID($analysis->resource_class_id)->description->meadow_type());
+      unless (defined $new_analysis->meadow_type()) {
+	$new_analysis->meadow_type($resourceClassAdaptor->fetch_by_dbID($analysis->resource_class_id)->description->meadow_type());
+      }
       $all_analysis_info{$new_analysis->{analysis_id}} = $new_analysis;
-#      push @all_analysis_info, $new_analysis;
     }
 
     my @all_analysis_info = ();

@@ -21,7 +21,7 @@ my $job_colors = {
 		  'done'       => 'green',
 		 };
 
-my $json_data = shift @ARGV || '{"url":["mysql://ensadmin:ensembl@127.0.0.1:2912/mp12_compara_nctrees_69d"], "analysis_id":["22"]}';
+my $json_data = shift @ARGV || '{"url":["mysql://ensro@127.0.0.1:2912/mp12_compara_nctrees_69d"], "analysis_id":["22"]}';
 
 my $var         = decode_json($json_data);
 my $url         = $var->{url}->[0];

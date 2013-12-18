@@ -12,7 +12,7 @@ use Data::Dumper;
 use lib ("./lib");
 use version_check;
 
-my $json_data = shift @ARGV || '{"version":["53"],"url":["mysql://ensadmin:ensembl@127.0.0.1:2912/mp12_compara_nctrees_70hmm"]}';
+my $json_data = shift @ARGV || '{"version":["53"],"url":["mysql://ensro@127.0.0.1:2912/mp12_compara_nctrees_70hmm"]}';
 
 # Input
 my $var = decode_json($json_data);
