@@ -14,7 +14,7 @@ use msg;
 use hive_extended;
 use version_check;
 
-my $json_data = shift @ARGV || '{"version":["53"],"url":["mysql://ensadmin:ensembl@127.0.0.1:2899/tm6_qc_pipeline_chicken_72_full_pipeline"],"analysis_id":["1"],"sSortDir_0":["asc"],"iDisplayLength":["10"],"iDisplayStart":["0"],"iSortCol_0":["0"],"iSortingCols":["1"]}';
+my $json_data = shift @ARGV || '{"version":["53"],"url":["mysql://ensro@127.0.0.1:2899/tm6_qc_pipeline_chicken_72_full_pipeline"],"analysis_id":["1"],"sSortDir_0":["asc"],"iDisplayLength":["10"],"iDisplayStart":["0"],"iSortCol_0":["0"],"iSortingCols":["1"]}';
 
 # Input
 my $var = decode_json($json_data);
@@ -108,14 +108,13 @@ sub formJobsInfo {
 			   },
 		    "6" => $job->completed(),
 		    "7" => $job->runtime_msec(),
-		    "8" => $job->query_count(),
-		    "9" => { 'value'     => $job->semaphore_count(),
+		    "8" => { 'value'     => $job->semaphore_count(),
 			     'job_label' => $unique_job_label,
 			     'adaptor'   => $adaptor,
 			     'method'    => 'semaphore_count'
 			   },
-		    "10" => $job->semaphored_job_id(),
-		    "11" => $msg,
+		    "9" => $job->semaphored_job_id(),
+		    "10" => $msg,
 		  };
   }
   my $response = {
@@ -169,14 +168,14 @@ sub fetch_last_error_for_jobid {
     my $all_msgs = $dbConn->get_LogMessageAdaptor()->fetch_by_job_id_HASHED_FROM_log_message_id_and_is_error_TO_msg($job_id);
     my @all_key_errors = grep {$all_msgs->{$_}->{1}} keys %$all_msgs;
     my ($msg_key) = sort {$b<=>$a} @all_key_errors;
-    
+
     my $errmsg = defined ($msg_key)? $all_msgs->{$msg_key}->{1} : "";
     return $errmsg;
 }
 
 sub constraints {
   my ($var) = @_;
-  my @columns = qw/job_id analysis_id input_id worker_id status retry_count completed runtime_msec query_count semaphore_count semaphored_job_id msg/;
+  my @columns = qw/job_id analysis_id input_id worker_id status retry_count completed runtime_msec semaphore_count semaphored_job_id msg/;
 
   ## For more information on these values, please see:
   # http://datatables.net/usage/server-side

@@ -301,7 +301,6 @@ function refresh_data_and_views(callback) {
 		    } else {
 			$("#select_analysis_colors option[value='mem']").attr("disabled", 1);
 		    }
-
 		    // We only update the views once the data has been updated
 		    callback();
 		    console.log("OK");
@@ -318,8 +317,6 @@ function refresh_data_and_views(callback) {
 
 // res is the JSON-encoded response from the server in the Ajax call
 function onSuccess_dbConnect(res) {
-    console.log("RES.STATUS:");
-    console.log(res.status);
     if (res.status !== "ok") {
 	log(res);
     } else {
@@ -447,15 +444,15 @@ function fetch_jobs() {
 		$(elem).attr("data-method", rowData[colIndex].method);
 		$(elem).attr("data-adaptor", rowData[colIndex].adaptor);
 		$(elem).attr("data-linkTo", rowData[colIndex].job_label);
-	    }, "aTargets" : [4,5,9]
+	    }, "aTargets" : [4,5]
 	    },
 	    { "fnCreatedCell" : function(elem, cellData, rowData, rowIndex, colIndex) {
 		$(elem).attr("id", rowData[0].id);
 	    }, "aTargets" : [0]
 	    },
-	    { "mRender"   : "value", "aTargets" : [0,4,5,9] },
+	    { "mRender"   : "value", "aTargets" : [0,4,5,8] },
 
-	    { "bSortable" : false, "aTargets" : [1,2,4,10,11] },
+	    { "bSortable" : false, "aTargets" : [1,2,4,9,10] },
 	    { "sClass"    : "editableStatus" , "aTargets" : [4] },
 	    { "sClass"    : "editableRetries", "aTargets" : [5] },
 	    //	    { "bVisible": false, "aTargets": [ 3,7,8,9,10 ] },
@@ -575,7 +572,6 @@ function fetch_jobs() {
 		      { type : "number-range" },
 		      { type : "date-range" },
 		      { type : "number-range" },
-		      { type : "number" },
 		      { type : "number" },
 		      { type : "number" },
 		      { type : "text", bRegex : true }
