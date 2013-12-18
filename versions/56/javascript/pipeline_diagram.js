@@ -39,7 +39,7 @@ function draw_diagram(xmlStr) {
     	.attr("height",height)
     	.attr("pointer-events", "all")
     	.append("g")
-    	.call(d3.behavior.zoom().on("zoom", function() { redraw(g) }))
+    	.call(d3.behavior.zoom().scaleExtent([0.8, Infinity]).on("zoom", function() { redraw(g) }))
     	.append("g");
     
     g.node().appendChild(importedNode);
