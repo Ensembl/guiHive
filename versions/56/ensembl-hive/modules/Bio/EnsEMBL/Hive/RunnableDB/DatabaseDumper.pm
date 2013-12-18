@@ -28,22 +28,32 @@ The following parameters are accepted:
  - exclude_list [boolean=0] : do we consider 'table_list' as a list
     of tables to be excluded from the dump (instead of included)
 
- - output_file [string] : the file to write the dump to
+ - output_file [string] : the file to write the dump to. If the filename
+    ends with ".gz", the file is compressed with "gzip" (default parameters)
 
-The following table describes how the various options combine:
-(T means table_list, EL exclude_list, EH exclude_ehive)
-(l+ is the list of included tables, l- of excluded tables)
+ - output_db [string] : URL of a database to write the dump to. In this
+    mode, the Runnable acts like MySQLTransfer
 
-T EL EH      l+  l-
+If "table_list" is undefined or maps to an empty list, the list
+of tables to be dumped is decided accordingly to "exclude_list" (EL)
+and "exclude_ehive" (EH). "exclude_list" controls the whole list of
+non-eHive tables.
 
-+  1  0      0   T  = all except T
-+  0  0      TH  0  = T and H
-0  0  0      0   0  = all
-0  1  0      H   0  = H
-+  1  1      0   TH = all except T and H
-+  0  1      T   H  = T (minus H)
-0  0  1      0   H  = all except H
-0  1  1      0   0  = nothing
+EL EH    List of tables to dump
+
+0  0  => all the tables
+0  1  => all the tables, except the eHive ones
+1  0  => all the tables, except the non-eHive ones = only the eHive tables
+1  1  => both eHive and non-eHive tables are excluded = nothing is dumped
+
+If "table_list" is defined to non-empty list T, the table of decision is:
+
+EL EH    List of tables to dump
+
+0  0  => all the tables in T + the eHive tables
+0  1  => all the tables in T
+1  0  => all the tables, except the ones in T
+1  1  => all the tables, except the ones in T and the eHive ones
 
 =head1 LICENSE
 
@@ -161,13 +171,24 @@ sub run {
     return if ($self->param('exclude_ehive') and $self->param('exclude_list') and scalar(@$ignores) == $self->param('nb_ehive_tables'));
 
     # mysqldump command
+    my $output = "";
+    if ($self->param('output_file')) {
+        if (lc $self->param('output_file') =~ /\.gz$/) {
+            $output = sprintf(' | gzip > %s', $self->param('output_file'));
+        } else {
+            $output = sprintf('> %s', $self->param('output_file'));
+        }
+    } else {
+        $output = sprintf(' | mysql %s', $self->mysql_conn_from_dbc($self->param('real_output_db')));
+    };
+
     my $cmd = join(' ', 
         'mysqldump',
         $self->mysql_conn_from_dbc($src_dbc),
         '--skip-lock-tables',
         @$tables,
         (map {sprintf('--ignore-table=%s.%s', $src_dbc->dbname, $_)} @$ignores),
-        $self->param('output_file') ? sprintf('> %s', $self->param('output_file')) : sprintf(' | mysql %s', $self->mysql_conn_from_dbc($self->param('real_output_db'))),
+        $output
     );
     print "$cmd\n" if $self->debug;
 
