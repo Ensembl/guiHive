@@ -57,6 +57,8 @@ sub fetch {
   my $avg_msec_per_job = $analysis_stats->avg_msec_per_job();
   my $guiHiveStatus = getGuiHiveStatus($job_counts, $status);
 
+  my $meadow_type = $analysis->meadow_type();
+
   ## TODO: status should be only the $status string (not the color), but we need to define this here
   ## until issue#17 is solved (job's colors in json and accessible by client code -- javascript).
   ## same for the names
@@ -69,6 +71,7 @@ sub fetch {
 		     avg_msec_per_job => $avg_msec_per_job,
 		     avg_msec_per_job_parsed => parse_msecs($avg_msec_per_job),
 		     total_job_count => $total_job_count,
+		     meadow_type => $meadow_type,
 		     jobs_counts => {
 				     counts => [],
 				     colors => [],
@@ -128,7 +131,10 @@ sub getGuiHiveStatus {
 
 sub meadow_type {
   my ($self, $meadow_type) = @_;
-  $self->{meadow_type} = $meadow_type;
+  if (defined $meadow_type) {
+    $self->{meadow_type} = $meadow_type;
+  }
+  return $self->{meadow_type};
 }
 
 sub stats {
