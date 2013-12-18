@@ -126,7 +126,7 @@ $(document).ready(function() {
 
     // We populate the URL bit on the header
     $("#guiHive_url").text(guiHive.pipeline_url);
-    $(".myHeader").text("guiHive (v" + guiHive.version + ")");
+    $("#guihiveVersion").text("(v" + guiHive.version + ")");
 			   
 
     // $("#Connect").click(function() {
