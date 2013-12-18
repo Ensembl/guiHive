@@ -23,13 +23,23 @@ div#guiHive_header {
 }
 
 .myHeader {
-    width   : 200px;
+    width   : 100px;
     font-size : 30px;
     font-weight : 800;
+    color : #0088cc;
     float : left;
     margin-top : 10px;
     margin-left : 10px;
     cursor : pointer;
+}
+
+#guihiveVersion {
+    width : 20px;
+    font-size : 12px;
+    font-weight : 900;
+    float : left;
+    margin-top : 16px;
+    margin-left : 10px;
 }
 
 #guiHive_url {
