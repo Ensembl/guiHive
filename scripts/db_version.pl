@@ -42,8 +42,18 @@ if ($@) {
 }
 
 if (defined $dbConn) {
+  ## Check db_connection
+  my $hive_db_version;
+  eval {
+    $hive_db_version = get_hive_db_version($dbConn);
+  };
+  if ($@) {
+    $response->err_msg($@);
+    $response->status("FAILED");
+    print $response->toJSON;
+    exit(0);
+  }
 
-  my $hive_db_version = get_hive_db_version($dbConn);
   if (defined $hive_db_version) {
     my $parsed_url = Bio::EnsEMBL::Hive::Utils::URL::parse($url);
     my $json_obj = { 'user'       => $parsed_url->{user},
