@@ -5,7 +5,7 @@ use warnings;
 
 ## The last added version is the one used here
 BEGIN {
-  my $last_version = `ls -t ../versions/ | head -n 1`;
+  my $last_version = `ls -t $ENV{GUIHIVE_BASEDIR}/versions/ | head -n 1`;
   chomp $last_version;
   unshift @INC, $ENV{GUIHIVE_BASEDIR} . "versions/$last_version/ensembl-hive/modules";
   require Bio::EnsEMBL::Hive::DBSQL::DBAdaptor;
