@@ -7,6 +7,9 @@ package main
 import (
 	"strings"
 	"bytes"
+	"regexp"
+	"strconv"
+	"sort"
 	"encoding/json"
 	"errors"
 	"flag"
@@ -26,6 +29,7 @@ const (
 
 var (
 	port string
+	isVersion = regexp.MustCompile(`^[0-9]+$`)
 )
 
 func init() {
@@ -39,10 +43,38 @@ func checkError(s string, err error, ss ...string) {
 	}
 }
 
+// Sortable os.fileInfos by name (-> num)
+type sortableFiles []os.FileInfo
+func (s sortableFiles) Len () int {
+	return len(s)
+}
+func (s sortableFiles) Less (i, j int) bool {
+	iVer, err := strconv.Atoi(s[i].Name())
+	checkError(fmt.Sprintf("Dir name %s can't be converted to int", s[i].Name()), err)
+	jVer, err := strconv.Atoi(s[j].Name())
+	checkError(fmt.Sprintf("Dir name %s can't be converted to int", s[j].Name()), err)
+	return iVer < jVer;
+}
+func (s sortableFiles) Swap (i, j int) {
+	s[i], s[j] = s[j], s[i]
+}
+
 func version(r *http.Request) string {
 	parts := strings.SplitN(r.URL.Path, "/", 4)
 	version := parts[2]
-	return version
+	if (isVersion.MatchString(version)) {
+		return version
+	} else {
+		path := os.Getenv("GUIHIVE_BASEDIR") + "/versions/"
+		dir, err := os.Open(path)
+		checkError("Can't open dir " + path, err)
+		files, err := dir.Readdir(-1)
+		checkError("Can't read dir " + path, err)
+		sort.Sort(sortableFiles(files))
+		version = files[len(files)-1].Name()
+		return version
+	}
+	return ""
 }
 
 func unknown(w http.ResponseWriter, r *http.Request) {

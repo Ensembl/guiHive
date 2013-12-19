@@ -3,20 +3,21 @@
 use strict;
 use warnings;
 
-## The last added version is the one used here
-BEGIN {
-  my $last_version = `ls -t $ENV{GUIHIVE_BASEDIR}/versions/ | head -n 1`;
-  chomp $last_version;
-  unshift @INC, $ENV{GUIHIVE_BASEDIR} . "versions/$last_version/ensembl-hive/modules";
-  require Bio::EnsEMBL::Hive::DBSQL::DBAdaptor;
-  require Bio::EnsEMBL::Hive::DBSQL::SqlSchemaAdaptor;
-  require Bio::EnsEMBL::Hive::Utils::URL;
-}
+# ## The last added version is the one used here
+# BEGIN {
+#   my $last_version = `ls -t $ENV{GUIHIVE_BASEDIR}/versions/ | head -n 1`;
+#   chomp $last_version;
+#   unshift @INC, $ENV{GUIHIVE_BASEDIR} . "versions/$last_version/ensembl-hive/modules";
+#   unshift @INC, $ENV{GUIHIVE_BASEDIR} . "versions/$last_version/scripts/lib";
+#   require Bio::EnsEMBL::Hive::DBSQL::DBAdaptor;
+#   require Bio::EnsEMBL::Hive::DBSQL::SqlSchemaAdaptor;
+#   require Bio::EnsEMBL::Hive::Utils::URL;
+# }
 
-## These are probably the ones already in PERL5LIB
-# use Bio::EnsEMBL::Hive::DBSQL::DBAdaptor;
-# use Bio::EnsEMBL::Hive::DBSQL::SqlSchemaAdaptor;
-# use Bio::EnsEMBL::Hive::Utils::URL;
+## The servers should have already set the PERL5LIB to point to the latest hive API in versions
+use Bio::EnsEMBL::Hive::DBSQL::DBAdaptor;
+use Bio::EnsEMBL::Hive::DBSQL::SqlSchemaAdaptor;
+use Bio::EnsEMBL::Hive::Utils::URL;
 
 use JSON;
 
