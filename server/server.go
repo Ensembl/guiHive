@@ -238,6 +238,7 @@ func main() {
 	http.Handle("/", http.FileServer(http.Dir(relPath)))
 
 	http.HandleFunc("/versions/", unknown)
+	http.Handle("/versions/51/", http.FileServer(http.Dir(relPath)))
 	http.Handle("/versions/53/", http.FileServer(http.Dir(relPath)))
 	http.Handle("/versions/54/", http.FileServer(http.Dir(relPath)))
 	http.Handle("/versions/55/", http.FileServer(http.Dir(relPath)))
@@ -245,12 +246,14 @@ func main() {
 
 	http.Handle("/styles/", http.FileServer(http.Dir(relPath)))
 	http.Handle("/javascript/", http.FileServer(http.Dir(relPath)))
+	http.Handle("/versions/51/javascript/", http.FileServer(http.Dir(relPath)))
 	http.Handle("/versions/53/javascript/", http.FileServer(http.Dir(relPath)))
 	http.Handle("/versions/54/javascript/", http.FileServer(http.Dir(relPath)))
 	http.Handle("/versions/55/javascript/", http.FileServer(http.Dir(relPath)))
 	http.Handle("/versions/56/javascript/", http.FileServer(http.Dir(relPath)))
 	http.Handle("/images/", http.FileServer(http.Dir(relPath)))
 	http.HandleFunc("/scripts/", scriptHandler)
+	http.HandleFunc("/versions/51/scripts/", scriptHandler)
 	http.HandleFunc("/versions/53/scripts/", scriptHandler)
 	http.HandleFunc("/versions/54/scripts/", scriptHandler)
 	http.HandleFunc("/versions/55/scripts/", scriptHandler)
