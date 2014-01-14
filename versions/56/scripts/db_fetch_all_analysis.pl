@@ -34,7 +34,7 @@ use analysisInfo;
 use hive_extended;
 use version_check;
 
-my $json_data = shift @ARGV || '{"version":["53"],"url":["mysql://ensro@127.0.0.1:2914/mp12_compara_nctrees_74sheep"]}';
+my $json_data = shift @ARGV || '{"version":["56"],"url":["mysql://ensro@127.0.0.1:2911/mm14_protein_trees_75"]}';
 
 my $var = decode_json($json_data);
 my $url = $var->{url}->[0];
@@ -127,5 +127,5 @@ sub fetch_stats {
   } else {
     ($resource_mem) = $resource_params =~ /mem=(\d+)/;
   }
-  return ($min_mem, $max_mem, $avg_mem, sprintf("%.2f",$min_cpu), sprintf("%.2f", $max_cpu), sprintf("%.2f", $avg_cpu), $resource_mem || 125);
+  return ($min_mem, $max_mem, $avg_mem, sprintf("%.2f",$min_cpu || 0), sprintf("%.2f", $max_cpu || 0), sprintf("%.2f", $avg_cpu || 0), $resource_mem || 125);
 }
