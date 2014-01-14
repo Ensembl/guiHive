@@ -73,7 +73,6 @@ sub formJobsForm {
 		    'analysis_display' => '',
 		    'analysis_id' => ''
 		   };
-  print STDERR Dumper \@values;
 
   my $template = HTML::Template->new(filename => $jobs_form_template);
   $template->param('values' => [@values]);
