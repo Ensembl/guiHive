@@ -559,24 +559,24 @@ sub run {
             );
         }
 
-        # A mechanism whereby workers can be caused to exit even if they were doing fine:
-        #
-        # FIXME: The following check is not *completely* correct, as it assumes hive_capacity is "local" to the analysis:
+            # A mechanism whereby workers can be caused to exit even if they were doing fine:
         if (!$self->cause_of_death) {
-            my $stats = $self->analysis->stats;
-            if( defined($stats->hive_capacity)
-            and 0 <= $stats->hive_capacity
-            and $stats->hive_capacity < $stats->num_running_workers
+            my $stats = $self->analysis->stats;     # make sure it is fresh from the DB
+            if( defined($stats->hive_capacity) && (0 <= $stats->hive_capacity) && ($self->adaptor->get_hive_current_load >= 1.1)
+             or defined($self->analysis->analysis_capacity) && (0 <= $self->analysis->analysis_capacity) && ($self->analysis->analysis_capacity < $stats->num_running_workers)
             ) {
                 $self->cause_of_death('HIVE_OVERLOAD');
             }
         }
 
-        if( $self->cause_of_death() eq 'NO_WORK') {
-            $self->adaptor->db->get_AnalysisStatsAdaptor->update_status($self->analysis_id, 'ALL_CLAIMED');
+        if( $self->cause_of_death() =~ /^(NO_WORK|HIVE_OVERLOAD)$/ ) {
+            if( $self->cause_of_death() eq 'NO_WORK') {
+                $self->adaptor->db->get_AnalysisStatsAdaptor->update_status($self->analysis_id, 'ALL_CLAIMED');
+            }
             
             if( $self->can_respecialize and !$specialization_arglist ) {
                 $self->cause_of_death(undef);
+                $self->adaptor->db->get_AnalysisStatsAdaptor->decrease_running_workers($self->analysis->dbID);  # FIXME: tidy up this counting of active roles
                 $self->specialize_and_compile_wrapper();
             }
         }
@@ -593,7 +593,7 @@ sub run {
     $self->adaptor->register_worker_death($self, 1);
 
     if($self->debug) {
-        $self->worker_say( 'AnalysisStats :'.$self->analysis->stats->toString ) if($self->analysis_id());
+        $self->worker_say( 'AnalysisStats : '.$self->analysis->stats->toString ) if($self->analysis_id());
         $self->worker_say( 'dbc '.$self->adaptor->db->dbc->disconnect_count. ' disconnect cycles' );
     }
 
@@ -669,7 +669,7 @@ sub run_one_batch {
     $self->adaptor->safe_synchronize_AnalysisStats($self->analysis->stats);
 
     if($self->debug) {
-        $self->worker_say( "Stats : ".$self->analysis->stats->toString );
+        $self->worker_say( 'AnalysisStats : '.$self->analysis->stats->toString );
         $self->worker_say( 'claimed '.scalar(@{$jobs}).' jobs to process' );
     }
 

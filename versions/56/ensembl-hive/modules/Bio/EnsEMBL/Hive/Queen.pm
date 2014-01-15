@@ -74,6 +74,7 @@ use Bio::EnsEMBL::Utils::Argument ('rearrange');
 use Bio::EnsEMBL::Hive::Utils ('destringify', 'dir_revhash');  # NB: needed by invisible code
 use Bio::EnsEMBL::Hive::AnalysisJob;
 use Bio::EnsEMBL::Hive::Worker;
+use Bio::EnsEMBL::Hive::Scheduler;
 
 use base ('Bio::EnsEMBL::Hive::DBSQL::ObjectAdaptor');
 
@@ -148,6 +149,9 @@ sub create_new_worker {
         or die "Could not insert a new worker";
     $sth->finish;
 
+    my $worker = $self->fetch_by_dbID($worker_id)
+        or die "Could not fetch worker with dbID=$worker_id";
+
     if($hive_log_dir or $worker_log_dir) {
         my $dir_revhash = dir_revhash($worker_id);
         $worker_log_dir ||= $hive_log_dir .'/'. ($dir_revhash ? "$dir_revhash/" : '') .'worker_id_'.$worker_id;
@@ -157,13 +161,9 @@ sub create_new_worker {
             1;
         } or die "Could not create '$worker_log_dir' directory : $@";
 
-        my $sth_add_log = $self->prepare( "UPDATE worker SET log_dir=? WHERE worker_id=?" );
-        $sth_add_log->execute($worker_log_dir, $worker_id);
-        $sth_add_log->finish;
+        $worker->log_dir( $worker_log_dir );
+        $self->update_log_dir( $worker );   # autoloaded
     }
-
-    my $worker = $self->fetch_by_dbID($worker_id)
-        or die "Could not fetch worker with dbID=$worker_id";
 
     $worker->init;
 
@@ -275,7 +275,7 @@ sub specialize_new_worker {
             }
         }
             # probably scheduled by beekeeper.pl:
-    } elsif( $stats = $self->suggest_analysis_to_specialize_by_rc_id_meadow_type($worker->resource_class_id, $worker->meadow_type) ) {
+    } elsif( $stats = Bio::EnsEMBL::Hive::Scheduler::suggest_analysis_to_specialize_by_rc_id_meadow_type($self, $worker->resource_class_id, $worker->meadow_type) ) {
 
         $worker->analysis( undef ); # make sure we reset anything that was there before
         $analysis_id = $stats->analysis_id;
@@ -288,9 +288,7 @@ sub specialize_new_worker {
 
     $worker->analysis_id( $analysis_id );
 
-    my $sth_update_analysis_id = $self->prepare( "UPDATE worker SET analysis_id=? WHERE worker_id=?" );
-    $sth_update_analysis_id->execute($worker->analysis_id, $worker->dbID);
-    $sth_update_analysis_id->finish;
+    $self->update_analysis_id( $worker );   # autoloaded
 
     if($special_batch) {
         $worker->special_batch( $special_batch );
@@ -751,7 +749,7 @@ sub print_analysis_status {
 
     my $list_of_analyses = $filter_analysis ? [$filter_analysis] : $self->db->get_AnalysisAdaptor->fetch_all;
     foreach my $analysis (sort {$a->dbID <=> $b->dbID} @$list_of_analyses) {
-        $analysis->stats->print_stats();
+        print $analysis->stats->toString . "\n";
     }
 }
 
@@ -835,22 +833,5 @@ sub register_all_workers_dead {
     }
 }
 
-
-sub suggest_analysis_to_specialize_by_rc_id_meadow_type {
-    my $self                = shift;
-    my $rc_id               = shift;
-    my $meadow_type         = shift;
-
-    my @suitable_analyses = @{ $self->db->get_AnalysisStatsAdaptor->fetch_all_by_suitability_rc_id_meadow_type( $rc_id, $meadow_type ) };
-
-    foreach my $stats (@suitable_analyses) {
-
-            #synchronize and double check that it can be run:
-        $self->safe_synchronize_AnalysisStats($stats);
-        return $stats if( ($stats->status ne 'BLOCKED') and ($stats->status ne 'SYNCHING') and ($stats->num_required_workers > 0) );
-    }
-
-    return undef;
-}
 
 1;
