@@ -32,6 +32,11 @@ var basicViews = function() {
     allAnalysisPies.chart = initialize_pipeline_diagram();
     allAnalysisPies.update = pipeline_diagram_update; // a closure
 
+    var legendChart = {};
+    legendChart.chart = legend();
+    legendChart.chart();
+    legendChart.update = legendChart.chart.transition() // a closure
+
     var allBubbles = {};
     allBubbles.chart = initialize_bubbles_cloud();
     allBubbles.update = bubbles_cloud_update; // a closure
@@ -41,6 +46,7 @@ var basicViews = function() {
 		   // allAnalysis  : allAnalysisCharts,
 		   allAnalysisP : allAnalysisPies,
 		   bubblesCloud : allBubbles,
+		   legend       : legendChart,
 		 };
 
     var views = function() {
@@ -54,6 +60,11 @@ var basicViews = function() {
 
     views.removeChart = function (name) {
 	delete charts.name;
+    };
+
+    views.replaceChart = function (name, chart_closure, update_closure) {
+	views.removeChart(name);
+	views.addChart(name, chart_closure, update_closure);
     };
 
     views.update = function() {

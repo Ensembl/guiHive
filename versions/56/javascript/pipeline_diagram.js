@@ -122,7 +122,13 @@ function initialize_pipeline_diagram() {
     guiHive.node_colors = nodeColor();
     $("#select_analysis_colors").change(function(){
 	guiHive.node_colors.attr($(this).val())
-	var pChart = guiHive.views.updateOneChart("allAnalysisP");
+	guiHive.views.updateOneChart("allAnalysisP");
+
+	// We need to update the legend (by creating a new legend)
+	var legendChart = legend().mode($(this).val());
+	legendChart();
+	var updateLegend = legendChart.transition();
+	guiHive.views.replaceChart('legend', legendChart, updateLegend)
     });
 
     // And change the cursor style for text
@@ -142,7 +148,18 @@ function pipeline_diagram_update(allCharts) {
 	// Update the color status of the node
 	var node_color = guiHive.node_colors(analysis_id);
 	var nodes = $(allCharts[i].root_node).siblings("path,polygon,polyline,rect");
-	d3.selectAll(nodes).transition().duration(1500).delay(0).attr("fill",node_color).attr("stroke",function() {if($(this).attr("stroke") === "black") {return "black"} else {return node_color}});
+	d3.selectAll(nodes)
+	    .transition()
+	    .duration(1500)
+	    .delay(0)
+	    .attr("fill",node_color)
+	    .attr("stroke",function() {
+		if($(this).attr("stroke") === "black") {
+		    return "black"
+		} else {
+		    return node_color
+		}
+	    });
 
 
 	// Update the pie charts
