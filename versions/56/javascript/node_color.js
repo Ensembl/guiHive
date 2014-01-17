@@ -22,6 +22,8 @@ function nodeColor() {
     var color_status = guiHive.config.Graph.Node.AnalysisStatus;
 
     var node_range = function(index) {
+	node_range.range();
+
 	// if the analysis doesn't have data, we don't change it color
 	if (guiHive.analysis_board[index].status === "EMPTY" ) {
 	    return "white";
@@ -32,7 +34,6 @@ function nodeColor() {
 	    return color_status[guiHive.analysis_board[index][attr]].Colour;
 	}
 	if (attr === 'mem' || attr === 'cpu') {
-	    node_range.range();
 	    return color_scale(guiHive.analysis_board[index][attr][1]);
 	}
 	return color_scale(guiHive.analysis_board[index][attr]);
