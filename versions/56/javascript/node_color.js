@@ -32,6 +32,7 @@ function nodeColor() {
 	    return color_status[guiHive.analysis_board[index][attr]].Colour;
 	}
 	if (attr === 'mem' || attr === 'cpu') {
+	    node_range.range();
 	    return color_scale(guiHive.analysis_board[index][attr][1]);
 	}
 	return color_scale(guiHive.analysis_board[index][attr]);
