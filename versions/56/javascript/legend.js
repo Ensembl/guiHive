@@ -34,33 +34,34 @@ legend = function() {
 	    .append("svg")
 	    .append("g");
 
-	lChart.transition = function(chart) {
+	// Only range-based legends will initialize these vars
+	var slices;
+	var color_scale;
+	var gradient_box;
+	var gradient_box_height;
 
-	    // Only range-based legends will initialize these vars
-	    var slices;
-	    var color_scale;
-	    var gradient_box;
-	    var gradient_box_height;
+	if ((mode === "total_job_count") || (mode === "mem") || (mode === "cpu") || (mode === "avg_msec_per_job")) {
+	    // range-based
+	    slices = 100;
+	    gradient_box_height = 150;
+	    color_scale = d3.scale.linear()
+		.domain([0, slices])
+		.range([min_color, max_color]);
 
-	    if ((mode === "total_job_count") || (mode === "mem") || (mode === "cpu") || (mode === "avg_msec_per_job")) {
-		// range-based
-		slices = 100;
-		gradient_box_height = 150;
-		color_scale = d3.scale.linear()
-		    .domain([0, slices])
-		    .range([min_color, max_color]);
-
-		for (var i = 0; i < slices; i++) {
-		    g.append("rect")
-			.attr("x", x)
-			.attr("y", y+(i * gradient_box_height / slices))
-			.attr("height", gradient_box_height / slices) // slices 1px each
-			.attr("width", width)
-			.attr("fill", color_scale(i));
-		}
-		$("#legend").css("height", gradient_box_height + 20 + "px")
-		
+	    for (var i = 0; i < slices; i++) {
+		g.append("rect")
+		    .attr("x", x)
+		    .attr("y", y+(i * gradient_box_height / slices))
+		    .attr("height", gradient_box_height / slices) // slices 1px each
+		    .attr("width", width)
+		    .attr("fill", color_scale(i));
 	    }
+	    $("#legend").css("height", (gradient_box_height + 20) + "px")
+	    
+	}
+
+
+	lChart.transition = function(chart) {
 
 	    var newT = function() {
 		if ((mode === "guiHiveStatus") || (mode === "status")) {
@@ -116,8 +117,10 @@ legend = function() {
 		    t.exit().remove();
 
 		} else if ((mode === "total_job_count") || (mode === "mem") || (mode === "cpu") || (mode === "avg_msec_per_job")) {
-		    // Range-based legend
-		    // We first need the limits
+		    // For some reason, the height of the legend div is reset to 40px. This code is inserted here to make sure that the original height is preserved
+		    // TODO: trace back why the $(#legend).css("height") is lost before updating
+		    $("#legend").css("height", (gradient_box_height + 20) + "px"); 
+
 		    var data = [];
 		    for (var i = 0; i < guiHive.analysis_board.length; i++) {
 			if (guiHive.analysis_board[i]) {
@@ -126,16 +129,20 @@ legend = function() {
 		    }
 
 		    var extent = d3.extent(data);
-		    g.append("text")
+		    var labels = g.selectAll("text")
+			.data(extent)
+
+		    labels
+			.text(function(d){return d})
+
+		    labels
+			.enter()
+			.append("text")
 			.attr("x", x + width)
-			.attr("y", y + 10)
+			.attr("y", function(d,i) {return y + (gradient_box_height * i) + (i === 0 ? 10 : 0)})
 			.attr("font-size", fontsize)
-			.text(extent[0]);
-		    g.append("text")
-			.attr("x", x + width)
-			.attr("y", y + gradient_box_height)
-			.attr("font-size", "12")
-			.text(extent[1]);
+			.text(function(d){return d});
+
 		}
 	    };
 	    return newT;
