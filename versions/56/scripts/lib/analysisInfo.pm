@@ -138,6 +138,9 @@ sub sum_jobs {
 
 sub getGuiHiveStatus {
   my ($jobs, $hiveStatus) = @_;
+  if ($hiveStatus eq 'BLOCKED') {
+    return $hiveStatus;
+  }
   if ($jobs->{inprogress_job_count}) {
     return "WORKING";
   } elsif ($jobs->{ready_job_count}) {
