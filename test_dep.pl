@@ -29,7 +29,7 @@ use warnings;
 print "CHECKING SERVER:\n";
 
 ## GO
-print " Checking if the Go is installed in the system: ";
+print " Checking if Go is installed in the system: ";
 my $go_path = `which go`;
 chomp $go_path;
 if ($go_path) {
@@ -59,7 +59,7 @@ if ($ehive_root_dir_envar) {
 ###########################
 ##       eHive           ##
 ###########################
-print "\nCHECKING EHIVE CODE:\n";
+print "\nCHECKING ENSEMBL API:\n";
 
 ## Perl
 print " Checking that perl is installed in the system: ";
