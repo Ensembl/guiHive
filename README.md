@@ -4,38 +4,40 @@ This repository contains the guiHive code, a graphic user interface to easily in
 
 ### Status
 
-This code is being actively developed. Improvements are being added regularly (mainly in documentation and error reporting), so regular updates of the repo are recommended.
+This code is being actively developed. Improvements and bug fixes are being added regularly, so regular updates of the repo are recommended (or watch the github repo to get notification of updates).
 
 
 ### Installation
 
 #### Pre-requisites
 
-In order to work with this application you need the following installed in your system:
+guiHive depends on the following components that need to be installed in your system:
 
 * Git client           : To clone this repository (http://git-scm.com/downloads).
-* eHive API            : If you require to download and install the eHive system, please follow these instructions: (http://www.ensembl.org/info/docs/eHive/installation.html). Note that the guiHive is in sync with the latest (stable) eHive code.
-   * Ensembl API       : eHive depends on the core Ensembl API. BioPerl or any other Ensembl related checkout are not needed
+* eHive API            : guiHive depends on the eHive API. You can download the latest code from github (https://github.com/Ensembl/ensembl-hive).
+   * Ensembl API       : eHive depends on the core Ensembl API. BioPerl or any other Ensembl related checkouts are not needed.
    * GraphViz          : eHive depends on dot (from GraphViz) to create the graphical representation of the pipelines. The Perl package GraphViz is also needed.
 * Go tools             : The server of guiHive is written in the Go programming language. Since the current guiHive version doesn't include binaries for the server you will need to compile it.
+                         Please refer to the Go website (http://golang.org) for installation instructions.
 * Misc Perl Modules    : Several Perl modules are needed by guiHive:
    * JSON
    * JSON::PP
    * URI::Escape
    * HTML::Template
 
-There is a script in the guiHive root directory called "test_dep.pl" that tests all the dependencies. You can run it whithout arguments:
+There is a script in the guiHive root directory called "test_dep.pl" that tests all the dependencies. To run it:
 $ perl test_dep.pl
 If you experience problems setting up guiHive you can also follow the tips printed at the end of that script.
 
 #### Compilation
 
-Once you have all the dependencies installed and up to date (specially the eHive code) follow these steps:
+Once you have all the dependencies installed and up to date follow these steps:
 
 * Clone the guiHive repository (if you haven't done yet) and cd into it.
+  $ git clone https://github.com/Ensembl/guiHive
 
 * cd into the "server" folder and build the web server
-     $ cd server
+     $ cd guiHive/server
      $ go build
 
 * This will create the "server" executable in the current directory
@@ -54,7 +56,13 @@ You should now be able to connect to your database and start monitoring your pip
 
 ### Browser compatibility
 
-All the 3rd party libraries used in guiHive are supposed to work in reasonably recent versions of the good most used web browsers. IE>=9 should also work. If you experience any problem, please, send your comments to mp@ebi.ac.uk
+guiHive and all the 3rd party libraries used in guiHive are supposed to work in reasonably recent versions of the mainstream web browsers. IE>=9 should also work but I haven't tested. If you experience any problem, please send your comments to hive-users@ebi.ac.uk or mp@ebi.ac.uk
 
 AFAIK everything works fine in Firefox (v7.0.1, v8.0.1, v12.0, v18.0.1), Chrome (v24.0.1312.56), Safari (v5.1.7) and Opera (v12.12).
+
+### Feedback
+
+Feedback is more than welcome.
+Please send your bug reports to the hive mailing list (hive-users@ebi.ac.uk).
+Comments can also be sent to me directly (mp@ebi.ac.uk)
 
