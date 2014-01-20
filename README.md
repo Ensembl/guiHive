@@ -1,11 +1,17 @@
 ## guiHive -- Graphic user interface for the eHive production system
 
-This repository contains the guiHive code, a graphic user interface to easily interact with the eHive production system.
+This repository contains the guiHive code, a graphic user interface to easily interact with your eHive pipeline.
+See https://github.com/Ensembl/ensembl-hive for more information about the eHive system.
 
 ### Status
 
-This code is being actively developed. Improvements and bug fixes are being added regularly, so regular updates of the repo are recommended (or watch the github repo to get notification of updates).
+This code is being actively developed. Improvements, new features and bug fixes are being added regularly, so if you use it, please remember to check for updates regularly (or "watch" the github repo to get notification of updates). It is also recommended that you join the hive-users mailing list (see https://github.com/Ensembl/ensembl-hive for more information on how to do this) since news and updates will be announced there.
 
+guiHive consists of:
+
+* A web interface that can be run in any modern web browser (see the "Browser compatibility" section below).
+* A web server that connects the web interface with the hive code that interacts with your hive database.
+* A Perl layer that gathers information from your pipeline (using the eHive API) and returns it to the web server and interface.
 
 ### Installation
 
