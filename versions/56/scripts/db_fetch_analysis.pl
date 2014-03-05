@@ -298,6 +298,9 @@ sub template_mappings_SELECT {
   $curr_val = "NULL" unless(defined $curr_val);
 
   $vals = insert_val_if_needed($vals,$curr_val);
+  if (defined $displays) {
+    $displays = insert_val_if_needed($displays,$curr_val);
+  }
 
   ## In case the value and its display should be different
   $displays = $vals unless (defined $displays);
@@ -350,7 +353,7 @@ sub insert_val_if_needed {
     if ($arref->[$i] eq $newVal) {
       return $arref;
     }
-    next if ($i == scalar(@$arref - 1));
+#    next if ($i == scalar(@$arref - 1));
     if ( ($arref->[$i] < $newVal) &&
 	 ($arref->[$i+1] > $newVal) ) {
       return [(@{$arref}[0..$i], $newVal, @{$arref}[$i+1..$#{$arref}])];
