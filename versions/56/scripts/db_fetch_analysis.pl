@@ -297,17 +297,17 @@ sub template_mappings_SELECT {
   my $curr_val = $obj->$method;
   $curr_val = "NULL" unless(defined $curr_val);
 
-  $vals = insert_val_if_needed($vals,$curr_val);
-  if (defined $displays) {
+  my $newVals = insert_val_if_needed($vals,$curr_val);
+  if ((defined $displays) && (length(@$newVals) != length(@$vals))) {
     $displays = insert_val_if_needed($displays,$curr_val);
   }
 
   ## In case the value and its display should be different
-  $displays = $vals unless (defined $displays);
+  $displays = $newVals unless (defined $displays);
 
   my @final_vals = ();
-  for (my $i=0; $i<scalar(@$vals); $i++) {
-      push @final_vals, [$vals->[$i], $displays->[$i]];
+  for (my $i=0; $i<scalar(@$newVals); $i++) {
+      push @final_vals, [$newVals->[$i], $displays->[$i]];
   }
 
   return [{"id"       => $obj->can("analysis_id") ? $obj->analysis_id : $obj->dbID,
