@@ -89,7 +89,10 @@ sub formAnalysisInfo {
       }
 
       unless (defined $new_analysis->meadow_type()) {
-	$new_analysis->meadow_type($resourceClassAdaptor->fetch_by_dbID($analysis->resource_class_id)->description->meadow_type());
+	my $resource_description = $resourceClassAdaptor->fetch_by_dbID($analysis->resource_class_id)->description;
+	if (defined $resource_description) {
+	  $new_analysis->meadow_type($resource_description->meadow_type());
+	}
       }
       $all_analysis_info{$new_analysis->{analysis_id}} = $new_analysis;
     }

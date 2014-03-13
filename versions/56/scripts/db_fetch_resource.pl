@@ -84,9 +84,11 @@ sub formResources {
   my $i = 0;
   for my $rc (sort {$a->dbID <=> $b->dbID} @$all_resources) {
     my $rd = $rc->description();
-    $info->{"resources"}->[$i]->{ 'rcID' } = $rc->dbID;
-    $info->{"resources"}->[$i]->{ 'meadow' } = $rd->meadow_type();
+    my $meadow_type = defined $rd ? $rd->meadow_type : '';
+    my $submission_cmd_args = defined $rd ? $rd->submission_cmd_args : '';
 
+    $info->{"resources"}->[$i]->{ 'rcID' } = $rc->dbID;
+    $info->{"resources"}->[$i]->{ 'meadow' } = $meadow_type;
     $info->{"resources"}->[$i]->{"resourceName"} = [{ "name"      => $rc->name(),
   						      "id"        => $rc->dbID,
   						      "adaptor"   => "ResourceClass",
@@ -94,11 +96,11 @@ sub formResources {
   						      "rcName"    => "rc_".$rc->name(),
   						    }];
 
-    $info->{"resources"}->[$i]->{"resourceParams"} = [{ "params"   => encode_entities($rd->submission_cmd_args()),
+    $info->{"resources"}->[$i]->{"resourceParams"} = [{ "params"   => encode_entities($submission_cmd_args),
   							"id"       => $rc->dbID(),
   							"adaptor"  => "ResourceDescription",
   							"method"   => "submission_cmd_args",
-  							"rcParams" => "rc_".$rc->dbID()."_".$rd->meadow_type(),
+  							"rcParams" => "rc_".$rc->dbID()."_".$meadow_type,
   						      }];
     $i++;
   }
