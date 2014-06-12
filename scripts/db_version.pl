@@ -102,6 +102,13 @@ print $response->toJSON();
 sub get_hive_db_version {
   my ($dbConn) = @_;
   my $metaAdaptor      = $dbConn->get_MetaAdaptor;
-  my $db_sql_schema_version   = eval { $metaAdaptor->fetch_value_by_key( 'hive_sql_schema_version' ); };
+  my $db_sql_schema_version;
+  eval {
+    if ($metaAdaptor->can('fetch_value_by_key')) {
+      $db_sql_schema_version = $metaAdaptor->fetch_value_by_key( 'hive_sql_schema_version' );
+    } elsif ($metaAdaptor->can('get_value_by_key')) {
+      $db_sql_schema_version = $metaAdaptor->get_value_by_key( 'hive_sql_schema_version' );
+    }
+  };
   return $db_sql_schema_version;
 }

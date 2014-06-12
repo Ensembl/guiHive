@@ -243,6 +243,7 @@ func main() {
 	http.Handle("/versions/54/", http.FileServer(http.Dir(relPath)))
 	http.Handle("/versions/55/", http.FileServer(http.Dir(relPath)))
 	http.Handle("/versions/56/", http.FileServer(http.Dir(relPath)))
+	http.Handle("/versions/62/", http.FileServer(http.Dir(relPath)))
 
 	http.Handle("/styles/", http.FileServer(http.Dir(relPath)))
 	http.Handle("/javascript/", http.FileServer(http.Dir(relPath)))
@@ -251,6 +252,8 @@ func main() {
 	http.Handle("/versions/54/javascript/", http.FileServer(http.Dir(relPath)))
 	http.Handle("/versions/55/javascript/", http.FileServer(http.Dir(relPath)))
 	http.Handle("/versions/56/javascript/", http.FileServer(http.Dir(relPath)))
+	http.Handle("/versions/62/javascript/", http.FileServer(http.Dir(relPath)))
+
 	http.Handle("/images/", http.FileServer(http.Dir(relPath)))
 	http.HandleFunc("/scripts/", scriptHandler)
 	http.HandleFunc("/versions/51/scripts/", scriptHandler)
@@ -258,6 +261,7 @@ func main() {
 	http.HandleFunc("/versions/54/scripts/", scriptHandler)
 	http.HandleFunc("/versions/55/scripts/", scriptHandler)
 	http.HandleFunc("/versions/56/scripts/", scriptHandler)
+	http.HandleFunc("/versions/62/scripts/", scriptHandler)
 	debug("Listening to port: %s", port)
 	err := http.ListenAndServe(":"+port, nil)
 	checkError("ListenAndServe ", err)
