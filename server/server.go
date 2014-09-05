@@ -198,11 +198,11 @@ func setEnvVar() error {
 	debug("GUIHIVE_BASEDIR: %s", os.Getenv("GUIHIVE_BASEDIR"))
 
 	// ENSEMBL_CVS_ROOT_DIR
-	// ensembl_cvs_root_dir := os.Getenv("ENSEMBL_CVS_ROOT_DIR")
-	// if ensembl_cvs_root_dir == "" {
-	// 	return errors.New("ENSEMBL_CVS_ROOT_DIR has to be set")
-	// }
-	// debug("ENSEMBL_CVS_ROOT_DIR: %s", ensembl_cvs_root_dir)
+	ensembl_cvs_root_dir := os.Getenv("ENSEMBL_CVS_ROOT_DIR")
+	if ensembl_cvs_root_dir == "" {
+		return errors.New("ENSEMBL_CVS_ROOT_DIR has to be set")
+	}
+	debug("ENSEMBL_CVS_ROOT_DIR: %s", ensembl_cvs_root_dir)
 
 	return nil
 }
