@@ -27,8 +27,6 @@ function barChart() {
     var yspace = 5;
 
     var bChart = function(g) {
-	console.log("DATA:");
-	console.log(data);
 	bChart.yscale = bChart.new_scale(g, data);
 
 	var gs = g.selectAll("rect")

@@ -145,7 +145,17 @@ function initialize_pipeline_diagram() {
 }
 
 function pipeline_diagram_update(allCharts) {
-    var max_counts = d3.max(guiHive.analysis_board, function(v){if (v === null) {return 0} return d3.sum(v.jobs_counts.counts)});
+
+    var all_counts = [];
+    for (var a in guiHive.analysis_board) {
+	if (guiHive.analysis_board.hasOwnProperty(a)) {
+	    all_counts.push(guiHive.analysis_board[a].jobs_counts.counts);
+	}
+    }
+    var max_counts = d3.max(all_counts, function (v) {
+	return d3.sum(v)
+    });
+
 //    var node_colors = nodeColor(); // closure
 //    node_colors.attr("avg_msec_per_job");
     for (var i = 0; i < allCharts.length; i++) {
