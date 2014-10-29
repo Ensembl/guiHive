@@ -308,21 +308,21 @@ function refresh_data_and_views(callback) {
 		    var mems = 0;
 		    var cpus = 0;
 		    for (var analysis in allAnalysisRes.out_msg) {
-			if (analysis.mem !== undefined) {
+			if (allAnalysisRes.out_msg[analysis]["mem"] !== undefined) {
 			    mems++;
 			}
-			if (analysis.cpu !== undefined) {
-			    cpu++;
+			if (allAnalysisRes.out_msg[analysis]["cpu"] !== undefined) {
+			    cpus++;
 			}
 		    }
 		    // var mems = allAnalysisRes.out_msg.filter(function(d){return (d !== null && d.mem !== undefined)});
 		    // var cpus = allAnalysisRes.out_msg.filter(function(d){return (d !== null && d.cpu !== undefined)});
-		    if (mems.length) {
+		    if (mems>0) {
 			$("#select_analysis_colors option[value='mem']").attr("disabled", null);
 		    } else {
 			$("#select_analysis_colors option[value='mem']").attr("disabled", 1);
 		    }
-		    if (cpus.length) {
+		    if (cpus>0) {
 			$("#select_analysis_colors option[value='cpu']").attr("disabled", null);
 		    } else {
 			$("#select_analysis_colors option[value='mem']").attr("disabled", 1);
