@@ -50,7 +50,14 @@ function nodeColor() {
     node_range.range = function() {
 	if (attr === 'total_job_count' ||
 	    attr === 'avg_msec_per_job'){
-	    var extent = d3.extent(guiHive.analysis_board.filter(function(d){return d!==null}), function(d,i){return parseInt(d[attr]) });
+	    console.log(guiHive.analysis_board);
+	    var vals = [];
+	    for (var analysis in guiHive.analysis_board) {
+		if (guiHive.analysis_board.hasOwnProperty(analysis) && (guiHive.analysis_board[analysis][attr]!==null)) {
+		    vals.push (parseInt(guiHive.analysis_board[analysis][attr]));
+		}
+	    }
+	    var extent = d3.extent(vals);
 	    color_scale = d3.scale.linear()
 		.domain(extent)
 		.range(["#FFEDAO","#F03B20"]);
