@@ -34,7 +34,7 @@ use analysisInfo;
 use hive_extended;
 use version_check;
 
-my $json_data = shift @ARGV || '{"version":["56"],"url":["mysql://ensro@127.0.0.1:2911/mm14_protein_trees_75"]}';
+my $json_data = shift @ARGV || '{"version":["56"],"url":["mysql://ensro@127.0.0.1:2913/mp12_compara_nctrees_78a"]}';
 
 my $var = decode_json($json_data);
 my $url = $var->{url}->[0];
@@ -82,9 +82,8 @@ sub formAnalysisInfo {
     my $resourceClassAdaptor = $dbConn->get_ResourceClassAdaptor();
     for my $analysis (@$all_analysis) {
       my $new_analysis = analysisInfo->fetch($analysis);
-
-      if (lsf_report_exists()) {
-	my ($min_mem, $max_mem, $avg_mem, $min_cpu, $max_cpu, $avg_cpu, $resource_mem) = fetch_stats ($analysis->dbID);
+      if (stats_table_is_not_empty($dbConn->dbc->dbname)) {
+	my ($min_mem, $max_mem, $avg_mem, $min_cpu, $max_cpu, $avg_cpu, $resource_mem) = fetch_stats_worker_resource_usage($analysis->dbID);
 	$new_analysis->stats($min_mem, $max_mem, $avg_mem, $min_cpu, $max_cpu, $avg_cpu, $resource_mem);
       }
 
@@ -107,8 +106,8 @@ sub formAnalysisInfo {
 }
 
 
-sub lsf_report_exists {
-  my $sql = "SHOW TABLES LIKE 'lsf_report'";
+sub stats_table_is_not_empty {
+  my $sql = "SELECT * FROM worker_resource_usage LIMIT 1";
   my $sth = $dbConn->dbc->prepare($sql);
   $sth->execute;
   if ($sth->fetchrow_array) {
@@ -117,19 +116,19 @@ sub lsf_report_exists {
   return 0;
 }
 
-sub fetch_stats {
+sub fetch_stats_worker_resource_usage {
   my ($analysis_id) = @_;
-  my $sql = "select min(mem_megs), max(mem_megs), avg(mem_megs), min(cpu_sec), max(cpu_sec), avg(cpu_sec), submission_cmd_args from lsf_report join worker using(process_id) join resource_description using(resource_class_id) where analysis_id = ?";
+  my $sql = "select min(mem_megs), max(mem_megs), avg(mem_megs), min(cpu_sec), max(cpu_sec), avg(cpu_sec), submission_cmd_args from worker_resource_usage join role using(worker_id) join analysis_base using (analysis_id) join resource_description using (resource_class_id) where analysis_id = ?";
   my $sth = $dbConn->dbc->prepare($sql);
 
   $sth->execute($analysis_id);
-
   my ($min_mem, $max_mem, $avg_mem, $min_cpu, $max_cpu, $avg_cpu, $resource_params) = $sth->fetchrow_array();
   my $resource_mem;
-  if (! defined $resource_params) {
-    $resource_mem = 125;  # Default
+  if (!defined $resource_params) {
+    $resource_mem = 125;
   } else {
     ($resource_mem) = $resource_params =~ /mem=(\d+)/;
   }
   return ($min_mem, $max_mem, $avg_mem, sprintf("%.2f",$min_cpu || 0), sprintf("%.2f", $max_cpu || 0), sprintf("%.2f", $avg_cpu || 0), $resource_mem || 125);
 }
+
