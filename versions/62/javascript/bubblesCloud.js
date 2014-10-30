@@ -93,7 +93,7 @@ function bubbleCloud() {
 	    node
 		.attr("title", function(x, i){
 		    var d = data[i];
-		    var tooltip_msg = "Analysis ID: " + (i+1) + "<br/>Logic name: " + d.logic_name + "<br/>Number of jobs:" + d.total_job_count + "<br/>Avg msec per job: " + d.avg_msec_per_job_parsed;
+		    var tooltip_msg = "Analysis ID: " + (d.analysis_id) + "<br/>Logic name: " + d.logic_name + "<br/>Number of jobs:" + d.total_job_count + "<br/>Avg msec per job: " + d.avg_msec_per_job_parsed;
 		    if (d.mem !== undefined) {
 			tooltip_msg = tooltip_msg + "<br/>Min memory used: " + d.mem[0] + "<br/>Mean memory used: " + d.mem[1] + "<br/>Max memory used:" + d.mem[2];
 		    }
