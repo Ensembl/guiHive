@@ -109,7 +109,7 @@ if ($@) {
   not_met_dep( "Hive",
 	       "perl -MBio::EnsEMBL::Hive -e ''",
 	       "The hive API checkout is not found in the system",
-	       "See http://www.ensembl.org/info/docs/eHive/installation.html"
+	       "See http://www.ensembl.org/info/docs/eHive.html"
 	     );
 } else {
   print " ... OK\n";
