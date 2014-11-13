@@ -77,10 +77,14 @@ function initialize_pipeline_diagram() {
 	    var analysis_name = matches[1];
 	    var gRoot = $(v).parent()[0];
 
-	    var polygon_coords = points_from_string(d3.select(gRoot).select("polygon").attr("points"));
-	    var posx = polygon_coords[1].x + 15;
-	    var posy = polygon_coords[4].y;
-	    var pChart = pieChart().x(posx).y(posy);
+	    // Trick to get the real bounding box of the <g> element
+	    var bbox = gRoot.getBBox();
+	    var text_elts = $(gRoot).children("text");
+	    var bbox_text1 = text_elts[0].getBBox();
+	    var midx_text = bbox_text1.x + bbox_text1.width/2;
+	    var real_bbox = [0, null, bbox.x + bbox.width, bbox.y];
+	    real_bbox[0] = 2 * midx_text - real_bbox[2];
+	    var pChart = pieChart().x(real_bbox[2]).y(real_bbox[3]);
 	    var gpie = d3.select(gRoot)
 		.append("g");
 	    pChart(gpie);
@@ -99,8 +103,8 @@ function initialize_pipeline_diagram() {
 		analysis_id = ns[1];
 		d3.select(gRoot)
 		    .append("rect")
-      		    .attr("x", polygon_coords[0].x)
-	    	    .attr("y", polygon_coords[4].y - 15)
+      		    .attr("x", real_bbox[0] + 15)
+	    	    .attr("y", real_bbox[3] - 15)
 	    	    .attr("width", 25)
 	    	    .attr("height", 15)
 	    	    .attr("stroke", "black")
@@ -108,8 +112,8 @@ function initialize_pipeline_diagram() {
 		d3.select(gRoot)
 	    	    .append("text")
 	    	    .text(analysis_id)
-	            .attr("x", polygon_coords[0].x + 3)
-	    	    .attr("y", polygon_coords[4].y - 2);
+	            .attr("x", real_bbox[0] + 15 + 3)
+	    	    .attr("y", real_bbox[3] - 2);
 	    }
 
 	    // Links to the analysis_details
