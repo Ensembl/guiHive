@@ -350,8 +350,7 @@ function onSuccess_dbConnect(res) {
 	$(".hidden_by_default").show();
     
 	// Connection message is displayed
-	var connection_header = "<h4>Connection Details</h4>";
-	$("#connection_msg").html(connection_header + res.out_msg.html);
+	$("#connection_msg").html(res.out_msg.html);
 
 	// We update the timer:
 	guiHive.refresh_data_timer.stop();
