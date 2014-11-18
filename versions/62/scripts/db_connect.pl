@@ -112,9 +112,9 @@ sub formResponse {
     $info->{username}  = $dbConn->dbc->username;
     $info->{hive_db_version} = get_hive_db_version($dbConn);
     $info->{hive_code_version} = get_hive_code_version();
-    $info->{pipeline_name} = get_hive_pipeline_name($dbConn);
-    $info->{hive_auto_rebalance_semaphores} = get_hive_auto_rebalance_semaphores($dbConn) ? 'Enabled' : 'Disabled';
-    $info->{hive_use_param_stack} = get_hive_use_param_stack($dbConn) ? 'Enabled' : 'Disabled';
+    $info->{pipeline_name} = get_hive_db_meta_key($dbConn, 'hive_pipeline_name');
+    $info->{hive_auto_rebalance_semaphores} = get_hive_db_meta_key($dbConn, 'hive_auto_rebalance_semaphores') ? 'Enabled' : 'Disabled';
+    $info->{hive_use_param_stack} = get_hive_db_meta_key($dbConn, 'hive_use_param_stack') ? 'Enabled' : 'Disabled';
 
     my $template = HTML::Template->new(filename => $connection_template);
     $template->param(%$info);
