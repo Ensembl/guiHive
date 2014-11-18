@@ -42,7 +42,7 @@ my $url = decode_json($json_url)->{url}->[0];
 my $version = decode_json($json_url)->{version}->[0];
 
 # Set up @INC and paths for static content
-my $project_dir = $ENV{GUIHIVE_BASEDIR} . "versions/$version/";
+my $project_dir = $ENV{GUIHIVE_BASEDIR};
 my $connection_template = "${project_dir}static/connection_details.html";
 
 my $response = msg->new();

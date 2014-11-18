@@ -77,7 +77,7 @@ func version(r *http.Request) string {
 	if (isVersion.MatchString(version)) {
 		return version
 	} else {
-		path := os.Getenv("GUIHIVE_BASEDIR") + "/versions/"
+		path := os.Getenv("GUIHIVE_PROJECTDIR") + "/versions/"
 		dir, err := os.Open(path)
 		checkError("Can't open dir " + path, err)
 		files, err := dir.Readdir(-1)
@@ -106,7 +106,7 @@ func scriptHandler(w http.ResponseWriter, r *http.Request) {
 	var outMsg bytes.Buffer
 	var errMsg bytes.Buffer
 
-	fname := os.Getenv("GUIHIVE_BASEDIR") + r.URL.Path
+	fname := os.Getenv("GUIHIVE_PROJECTDIR") + r.URL.Path
 	args, err := json.Marshal(r.Form)
 	checkError("Can't Marshal JSON:", err)
 
@@ -115,7 +115,7 @@ func scriptHandler(w http.ResponseWriter, r *http.Request) {
 	version := version(r);
 	debug("VERSION: %s", version)
 	
-	versionRootDir := os.Getenv("GUIHIVE_BASEDIR") + "/versions/" + version;
+	versionRootDir := os.Getenv("GUIHIVE_PROJECTDIR") + "/versions/" + version + "/";
 	ehiveRootDir := versionRootDir + "/ensembl-hive"
 	ehiveRootLib := ehiveRootDir + "/modules"
 	guihiveRootLib := versionRootDir + "/scripts/lib"
@@ -127,7 +127,7 @@ func scriptHandler(w http.ResponseWriter, r *http.Request) {
 	cmd.Env = make([]string,0)
 	cmd.Env = append(cmd.Env, "PERL5LIB=" + newPerl5Lib)
 	cmd.Env = append(cmd.Env, "EHIVE_ROOT_DIR=" + ehiveRootDir)
-	cmd.Env = append(cmd.Env, "GUIHIVE_BASEDIR=" + os.Getenv("GUIHIVE_BASEDIR"))
+	cmd.Env = append(cmd.Env, "GUIHIVE_BASEDIR=" + versionRootDir)
 	cmd.Env = append(cmd.Env, "PATH=" + os.Getenv("PATH"))
 
 	cmd.Stdout = &outMsg
@@ -182,7 +182,11 @@ func setEnvVar() error {
 	if err != nil {
 		return err
 	}
-	debug("PROJECT_DIRECTORY: %s\n", projectDirectory)
+	//GUIHIVE_PROJECTDIR
+	if err := os.Setenv("GUIHIVE_PROJECTDIR", projectDirectory+"/"); err != nil {
+		return err
+	}
+	debug("PROJECT_DIRECTORY: %s\n", os.Getenv("GUIHIVE_PROJECTDIR"))
 
 	// PER5LIB
 	newPerl5Lib := addPerl5Lib(path.Clean(projectDirectory + "/scripts/lib"))
@@ -190,12 +194,6 @@ func setEnvVar() error {
 	if (err != nil) {
 		return err
 	}
-
-	//GUIHIVE_BASEDIR
-	if err := os.Setenv("GUIHIVE_BASEDIR", projectDirectory+"/"); err != nil {
-		return err
-	}
-	debug("GUIHIVE_BASEDIR: %s", os.Getenv("GUIHIVE_BASEDIR"))
 
 	return nil
 }
@@ -226,7 +224,7 @@ func main() {
 	errV := setEnvVar()
 	checkError("Problem setting environmental variables: ", errV)
 
-	relPath := os.Getenv("GUIHIVE_BASEDIR")
+	relPath := os.Getenv("GUIHIVE_PROJECTDIR")
 
 	http.Handle("/", http.FileServer(http.Dir(relPath)))
 

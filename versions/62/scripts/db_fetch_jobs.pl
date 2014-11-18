@@ -47,7 +47,7 @@ my $iSortingCols   = $var->{iSortingCols}->[0];
 my $sEcho          = $var->{sEcho}->[0];
 my $version        = $var->{version}->[0];
 
-my $project_dir = $ENV{GUIHIVE_BASEDIR} . "versions/$version/";
+my $project_dir = $ENV{GUIHIVE_BASEDIR};
 my $jobs_template = $project_dir . "static/jobs.html";
 my $input_ids_template = $project_dir . "static/jobs_input_ids.html";
 

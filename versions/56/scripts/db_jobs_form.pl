@@ -40,7 +40,7 @@ my $url = $var->{url}->[0];
 my $version = $var->{version}->[0];
 
 # Set up @INC and paths for static content
-my $project_dir = $ENV{GUIHIVE_BASEDIR} . "versions/$version/";
+my $project_dir = $ENV{GUIHIVE_BASEDIR};
 my $jobs_form_template = $project_dir . "static/jobs_form.html";
 
 # Initialization

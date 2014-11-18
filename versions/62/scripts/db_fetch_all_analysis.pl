@@ -40,7 +40,7 @@ my $var = decode_json($json_data);
 my $url = $var->{url}->[0];
 my $version = $var->{version}->[0];
 
-my $project_dir = $ENV{GUIHIVE_BASEDIR} . "versions/$version/";
+my $project_dir = $ENV{GUIHIVE_BASEDIR};
 
 my $dbConn = Bio::EnsEMBL::Hive::DBSQL::DBAdaptor->new( -no_sql_schema_version_check => 1, -url => $url );
 

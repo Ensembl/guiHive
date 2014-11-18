@@ -42,7 +42,7 @@ my $url = $var->{url}->[0];
 my $analysis_id = $var->{analysis_id}->[0];
 my $version = $var->{version}->[0];
 
-my $project_dir = $ENV{GUIHIVE_BASEDIR} . "versions/$version/";
+my $project_dir = $ENV{GUIHIVE_BASEDIR};
 my $details_template = $project_dir . "static/analysis_details.html";
 
 ## Initialization
