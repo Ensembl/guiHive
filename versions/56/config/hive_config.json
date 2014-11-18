@@ -1,32 +1,5 @@
 {
     "VERSION" : 0.01,
-    "Valley" : {
-        "SubmitWorkersMax"  : 50
-    },
-    "Meadow" : {
-        "LSF" : {
-            "SubmissionOptions"         : "",
-            "TotalRunningWorkersMax"    : 1000,
-            "farm2" : {
-                "SubmissionOptions"  : ""
-            },
-            "pcs4" : {
-                "SubmissionOptions"  : ""
-            },
-            "EBI" : {
-                "SubmissionOptions"  : ""
-            }
-        },
-        "LOCAL" : {
-            "TotalRunningWorkersMax"   : 2,
-            "my-quadcore-desktop" : {
-                "TotalRunningWorkersMax"   : 4
-            },
-            "your-weak-laptop" : {
-                "TotalRunningWorkersMax"   : 1
-            }
-        }
-    },
     "Graph" : {
         "Pad"  : "1.0",
 
