@@ -11,7 +11,7 @@
 
 =head1 LICENSE
 
-    Copyright [1999-2013] Wellcome Trust Sanger Institute and the EMBL-European Bioinformatics Institute
+    Copyright [1999-2014] Wellcome Trust Sanger Institute and the EMBL-European Bioinformatics Institute
 
     Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.
     You may obtain a copy of the License at
@@ -24,7 +24,7 @@
 
 =head1 CONTACT
 
-  Please contact ehive-users@ebi.ac.uk mailing list with questions/suggestions.
+  Please subscribe to the Hive mailing list:  http://listserver.ebi.ac.uk/mailman/listinfo/ehive-users  to discuss Hive-related questions or to be notified of our updates
 
 =cut
 
@@ -32,37 +32,10 @@
 package Bio::EnsEMBL::Hive::Accumulator;
 
 use strict;
-use Scalar::Util ('weaken');
 
-use Bio::EnsEMBL::Utils::Argument ('rearrange');
 use Bio::EnsEMBL::Hive::Utils ('stringify');
 
-sub new {
-    my $class = shift @_;
-
-    my $self = bless {}, $class;
-
-    my ($adaptor, $struct_name, $signature_template) = 
-         rearrange([qw(adaptor struct_name signature_template) ], @_);
-
-    $self->adaptor($adaptor)                        if(defined($adaptor));
-    $self->struct_name($struct_name)                if(defined($struct_name));
-    $self->signature_template($signature_template)  if(defined($signature_template));
-
-    return $self;
-}
-
-
-sub adaptor {
-    my $self = shift @_;
-
-    if(@_) {
-        $self->{'_adaptor'} = shift @_;
-        weaken $self->{'_adaptor'};
-    }
-
-    return $self->{'_adaptor'};
-}
+use base ( 'Bio::EnsEMBL::Hive::Storable' );
 
 
 sub struct_name {
@@ -125,7 +98,6 @@ sub dataflow {
 
     $self->adaptor->store( \@rows );
 }
-
 
 1;
 

@@ -11,7 +11,7 @@
 
 =head1 LICENSE
 
-    Copyright [1999-2013] Wellcome Trust Sanger Institute and the EMBL-European Bioinformatics Institute
+    Copyright [1999-2014] Wellcome Trust Sanger Institute and the EMBL-European Bioinformatics Institute
 
     Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.
     You may obtain a copy of the License at
@@ -24,7 +24,7 @@
 
 =head1 CONTACT
 
-    Please contact ehive-users@ebi.ac.uk mailing list with questions/suggestions.
+    Please subscribe to the Hive mailing list:  http://listserver.ebi.ac.uk/mailman/listinfo/ehive-users  to discuss Hive-related questions or to be notified of our updates
 
 =head1 APPENDIX
 
@@ -38,41 +38,20 @@ package Bio::EnsEMBL::Hive::AnalysisJob;
 
 use strict;
 
-use Bio::EnsEMBL::Utils::Argument ('rearrange');
-
-use Bio::EnsEMBL::Hive::Utils ('destringify');
+use Bio::EnsEMBL::Hive::Utils ('stringify', 'destringify');
 use Bio::EnsEMBL::Hive::DBSQL::AnalysisJobAdaptor;
 use Bio::EnsEMBL::Hive::DBSQL::DataflowRuleAdaptor;
 
-use base (  'Bio::EnsEMBL::Storable',       # inherit dbID(), adaptor() and new() methods
+use base (  'Bio::EnsEMBL::Hive::Storable', # inherit dbID(), adaptor() and new() methods
             'Bio::EnsEMBL::Hive::Params',   # inherit param management functionality
          );
 
 
-sub new {
-    my $class = shift @_;
-
-    my $self = $class->SUPER::new( @_ );    # deal with Storable stuff
-
-    my($analysis_id, $input_id, $param_id_stack, $accu_id_stack, $worker_id, $status, $retry_count, $completed, $runtime_msec, $query_count, $semaphore_count, $semaphored_job_id) =
-        rearrange([qw(analysis_id input_id param_id_stack accu_id_stack worker_id status retry_count completed runtime_msec query_count semaphore_count semaphored_job_id) ], @_);
-
-    $self->analysis_id($analysis_id)            if(defined($analysis_id));
-    $self->input_id($input_id)                  if(defined($input_id));
-    $self->param_id_stack($param_id_stack)      if(defined($param_id_stack));
-    $self->accu_id_stack($accu_id_stack)        if(defined($accu_id_stack));
-    $self->worker_id($worker_id)                if(defined($worker_id));
-    $self->status($status)                      if(defined($status));
-    $self->retry_count($retry_count)            if(defined($retry_count));
-    $self->completed($completed)                if(defined($completed));
-    $self->runtime_msec($runtime_msec)          if(defined($runtime_msec));
-    $self->query_count($query_count)            if(defined($query_count));
-    $self->semaphore_count($semaphore_count)    if(defined($semaphore_count));
-    $self->semaphored_job_id($semaphored_job_id) if(defined($semaphored_job_id));
-
-    return $self;
+sub prev_job_id {
+    my $self = shift;
+    $self->{'_prev_job_id'} = shift if(@_);
+    return $self->{'_prev_job_id'};
 }
-
 
 sub analysis_id {
     my $self = shift;
@@ -82,19 +61,25 @@ sub analysis_id {
 
 sub input_id {
     my $self = shift;
-    $self->{'_input_id'} = shift if(@_);
+    if(@_) {
+        my $input_id = shift @_;
+        $self->{'_input_id'} = ref($input_id) ? stringify($input_id) : $input_id;
+    }
+
     return $self->{'_input_id'};
 }
 
 sub param_id_stack {
     my $self = shift;
     $self->{'_param_id_stack'} = shift if(@_);
+    $self->{'_param_id_stack'} = '' unless(defined($self->{'_param_id_stack'}));
     return $self->{'_param_id_stack'};
 }
 
 sub accu_id_stack {
     my $self = shift;
     $self->{'_accu_id_stack'} = shift if(@_);
+    $self->{'_accu_id_stack'} = '' unless(defined($self->{'_accu_id_stack'}));
     return $self->{'_accu_id_stack'};
 }
 
@@ -107,6 +92,7 @@ sub worker_id {
 sub status {
     my $self = shift;
     $self->{'_status'} = shift if(@_);
+    $self->{'_status'} = ( ($self->semaphore_count>0) ? 'SEMAPHORED' : 'READY' ) unless(defined($self->{'_status'}));
     return $self->{'_status'};
 }
 
@@ -164,11 +150,13 @@ sub dataflow_rules {    # if ever set will prevent the Job from fetching rules f
 
     my $branch_code = Bio::EnsEMBL::Hive::DBSQL::DataflowRuleAdaptor::branch_name_2_code($branch_name_or_code);
 
-    $self->{'_dataflow_rules'}{$branch_code} = shift if(@_);
+    if(@_) {
+        $self->{'_dataflow_rules'}{$branch_code} = shift @_;
+    }
 
-    return $self->{'_dataflow_rules'}
-        ? ( $self->{'_dataflow_rules'}{$branch_code} || [] )
-        : $self->adaptor->db->get_DataflowRuleAdaptor->fetch_all_by_from_analysis_id_and_branch_code($self->analysis_id, $branch_code);
+    $self->{'_dataflow_rules'} ||= $self->adaptor->db->get_DataflowRuleAdaptor->fetch_all_by_from_analysis_id_HASHED_FROM_branch_code( $self->analysis_id );
+
+    return $self->{'_dataflow_rules'}{$branch_code} || [];
 }
 
 sub stdout_file {
@@ -287,7 +275,8 @@ sub dataflow_output_id {
     my $param_id_stack          = $self->param_id_stack();
     my $accu_id_stack           = $self->accu_id_stack();
 
-    my $hive_use_param_stack    = $self->adaptor() && $self->adaptor->db->hive_use_param_stack();
+    my $job_adaptor             = $self->adaptor();
+    my $hive_use_param_stack    = $job_adaptor && $job_adaptor->db->hive_use_param_stack();
 
     if($hive_use_param_stack) {
         if($input_id and ($input_id ne '{}')) {     # add the parent to the param_id_stack if it had non-trivial extra parameters
@@ -331,80 +320,63 @@ sub dataflow_output_id {
 
             $target_analysis_or_table->dataflow( $output_ids_for_this_rule, $self );
 
-        } else {
-
-            if(my $funnel_dataflow_rule_id = $rule->funnel_dataflow_rule_id()) {    # members of a semaphored fan will have to wait in cache until the funnel is created:
+        } elsif(my $funnel_dataflow_rule_id = $rule->funnel_dataflow_rule_id()) {    # members of a semaphored fan will have to wait in cache until the funnel is created:
 
                 my $fan_cache_this_branch = $self->fan_cache()->{$funnel_dataflow_rule_id} ||= [];
-                push @$fan_cache_this_branch, map { [$_, $target_analysis_or_table] } @$output_ids_for_this_rule;
+                push @$fan_cache_this_branch, map { Bio::EnsEMBL::Hive::AnalysisJob->new(
+                                                        'prev_job_id'       => $self->dbID,
+                                                        'analysis_id'       => $target_analysis_or_table->dbID, # expecting an Analysis
+                                                        'input_id'          => $_,
+                                                        'param_id_stack'    => $param_id_stack,
+                                                        'accu_id_stack'     => $accu_id_stack,
+                                                        # semaphored_job_id  => to be set when the $funnel_job has been stored
+                                                    ) } @$output_ids_for_this_rule;
 
-            } else {    # either a semaphored funnel or a non-semaphored dataflow:
+        } else {    # either a semaphored funnel or a non-semaphored dataflow:
 
-                my $fan_cache = delete $self->fan_cache()->{$rule->dbID};   # clear the cache at the same time
+                my $fan_jobs = delete $self->fan_cache()->{$rule->dbID};   # clear the cache at the same time
 
-                if($fan_cache && @$fan_cache) { # a semaphored funnel
-                    my $funnel_job_id;
+                if($fan_jobs && @$fan_jobs) { # a semaphored funnel
+
                     if( (my $funnel_job_count = scalar(@$output_ids_for_this_rule)) !=1 ) {
 
                         $self->transient_error(0);
                         die "Asked to dataflow into $funnel_job_count funnel jobs instead of 1";
 
-                    } elsif($funnel_job_id = Bio::EnsEMBL::Hive::DBSQL::AnalysisJobAdaptor->CreateNewJob(   # if a semaphored funnel job creation succeeded, ...
-                                            -input_id           => $output_ids_for_this_rule->[0],
-                                            -param_id_stack     => $param_id_stack,
-                                            -accu_id_stack      => $accu_id_stack,
-                                            -analysis           => $target_analysis_or_table,
-                                            -prev_job           => $self,
-                                            -semaphore_count    => scalar(@$fan_cache),         # "pre-increase" the semaphore count before creating the dependent jobs
-                                            -semaphored_job_id  => $self->semaphored_job_id(),  # propagate parent's semaphore if any
-                    )) {                                                                                    # ... then create the fan out of the cache:
-                        push @output_job_ids, $funnel_job_id;
+                    } else {
+                        my $funnel_job = Bio::EnsEMBL::Hive::AnalysisJob->new(
+                                            'prev_job_id'       => $self->dbID,
+                                            'analysis_id'       => $target_analysis_or_table->dbID, # expecting an Analysis
+                                            'input_id'          => $output_ids_for_this_rule->[0],
+                                            'param_id_stack'    => $param_id_stack,
+                                            'accu_id_stack'     => $accu_id_stack,
+                                            'semaphore_count'   => scalar(@$fan_jobs),          # "pre-increase" the semaphore count before creating the dependent jobs
+                                            'semaphored_job_id' => $self->semaphored_job_id(),  # propagate parent's semaphore if any
+                        );
 
-                        my $failed_to_create = 0;
+                        my ($funnel_job_id) = @{ $job_adaptor->store_jobs_and_adjust_counters( [ $funnel_job ], 0) };
+                        if($funnel_job_id) {    # if a semaphored funnel job creation succeeded, then store the fan out of the cache:
 
-                        foreach my $pair ( @$fan_cache ) {
-                            my ($output_id, $fan_analysis) = @$pair;
-                            if(my $job_id = Bio::EnsEMBL::Hive::DBSQL::AnalysisJobAdaptor->CreateNewJob(
-                                -input_id           => $output_id,
-                                -param_id_stack     => $param_id_stack,
-                                -accu_id_stack      => $accu_id_stack,
-                                -analysis           => $fan_analysis,
-                                -prev_job           => $self,
-                                -semaphored_job_id  => $funnel_job_id,      # by passing this parameter we request not to propagate semaphores
-                                -push_new_semaphore => 1,                   # inform the adaptor that semaphore count doesn't need up-adjustment
-                            )) {
-                                push @output_job_ids, $job_id;
-                            } else {                                        # count all dependent jobs that failed to create
-                                $failed_to_create++;
+                            foreach my $fan_job (@$fan_jobs) {  # set the funnel in every fan's job:
+                                $fan_job->semaphored_job_id( $funnel_job_id );
                             }
+                            push @output_job_ids, $funnel_job_id, @{ $job_adaptor->store_jobs_and_adjust_counters( $fan_jobs, 1) };
                         }
-                        if($failed_to_create) { # adjust semaphore_count for jobs that failed to create:
-                            $self->adaptor->decrease_semaphore_count_for_jobid( $funnel_job_id, $failed_to_create );
-                        }
-                    } else {    # assume the whole semaphored group of jobs has been created already
                     }
-
                 } else {    # non-semaphored dataflow (but potentially propagating any existing semaphores)
+                    my @non_semaphored_jobs = map { Bio::EnsEMBL::Hive::AnalysisJob->new(
+                                                        'prev_job_id'       => $self->dbID,
+                                                        'analysis_id'       => $target_analysis_or_table->dbID, # expecting an Analysis
+                                                        'input_id'          => $_,
+                                                        'param_id_stack'    => $param_id_stack,
+                                                        'accu_id_stack'     => $accu_id_stack,
+                                                        'semaphored_job_id' => $self->semaphored_job_id(),  # propagate parent's semaphore if any
+                    ) } @$output_ids_for_this_rule;
 
-                    foreach my $output_id ( @$output_ids_for_this_rule ) {
-
-                        if(my $job_id = Bio::EnsEMBL::Hive::DBSQL::AnalysisJobAdaptor->CreateNewJob(
-                            -input_id           => $output_id,
-                            -param_id_stack     => $param_id_stack,
-                            -accu_id_stack      => $accu_id_stack,
-                            -analysis           => $target_analysis_or_table,
-                            -prev_job           => $self,
-                            -semaphored_job_id  => $self->semaphored_job_id(),  # propagate parent's semaphore if any
-                        )) {
-                                # only add the ones that were indeed created:
-                            push @output_job_ids, $job_id;
-                        }
-                    }
+                    push @output_job_ids, @{ $job_adaptor->store_jobs_and_adjust_counters( \@non_semaphored_jobs, 0) };
                 }
-
-            }
-        }
-    }
+        } # /if
+    } # /foreach my $rule
 
     return \@output_job_ids;
 }

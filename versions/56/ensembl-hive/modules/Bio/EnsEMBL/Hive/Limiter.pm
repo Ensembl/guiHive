@@ -11,7 +11,7 @@
 
 =head1 LICENSE
 
-    Copyright [1999-2013] Wellcome Trust Sanger Institute and the EMBL-European Bioinformatics Institute
+    Copyright [1999-2014] Wellcome Trust Sanger Institute and the EMBL-European Bioinformatics Institute
 
     Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.
     You may obtain a copy of the License at
@@ -24,7 +24,7 @@
 
 =head1 CONTACT
 
-  Please contact ehive-users@ebi.ac.uk mailing list with questions/suggestions.
+  Please subscribe to the Hive mailing list:  http://listserver.ebi.ac.uk/mailman/listinfo/ehive-users  to discuss Hive-related questions or to be notified of our updates
 
 =cut
 
@@ -89,7 +89,11 @@ sub preliminary_offer {
     my $multiplier          = $self->multiplier;
 
     if( defined($available_capacity) and defined($multiplier) and ($multiplier >= 0.0) ) {  # if multiplier is negative it is not limiting
-        my $slots_available = int($available_capacity * $multiplier);
+
+        $available_capacity = 0 if($available_capacity<0);
+
+        my $product = $available_capacity * $multiplier;
+        my $slots_available = int( "$product" );            # stringification helps to round up things like 0.1*10 (instead of leaving them at 0.99999999)
 
         return ($slots_available<$slots_asked) ? $slots_available : $slots_asked;
     }

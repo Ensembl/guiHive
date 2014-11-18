@@ -31,7 +31,7 @@
 
 =head1 LICENSE
 
-    Copyright [1999-2013] Wellcome Trust Sanger Institute and the EMBL-European Bioinformatics Institute
+    Copyright [1999-2014] Wellcome Trust Sanger Institute and the EMBL-European Bioinformatics Institute
 
     Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.
     You may obtain a copy of the License at
@@ -44,7 +44,7 @@
 
 =head1 CONTACT
 
-    Please contact ehive-users@ebi.ac.uk mailing list with questions/suggestions.
+    Please subscribe to the Hive mailing list:  http://listserver.ebi.ac.uk/mailman/listinfo/ehive-users  to discuss Hive-related questions or to be notified of our updates
 
 =cut
 
@@ -53,46 +53,10 @@ package Bio::EnsEMBL::Hive::DataflowRule;
 
 use strict;
 
-use Bio::EnsEMBL::Utils::Argument ('rearrange');
-use Bio::EnsEMBL::Utils::Exception ('throw');
-
-use Bio::EnsEMBL::Hive::Utils ('stringify');
+use Bio::EnsEMBL::Hive::Utils ('stringify', 'throw');
 use Bio::EnsEMBL::Hive::DBSQL::AnalysisAdaptor;
 
-use base (  'Bio::EnsEMBL::Storable',       # inherit dbID(), adaptor() and new() methods
-         );
-
-
-=head2 new
-
-  Usage   : Bio::EnsEMBL::Hive::DataflowRule->new(-from_analysis => $fromAnalysis, -to_analysis => $toAnalysis, -branch_code => $branch_code);
-  Function: Constructor for DataflowRule object
-  Returns : Bio::EnsEMBL::Hive::DataflowRule
-  Args    : a rearrange-compatible hash
-            
-=cut
-
-sub new {
-    my $class = shift @_;
-
-    my $self = $class->SUPER::new( @_ );    # deal with Storable stuff
-
-    my ($fromAnalysis, $toAnalysis, $from_analysis_id, $branch_code, $funnel_dataflow_rule_id, $to_analysis_url, $input_id_template ) =
-    rearrange( [ qw (FROM_ANALYSIS TO_ANALYSIS FROM_ANALYSIS_ID BRANCH_CODE FUNNEL_DATAFLOW_RULE_ID TO_ANALYSIS_URL INPUT_ID_TEMPLATE) ], @_ );
-
-        # from objects:
-    $self->from_analysis( $fromAnalysis )           if(defined($fromAnalysis));
-    $self->to_analysis( $toAnalysis )               if(defined($toAnalysis));
-
-        # simple scalars:
-    $self->from_analysis_id($from_analysis_id)      if(defined($from_analysis_id));
-    $self->to_analysis_url($to_analysis_url)        if(defined($to_analysis_url));
-    $self->branch_code($branch_code)                if(defined($branch_code));
-    $self->funnel_dataflow_rule_id($funnel_dataflow_rule_id)  if(defined($funnel_dataflow_rule_id));
-    $self->input_id_template($input_id_template)    if(defined($input_id_template));
-
-    return $self;
-}
+use base ( 'Bio::EnsEMBL::Hive::Storable' );
 
 
 =head2 branch_code
@@ -104,8 +68,9 @@ sub new {
 sub branch_code {
     my $self = shift @_;
 
-    if(@_) { # setter mode
-        $self->{'_branch_code'} = shift @_;
+    if(@_) {
+        my $branch_name_or_code = shift @_;
+        $self->{'_branch_code'} = $branch_name_or_code && Bio::EnsEMBL::Hive::DBSQL::DataflowRuleAdaptor::branch_name_2_code( $branch_name_or_code );
     }
     return $self->{'_branch_code'};
 }
@@ -136,7 +101,7 @@ sub funnel_dataflow_rule_id {
 sub input_id_template {
     my $self = shift @_;
 
-    if(@_) { # setter mode
+    if(@_) {
         my $input_id_template = shift @_;
         $self->{'_input_id_template'} = (ref($input_id_template) ? stringify($input_id_template) : $input_id_template),
     }

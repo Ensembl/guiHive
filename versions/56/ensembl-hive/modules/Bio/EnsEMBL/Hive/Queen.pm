@@ -40,7 +40,7 @@
 
 =head1 LICENSE
 
-    Copyright [1999-2013] Wellcome Trust Sanger Institute and the EMBL-European Bioinformatics Institute
+    Copyright [1999-2014] Wellcome Trust Sanger Institute and the EMBL-European Bioinformatics Institute
 
     Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.
     You may obtain a copy of the License at
@@ -53,7 +53,7 @@
 
 =head1 CONTACT
 
-    Please contact ehive-users@ebi.ac.uk mailing list with questions/suggestions.
+    Please subscribe to the Hive mailing list:  http://listserver.ebi.ac.uk/mailman/listinfo/ehive-users  to discuss Hive-related questions or to be notified of our updates
 
 =head1 APPENDIX
 
@@ -68,8 +68,6 @@ package Bio::EnsEMBL::Hive::Queen;
 use strict;
 use POSIX;
 use File::Path 'make_path';
-
-use Bio::EnsEMBL::Utils::Argument ('rearrange');
 
 use Bio::EnsEMBL::Hive::Utils ('destringify', 'dir_revhash');  # NB: needed by invisible code
 use Bio::EnsEMBL::Hive::AnalysisJob;
@@ -113,13 +111,13 @@ sub object_class {
 =cut
 
 sub create_new_worker {
-    my ($self, @args) = @_;
+    my $self    = shift @_;
+    my %flags   = @_;
 
     my ($meadow_type, $meadow_name, $process_id, $exec_host, $resource_class_id, $resource_class_name,
-        $no_write, $debug, $worker_log_dir, $hive_log_dir, $job_limit, $life_span, $no_cleanup, $retry_throwing_jobs, $can_respecialize) =
-
-    rearrange([qw(meadow_type meadow_name process_id exec_host resource_class_id resource_class_name
-                no_write debug worker_log_dir hive_log_dir job_limit life_span no_cleanup retry_throwing_jobs can_respecialize) ], @args);
+        $no_write, $debug, $worker_log_dir, $hive_log_dir, $job_limit, $life_span, $no_cleanup, $retry_throwing_jobs, $can_respecialize)
+     = @flags{qw(-meadow_type -meadow_name -process_id -exec_host -resource_class_id -resource_class_name
+            -no_write -debug -worker_log_dir -hive_log_dir -job_limit -life_span -no_cleanup -retry_throwing_jobs -can_respecialize)};
 
     foreach my $prev_worker_incarnation (@{ $self->fetch_all( "status!='DEAD' AND meadow_type='$meadow_type' AND meadow_name='$meadow_name' AND process_id='$process_id'" ) }) {
             # so far 'RELOCATED events' has been detected on LSF 9.0 in response to sending signal #99 or #100
@@ -197,10 +195,12 @@ sub create_new_worker {
 =cut
 
 sub specialize_new_worker {
-    my ($self, $worker, @args) = @_;
+    my $self    = shift @_;
+    my $worker  = shift @_;
+    my %flags   = @_;
 
-    my ($analysis_id, $logic_name, $job_id, $force) =
-        rearrange([qw(analysis_id logic_name job_id force) ], @args);
+    my ($analysis_id, $logic_name, $job_id, $force)
+     = @flags{qw(-analysis_id -logic_name -job_id -force)};
 
     if( scalar( grep {defined($_)} ($analysis_id, $logic_name, $job_id) ) > 1) {
         die "At most one of the options {-analysis_id, -logic_name, -job_id} can be set to pre-specialize a Worker";
@@ -212,7 +212,7 @@ sub specialize_new_worker {
     if($job_id or $analysis_id or $logic_name) {    # probably pre-specialized from command-line
 
         if($job_id) {
-            print "resetting and fetching job for job_id '$job_id'\n";
+            warn "resetting and fetching job for job_id '$job_id'\n";
 
             my $job_adaptor = $self->db->get_AnalysisJobAdaptor;
 
@@ -677,9 +677,9 @@ sub get_num_failed_analyses {
     my $filter_analysis_failed = 0;
 
     foreach my $failed_analysis (@$failed_analyses) {
-        print "\t##########################################################\n";
-        print "\t# Too many jobs in analysis '".$failed_analysis->logic_name."' FAILED #\n";
-        print "\t##########################################################\n\n";
+        warn "\t##########################################################\n";
+        warn "\t# Too many jobs in analysis '".$failed_analysis->logic_name."' FAILED #\n";
+        warn "\t##########################################################\n\n";
         if($filter_analysis and ($filter_analysis->dbID == $failed_analysis)) {
             $filter_analysis_failed = 1;
         }
@@ -738,7 +738,7 @@ sub get_remaining_jobs_show_hive_progress {
     ? ((100.0 * ($done+$failed))/$total)
     : 0.0;
   my $remaining = $total - $done - $failed;
-  printf("hive %1.3f%% complete (< %1.3f CPU_hrs) (%d todo + %d done + %d failed = %d total)\n", 
+  warn sprintf("hive %1.3f%% complete (< %1.3f CPU_hrs) (%d todo + %d done + %d failed = %d total)\n",
           $completed, $cpuhrs, $remaining, $done, $failed, $total);
   return $remaining;
 }

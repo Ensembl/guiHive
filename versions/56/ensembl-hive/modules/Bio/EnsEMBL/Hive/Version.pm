@@ -2,14 +2,15 @@
 
 =head1 NAME
 
-    Bio::EnsEMBL::Hive::Configurable
+    Bio::EnsEMBL::Hive::Version
+
+=head1 SYNOPSIS
+
+    use Bio::EnsEMBL::Hive::Version 2.0;
 
 =head1 DESCRIPTION
 
-    A base class for objects that we want to be configurable in the following sense:
-        1) have a pointer to the $config
-        2) know their context
-        3) automatically apply that context when getting and setting
+    Version number of the Hive code.
 
 =head1 LICENSE
 
@@ -31,44 +32,16 @@
 =cut
 
 
-package Bio::EnsEMBL::Hive::Configurable;
+package Bio::EnsEMBL::Hive::Version;
 
 use strict;
 use warnings;
 
+our $VERSION = '2.0';
 
-sub config {
-    my $self = shift @_;
+sub get_code_version {
 
-    if(@_) {
-        $self->{'_config'} = shift @_;
-    }
-    return $self->{'_config'};
+    return $VERSION;
 }
-
-
-sub context {
-    my $self = shift @_;
-
-    if(@_) {
-        $self->{'_context'} = shift @_;
-    }
-    return $self->{'_context'};
-}
-
-
-sub config_get {
-    my $self = shift @_;
-
-    return $self->config->get( @{$self->context}, @_ );
-}
-
-
-sub config_set {
-    my $self = shift @_;
-
-    return $self->config->set( @{$self->context}, @_ );
-}
-
 
 1;

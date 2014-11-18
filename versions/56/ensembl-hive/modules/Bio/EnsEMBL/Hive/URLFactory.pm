@@ -21,7 +21,7 @@
 
 =head1 LICENSE
 
-    Copyright [1999-2013] Wellcome Trust Sanger Institute and the EMBL-European Bioinformatics Institute
+    Copyright [1999-2014] Wellcome Trust Sanger Institute and the EMBL-European Bioinformatics Institute
 
     Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.
     You may obtain a copy of the License at
@@ -34,7 +34,7 @@
 
 =head1 CONTACT
 
-    Please contact ehive-users@ebi.ac.uk mailing list with questions/suggestions.
+    Please subscribe to the Hive mailing list:  http://listserver.ebi.ac.uk/mailman/listinfo/ehive-users  to discuss Hive-related questions or to be notified of our updates
 
 =cut
 
@@ -45,12 +45,9 @@ my $_URLFactory_global_instance;
 package Bio::EnsEMBL::Hive::URLFactory;
 
 use strict;
-use Bio::EnsEMBL::Utils::Argument;
-use Bio::EnsEMBL::Utils::Exception;
 
 use Bio::EnsEMBL::Hive::Utils::URL;
 use Bio::EnsEMBL::Hive::DBSQL::DBAdaptor;
-use Bio::EnsEMBL::Hive::Extensions;
 use Bio::EnsEMBL::Hive::Accumulator;
 use Bio::EnsEMBL::Hive::NakedTable;
 
@@ -97,7 +94,7 @@ sub fetch {
 
         my $dba = ($parsed_url->{'dbconn_part'} =~ m{^\w*:///$} )
             ? $default_dba
-            : $class->create_cached_dba( @$parsed_url{qw(driver user pass host port dbname conn_params)} );
+            : $class->create_cached_dba( @$parsed_url{qw(dbconn_part driver user pass host port dbname conn_params)} );
 
         my $table_name      = $parsed_url->{'table_name'};
         my $tparam_name     = $parsed_url->{'tparam_name'};
@@ -118,17 +115,17 @@ sub fetch {
         } elsif($table_name eq 'accu') {
 
             return Bio::EnsEMBL::Hive::Accumulator->new(
-                    -adaptor            => $dba->get_AccumulatorAdaptor,
-                    -struct_name        => $tparam_name,
-                    -signature_template => $tparam_value,
+                    adaptor            => $dba->get_AccumulatorAdaptor,
+                    struct_name        => $tparam_name,
+                    signature_template => $tparam_value,
             );
 
         } else {
 
             return Bio::EnsEMBL::Hive::NakedTable->new(
-                -adaptor    => $dba->get_NakedTableAdaptor,
-                -table_name => $table_name,
-                $tparam_value ? (-insertion_method => $tparam_value) : ()
+                adaptor    => $dba->get_NakedTableAdaptor,
+                table_name => $table_name,
+                $tparam_value ? (insertion_method => $tparam_value) : ()
             );
         }
     }
@@ -136,7 +133,7 @@ sub fetch {
 }
 
 sub create_cached_dba {
-    my ($class, $driver, $user, $pass, $host, $port, $dbname, $conn_params) = @_;
+    my ($class, $dbconn_part, $driver, $user, $pass, $host, $port, $dbname, $conn_params) = @_;
 
     if($driver eq 'mysql') {
         $user ||= 'ensro';
@@ -163,7 +160,13 @@ sub create_cached_dba {
 
         eval "require $module";
 
-        $_URLFactory_global_instance->{$connectionKey} = $dba = $module->new (
+        $_URLFactory_global_instance->{$connectionKey} = $dba =
+        $type eq 'hive'
+          ? $module->new(
+            -url    => $dbconn_part,
+            -disconnect_when_inactive => $discon,
+            -no_sql_schema_version_check => $nosqlvc,
+        ) : $module->new(
             -driver => $driver,
             -host   => $host,
             -port   => $port,
@@ -172,7 +175,6 @@ sub create_cached_dba {
             -dbname => $dbname,
             -species => $dbname,
             -disconnect_when_inactive => $discon,
-            -no_sql_schema_version_check => $nosqlvc,
         );
     }
     return $dba;

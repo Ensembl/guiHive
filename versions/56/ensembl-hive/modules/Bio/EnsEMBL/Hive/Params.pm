@@ -50,7 +50,7 @@ By inheriting from this module you make your module able to deal with parameters
 
 =head1 LICENSE
 
-    Copyright [1999-2013] Wellcome Trust Sanger Institute and the EMBL-European Bioinformatics Institute
+    Copyright [1999-2014] Wellcome Trust Sanger Institute and the EMBL-European Bioinformatics Institute
 
     Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.
     You may obtain a copy of the License at
@@ -63,7 +63,7 @@ By inheriting from this module you make your module able to deal with parameters
 
 =head1 CONTACT
 
-    Please contact ehive-users@ebi.ac.uk mailing list with questions/suggestions.
+    Please subscribe to the Hive mailing list:  http://listserver.ebi.ac.uk/mailman/listinfo/ehive-users  to discuss Hive-related questions or to be notified of our updates
 
 =cut
 
@@ -110,6 +110,9 @@ sub param_init {
             if($strict_hash_format or $source=~/^\{.*\}$/) {
                 my $param_hash = eval($source) || {};
                 if($@ or (ref($param_hash) ne 'HASH')) {
+                    if($self->can('transient_error')) {
+                        $self->transient_error(0);
+                    }
                     die "Expected a {'param'=>'value'} hashref, but got the following string instead: '$source'\n";
                 }
                 $source = $param_hash;
@@ -310,10 +313,10 @@ sub mysql_conn { # an example stringification formatter (others can be defined h
     my ($self, $db_conn) = @_;
 
     if(ref($db_conn) eq 'HASH') {
-        return "--host=$db_conn->{-host} --port=$db_conn->{-port} --user='$db_conn->{-user}' --pass='$db_conn->{-pass}' $db_conn->{-dbname}";
+        return "--host=$db_conn->{-host} --port=$db_conn->{-port} --user='$db_conn->{-user}' --password='$db_conn->{-pass}' $db_conn->{-dbname}";
     } else {
         my $dbc = go_figure_dbc( $db_conn );
-        return '--host='.$dbc->host.' --port='.$dbc->port." --user='".$dbc->username."' --pass='".$dbc->password."' ".$dbc->dbname;
+        return '--host='.$dbc->host.' --port='.$dbc->port." --user='".$dbc->username."' --password='".$dbc->password."' ".$dbc->dbname;
     }
 }
 

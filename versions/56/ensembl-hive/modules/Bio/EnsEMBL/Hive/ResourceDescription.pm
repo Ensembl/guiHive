@@ -19,7 +19,7 @@
 
 =head1 LICENSE
 
-    Copyright [1999-2013] Wellcome Trust Sanger Institute and the EMBL-European Bioinformatics Institute
+    Copyright [1999-2014] Wellcome Trust Sanger Institute and the EMBL-European Bioinformatics Institute
 
     Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.
     You may obtain a copy of the License at
@@ -32,7 +32,7 @@
 
 =head1 CONTACT
 
-    Please contact ehive-users@ebi.ac.uk mailing list with questions/suggestions.
+    Please subscribe to the Hive mailing list:  http://listserver.ebi.ac.uk/mailman/listinfo/ehive-users  to discuss Hive-related questions or to be notified of our updates
 
 =cut
 
@@ -40,38 +40,8 @@
 package Bio::EnsEMBL::Hive::ResourceDescription;
 
 use strict;
-use Scalar::Util ('weaken');
 
-use Bio::EnsEMBL::Utils::Argument ('rearrange');
-
-sub new {
-    my $class = shift @_;
-
-    my $self = bless {}, $class;
-
-    my ($adaptor, $resource_class_id, $meadow_type, $submission_cmd_args, $worker_cmd_args) =
-         rearrange([qw(adaptor resource_class_id meadow_type submission_cmd_args worker_cmd_args) ], @_);
-
-    $self->adaptor($adaptor) if(defined($adaptor));
-    $self->resource_class_id($resource_class_id);
-    $self->meadow_type($meadow_type);
-    $self->submission_cmd_args($submission_cmd_args);
-    $self->worker_cmd_args($worker_cmd_args);
-
-    return $self;
-}
-
-
-sub adaptor {
-    my $self = shift @_;
-
-    if(@_) {
-        $self->{'_adaptor'} = shift @_;
-        weaken $self->{'_adaptor'};
-    }
-
-    return $self->{'_adaptor'};
-}
+use base ( 'Bio::EnsEMBL::Hive::Storable' );
 
 
 sub resource_class_id {

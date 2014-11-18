@@ -31,7 +31,7 @@
 
 =head1 LICENSE
 
-    Copyright [1999-2013] Wellcome Trust Sanger Institute and the EMBL-European Bioinformatics Institute
+    Copyright [1999-2014] Wellcome Trust Sanger Institute and the EMBL-European Bioinformatics Institute
 
     Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.
     You may obtain a copy of the License at
@@ -44,7 +44,7 @@
 
 =head1 CONTACT
 
-    Please contact ehive-users@ebi.ac.uk mailing list with questions/suggestions.
+    Please subscribe to the Hive mailing list:  http://listserver.ebi.ac.uk/mailman/listinfo/ehive-users  to discuss Hive-related questions or to be notified of our updates
 
 =cut
 
@@ -127,14 +127,14 @@ sub write_output {
     my $chunk_size   = 0;   # number of sequences in the current chunk
     my $chunk_name   = $output_prefix.$chunk_number.$output_suffix;
     my $chunk_seqio  = Bio::SeqIO->new(-file => '>'.$chunk_name, -format => 'fasta');
-
+    
     while (my $seq_object = $input_seqio->next_seq) {
+	$chunk_seqio->write_seq( $seq_object );
+	
         if((my $seq_length = $seq_object->length()) + $chunk_length <= $max_chunk_length) {
-
-                # add to the current chunk:
-            $chunk_seqio->write_seq( $seq_object );
             $chunk_length += $seq_length;
             $chunk_size   += 1;
+
         } else {
 
                 # dataflow the current chunk:
@@ -162,6 +162,8 @@ sub write_output {
             'chunk_length' => $chunk_length,
             'chunk_size' => $chunk_size
         }, 2);
+    } else {
+	unlink $chunk_name unless (stat($chunk_name))[7];
     }
 }
 

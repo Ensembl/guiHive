@@ -15,7 +15,7 @@
 
 =head1 LICENSE
 
-    Copyright [1999-2013] Wellcome Trust Sanger Institute and the EMBL-European Bioinformatics Institute
+    Copyright [1999-2014] Wellcome Trust Sanger Institute and the EMBL-European Bioinformatics Institute
 
     Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.
     You may obtain a copy of the License at
@@ -28,7 +28,7 @@
 
 =head1 CONTACT
 
-    Please contact ehive-users@ebi.ac.uk mailing list with questions/suggestions.
+    Please subscribe to the Hive mailing list:  http://listserver.ebi.ac.uk/mailman/listinfo/ehive-users  to discuss Hive-related questions or to be notified of our updates
 
 =head1 APPENDIX
 
@@ -42,62 +42,20 @@ package Bio::EnsEMBL::Hive::DBSQL::AnalysisDataAdaptor;
 
 use strict;
 
-use base ('Bio::EnsEMBL::DBSQL::BaseAdaptor');
+use base ('Bio::EnsEMBL::Hive::DBSQL::NakedTableAdaptor');
 
 
-sub fetch_by_dbID {
-  my ($self, $data_id) = @_;
-
-  my $sql = "SELECT data FROM analysis_data WHERE analysis_data_id = ?";
-  my $sth = $self->prepare($sql);
-  $sth->execute($data_id);
-
-  my ($data) = $sth->fetchrow_array();
-  $sth->finish();
-  return $data;
-}
-
-#
-# STORE METHODS
-#
-################
-
-sub store {
-  my ($self, $data) = @_;
-  
-  return 0 unless($data);
-  
-  my $sth = $self->prepare("INSERT INTO analysis_data (data) VALUES (?)");
-  $sth->execute($data);
-  my $data_id = $self->dbc->db_handle->last_insert_id(undef, undef, 'analysis_data', 'analysis_data_id');
-  $sth->finish;
-
-  return $data_id;
+sub default_table_name {
+    return 'analysis_data';
 }
 
 
 sub store_if_needed {
-  my ($self, $data) = @_;
-  my $data_id;
+    my ($self, $data) = @_;
 
-  return 0 unless($data);
+    my ($stored_hash) = $self->store({'data'=> $data}, 1);
 
-  my $sth = $self->prepare("SELECT analysis_data_id FROM analysis_data WHERE data = ?");
-  $sth->execute($data);
-  ($data_id) = $sth->fetchrow_array();
-  $sth->finish;
-
-  if($data_id) {
-    # print("data already stored as id $data_id\n");
-    return $data_id;
-  }
-
-  return $self->store($data);
+    return '_extended_data_id ' . $stored_hash->{'analysis_data_id'};
 }
 
 1;
-
-
-
-
-

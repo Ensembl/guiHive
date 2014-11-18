@@ -11,7 +11,7 @@
 
 =head1 LICENSE
 
-    Copyright [1999-2013] Wellcome Trust Sanger Institute and the EMBL-European Bioinformatics Institute
+    Copyright [1999-2014] Wellcome Trust Sanger Institute and the EMBL-European Bioinformatics Institute
 
     Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.
     You may obtain a copy of the License at
@@ -24,7 +24,7 @@
 
 =head1 CONTACT
 
-  Please contact ehive-users@ebi.ac.uk mailing list with questions/suggestions.
+  Please subscribe to the Hive mailing list:  http://listserver.ebi.ac.uk/mailman/listinfo/ehive-users  to discuss Hive-related questions or to be notified of our updates
 
 =cut
 
@@ -32,36 +32,8 @@
 package Bio::EnsEMBL::Hive::NakedTable;
 
 use strict;
-use Scalar::Util ('weaken');
 
-use Bio::EnsEMBL::Utils::Argument ('rearrange');
-
-sub new {
-    my $class = shift @_;
-
-    my $self = bless {}, $class;
-
-    my ($adaptor, $table_name, $insertion_method) = 
-         rearrange([qw(adaptor table_name insertion_method) ], @_);
-
-    $self->adaptor($adaptor)                    if(defined($adaptor));
-    $self->table_name($table_name)              if(defined($table_name));
-    $self->insertion_method($insertion_method)  if(defined($insertion_method));
-
-    return $self;
-}
-
-
-sub adaptor {
-    my $self = shift @_;
-
-    if(@_) {
-        $self->{'_adaptor'} = shift @_;
-        weaken $self->{'_adaptor'};
-    }
-
-    return $self->{'_adaptor'};
-}
+use base ( 'Bio::EnsEMBL::Hive::Storable' );
 
 
 sub table_name {
@@ -73,6 +45,7 @@ sub table_name {
     return $self->{'_table_name'};
 }
 
+
 sub insertion_method {
     my $self = shift @_;
 
@@ -81,6 +54,7 @@ sub insertion_method {
     }
     return $self->{'_insertion_method'} || 'INSERT_IGNORE';
 }
+
 
 sub url {
     my $self    = shift @_;
@@ -93,6 +67,7 @@ sub url {
         return;
     }
 }
+
 
 sub dataflow {
     my ( $self, $output_ids, $emitting_job ) = @_;
@@ -116,7 +91,6 @@ sub dataflow {
     }
     $adaptor->store( \@rows );
 }
-
 
 1;
 

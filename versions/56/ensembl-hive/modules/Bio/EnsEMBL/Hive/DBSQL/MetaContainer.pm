@@ -14,7 +14,7 @@
 
 =head1 LICENSE
 
-    Copyright [1999-2013] Wellcome Trust Sanger Institute and the EMBL-European Bioinformatics Institute
+    Copyright [1999-2014] Wellcome Trust Sanger Institute and the EMBL-European Bioinformatics Institute
 
     Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.
     You may obtain a copy of the License at
@@ -27,7 +27,7 @@
 
 =head1 CONTACT
 
-    Please contact ehive-users@ebi.ac.uk mailing list with questions/suggestions.
+    Please subscribe to the Hive mailing list:  http://listserver.ebi.ac.uk/mailman/listinfo/ehive-users  to discuss Hive-related questions or to be notified of our updates
 
 =cut
 
@@ -37,7 +37,7 @@ package Bio::EnsEMBL::Hive::DBSQL::MetaContainer;
 use strict;
 use Bio::EnsEMBL::Hive::Utils ('stringify', 'destringify');
 
-use base ('Bio::EnsEMBL::Hive::DBSQL::NakedTableAdaptor', 'Bio::EnsEMBL::DBSQL::BaseMetaContainer');
+use base ('Bio::EnsEMBL::Hive::DBSQL::NakedTableAdaptor');
 
 
 sub default_table_name {

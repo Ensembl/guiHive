@@ -16,7 +16,7 @@
 
 =head1 LICENSE
 
-    Copyright [1999-2013] Wellcome Trust Sanger Institute and the EMBL-European Bioinformatics Institute
+    Copyright [1999-2014] Wellcome Trust Sanger Institute and the EMBL-European Bioinformatics Institute
 
     Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.
     You may obtain a copy of the License at
@@ -29,7 +29,7 @@
 
 =head1 CONTACT
 
-    Please contact ehive-users@ebi.ac.uk mailing list with questions/suggestions.
+    Please subscribe to the Hive mailing list:  http://listserver.ebi.ac.uk/mailman/listinfo/ehive-users  to discuss Hive-related questions or to be notified of our updates
 
 =head1 APPENDIX
 
@@ -43,166 +43,95 @@ package Bio::EnsEMBL::Hive::DBSQL::AnalysisJobAdaptor;
 
 use strict;
 
-use Bio::EnsEMBL::Utils::Argument ('rearrange');
-use Bio::EnsEMBL::Utils::Exception ('throw');
-
 use Bio::EnsEMBL::Hive::DBSQL::AnalysisDataAdaptor;
 use Bio::EnsEMBL::Hive::AnalysisJob;
+use Bio::EnsEMBL::Hive::DBSQL::DataflowRuleAdaptor;
 use Bio::EnsEMBL::Hive::Utils ('stringify');
 
-use base ('Bio::EnsEMBL::DBSQL::BaseAdaptor');
-
-###############################################################################
-#
-#  CLASS methods
-#
-###############################################################################
-
-=head2 CreateNewJob
-
-  Args       : -input_id => string of input_id which will be passed to run the job (or a Perl hash that will be automagically stringified)
-               -analysis => Bio::EnsEMBL::Hive::Analysis object stored in the database
-               -prev_job_id => (optional) job_id of job that is creating this job.
-                               Used purely for book keeping.
-  Example    : $job_id = Bio::EnsEMBL::Hive::DBSQL::AnalysisJobAdaptor->CreateNewJob(
-                                    -input_id => 'my input data',
-                                    -analysis => $myAnalysis);
-  Description: uses the analysis object to get the db connection from the adaptor to store a new
-               job in a hive.  This is a class level method since it does not have any state.
-               Also updates corresponding analysis_stats by incrementing total_job_count,
-               ready_job_count and flagging the incremental update by changing the status
-               to 'LOADING' (but only if the analysis is not blocked).
-               NOTE: no AnalysisJob object is created in memory as the result of this call; it is simply a "fast store".
-  Returntype : int job_id on database analysis is from.
-  Exceptions : thrown if either -input_id or -analysis are not properly defined
-  Caller     : general
-
-=cut
-
-sub CreateNewJob {
-  my ($class, @args) = @_;
-
-  my ($input_id, $param_id_stack, $accu_id_stack, $analysis, $prev_job, $prev_job_id, $semaphore_count, $semaphored_job_id, $push_new_semaphore) =
-     rearrange([qw(input_id param_id_stack accu_id_stack analysis prev_job prev_job_id semaphore_count semaphored_job_id push_new_semaphore)], @args);
-
-  throw("must define input_id") unless($input_id);
-  throw("must define analysis") unless($analysis);
-  throw("analysis must be [Bio::EnsEMBL::Hive::Analysis] not a [$analysis]")
-    unless($analysis->isa('Bio::EnsEMBL::Hive::Analysis'));
-  throw("analysis must have adaptor connected to database")
-    unless($analysis->adaptor and $analysis->adaptor->db);
-  throw("Please specify prev_job object instead of prev_job_id if available") if ($prev_job_id);   # 'obsolete' message
-
-    $prev_job_id = $prev_job && $prev_job->dbID();
-
-    if(ref($input_id)) {  # let's do the Perl hash stringification centrally rather than in many places:
-        $input_id = stringify($input_id);
-    }
-
-    if(length($input_id) >= 255) {
-        print "input_id is '$input_id', length = ".length($input_id)."\n";
-        my $extended_data_id = $analysis->adaptor->db->get_AnalysisDataAdaptor->store_if_needed($input_id);
-        $input_id = "_extended_data_id $extended_data_id";
-    }
-
-    if(length($param_id_stack) >= 64) {
-        print "param_id_stack is '$param_id_stack', length = ".length($param_id_stack)."\n";
-        my $extended_data_id = $analysis->adaptor->db->get_AnalysisDataAdaptor->store_if_needed($param_id_stack);
-        $param_id_stack = "_extended_data_id $extended_data_id";
-    }
-
-    if(length($accu_id_stack) >= 64) {
-        print "accu_id_stack is '$accu_id_stack', length = ".length($accu_id_stack)."\n";
-        my $extended_data_id = $analysis->adaptor->db->get_AnalysisDataAdaptor->store_if_needed($accu_id_stack);
-        $accu_id_stack = "_extended_data_id $extended_data_id";
-    }
+use base ('Bio::EnsEMBL::Hive::DBSQL::ObjectAdaptor');
 
 
-  $semaphore_count ||= 0;
-
-  my $dba = $analysis->adaptor->db;
-  my $dbc = $dba->dbc;
-  my $insertion_method  = { 'mysql' => 'INSERT IGNORE', 'sqlite' => 'INSERT OR IGNORE', 'pgsql' => 'INSERT' }->{ $dbc->driver };
-  my $job_status        = ($semaphore_count>0) ? 'SEMAPHORED' : 'READY';
-  my $analysis_id       = $analysis->dbID();
-
-    $dbc->do( "SELECT 1 FROM job WHERE job_id=$semaphored_job_id FOR UPDATE" ) if($semaphored_job_id and ($dbc->driver ne 'sqlite'));
-
-  my $sql = qq{$insertion_method INTO job 
-              (input_id, param_id_stack, accu_id_stack, prev_job_id,analysis_id,status,semaphore_count,semaphored_job_id)
-              VALUES (?,?,?,?,?,?,?,?)};
- 
-  my $sth       = $dbc->prepare($sql);
-  my @values    = ($input_id, $param_id_stack || '', $accu_id_stack || '', $prev_job_id, $analysis_id, $job_status, $semaphore_count, $semaphored_job_id);
-
-  my $return_code = $sth->execute(@values)
-            # using $return_code in boolean context allows to skip the value '0E0' ('no rows affected') that Perl treats as zero but regards as true:
-        or die "Could not run\n\t$sql\nwith data:\n\t(".join(',', @values).')';
-
-  my $job_id;
-  if($return_code > 0) {    # <--- for the same reason we have to be explicitly numeric here:
-      $job_id = $dbc->db_handle->last_insert_id(undef, undef, 'job', 'job_id');
-      $sth->finish;
-
-      if($semaphored_job_id and !$push_new_semaphore) {     # if we are not creating a new semaphore (where dependent jobs have already been counted),
-                                                            # but rather propagating an existing one (same or other level), we have to up-adjust the counter
-            $prev_job->adaptor->increase_semaphore_count_for_jobid( $semaphored_job_id );
-      }
-
-      unless($dba->hive_use_triggers()) {
-          $dbc->do(qq{
-            UPDATE analysis_stats
-               SET total_job_count=total_job_count+1
-          }
-          .(($job_status eq 'READY')
-                  ? " ,ready_job_count=ready_job_count+1 "
-                  : " ,semaphored_job_count=semaphored_job_count+1 "
-          ).(($dbc->driver eq 'pgsql')
-          ? " ,status = CAST(CASE WHEN status!='BLOCKED' THEN 'LOADING' ELSE 'BLOCKED' END AS analysis_status) "
-          : " ,status =      CASE WHEN status!='BLOCKED' THEN 'LOADING' ELSE 'BLOCKED' END "
-          )." WHERE analysis_id=$analysis_id ");
-      }
-  } else {  #   if we got 0E0, it means "ignored insert collision" (job created previously), so we simply return an undef and deal with it outside
-  }
-
-  return $job_id;
+sub default_table_name {
+    return 'job';
 }
 
-###############################################################################
-#
-#  INSTANCE methods
-#
-###############################################################################
 
-=head2 fetch_by_dbID
+sub object_class {
+    return 'Bio::EnsEMBL::Hive::AnalysisJob';
+}
 
-  Arg [1]    : int $id
-               the unique database identifier for the feature to be obtained
-  Example    : $feat = $adaptor->fetch_by_dbID(1234);
-  Description: Returns the AnalysisJob defined by the job_id $id.
-  Returntype : Bio::EnsEMBL::Hive::AnalysisJob
-  Exceptions : thrown if $id is not defined
-  Caller     : general
+
+sub default_overflow_limit {
+    return {
+        'input_id'          => 255,
+        'param_id_stack'    =>  64,
+        'accu_id_stack'     =>  64,
+    };
+}
+
+
+=head2 store_jobs_and_adjust_counters
+
+  Arg [1]    : arrayref of Bio::EnsEMBL::Hive::AnalysisJob $jobs_to_store
+  Arg [2]    : (optional) boolean $push_new_semaphore
+  Example    : my @output_job_ids = @{ $job_adaptor->store_jobs_and_adjust_counters( \@jobs_to_store ) };
+  Description: Attempts to store a list of jobs, returns an arrayref of successfully stored job_ids
+  Returntype : Reference to list of job_dbIDs
 
 =cut
 
-sub fetch_by_dbID {
-  my ($self,$id) = @_;
+sub store_jobs_and_adjust_counters {
+    my ($self, $jobs, $push_new_semaphore) = @_;
 
-  unless(defined $id) {
-    throw("fetch_by_dbID must have an id");
-  }
+    my $dbc                                 = $self->dbc;
 
-  my @tabs = $self->_tables;
+        # NB: our use patterns assume all jobs from the same storing batch share the same semaphored_job_id:
+    my $semaphored_job_id                   = scalar(@$jobs) && $jobs->[0]->semaphored_job_id();
+    my $need_to_increase_semaphore_count    = ($semaphored_job_id && !$push_new_semaphore);
 
-  my ($name, $syn) = @{$tabs[0]};
+    my @output_job_ids  = ();
+    my $failed_to_store = 0;
 
-  #construct a constraint like 't1.table1_id = 1'
-  my $constraint = "${syn}.${name}_id = $id";
+    foreach my $job (@$jobs) {
+            # avoid deadlocks when dataflowing under transactional mode (used in Ortheus Runnable for example):
+        $dbc->do( "SELECT 1 FROM job WHERE job_id=$semaphored_job_id FOR UPDATE" ) if($need_to_increase_semaphore_count and ($dbc->driver ne 'sqlite'));
 
-  #return first element of _generic_fetch list
-  my ($obj) = @{$self->_generic_fetch($constraint)};
-  return $obj;
+        my ($job, $stored_this_time) = $self->store( $job, 0 );
+
+        if($stored_this_time) {
+            if($need_to_increase_semaphore_count) { # if we are not creating a new semaphore (where dependent jobs have already been counted),
+                                                    # but rather propagating an existing one (same or other level), we have to up-adjust the counter
+                $self->increase_semaphore_count_for_jobid( $semaphored_job_id );
+            }
+
+            unless($self->db->hive_use_triggers()) {
+                $dbc->do(qq{
+                        UPDATE analysis_stats
+                        SET total_job_count=total_job_count+1
+                    }
+                    .(($job->status eq 'READY')
+                        ? " ,ready_job_count=ready_job_count+1 "
+                        : " ,semaphored_job_count=semaphored_job_count+1 "
+                    ).(($dbc->driver eq 'pgsql')
+                        ? " ,status = CAST(CASE WHEN status!='BLOCKED' THEN 'LOADING' ELSE 'BLOCKED' END AS analysis_status) "
+                        : " ,status =      CASE WHEN status!='BLOCKED' THEN 'LOADING' ELSE 'BLOCKED' END "
+                    )." WHERE analysis_id=".$job->analysis_id
+                );
+            }
+
+            push @output_job_ids, $job->dbID();
+
+        } else {
+            $failed_to_store++;
+        }
+    }
+
+        # adjust semaphore_count for jobs that failed to be stored (but have been pre-counted during funnel's creation):
+    if($push_new_semaphore and $failed_to_store) {
+        $self->decrease_semaphore_count_for_jobid( $semaphored_job_id, $failed_to_store );
+    }
+
+    return \@output_job_ids;
 }
 
 
@@ -222,25 +151,26 @@ sub fetch_all_by_analysis_id_status {
     my ($self, $analysis_id, $status, $retry_count_at_least) = @_;
 
     my @constraints = ();
-    push @constraints, "j.analysis_id=$analysis_id"             if ($analysis_id);
-    push @constraints, "j.status='$status'"                     if ($status);
-    push @constraints, "j.retry_count >= $retry_count_at_least" if ($retry_count_at_least);
-    return $self->_generic_fetch( join(" AND ", @constraints) );
+    push @constraints, "analysis_id=$analysis_id"             if ($analysis_id);
+    push @constraints, "status='$status'"                     if ($status);
+    push @constraints, "retry_count >= $retry_count_at_least" if ($retry_count_at_least);
+
+    return $self->fetch_all( join(" AND ", @constraints) );
 }
 
 
 sub fetch_some_by_analysis_id_limit {
     my ($self, $analysis_id, $limit) = @_;
 
-    return $self->_generic_fetch( "j.analysis_id = '$analysis_id'", undef, "LIMIT $limit" );
+    return $self->fetch_all( "analysis_id = '$analysis_id' LIMIT $limit" );
 }
 
 
 sub fetch_all_incomplete_jobs_by_worker_id {
     my ($self, $worker_id) = @_;
 
-    my $constraint = "j.status IN ('COMPILATION','PRE_CLEANUP','FETCH_INPUT','RUN','WRITE_OUTPUT','POST_CLEANUP') AND j.worker_id='$worker_id'";
-    return $self->_generic_fetch($constraint);
+    my $constraint = "status IN ('CLAIMED','PRE_CLEANUP','FETCH_INPUT','RUN','WRITE_OUTPUT','POST_CLEANUP') AND worker_id='$worker_id'";
+    return $self->fetch_all($constraint);
 }
 
 
@@ -258,144 +188,11 @@ sub fetch_by_url_query {
     }
 }
 
-#
-# INTERNAL METHODS
-#
-###################
-
-sub _generic_fetch {
-  my ($self, $constraint, $join, $final_clause) = @_;
-  
-  my @tables = $self->_tables;
-  my $columns = join(', ', $self->_columns());
-  
-  if ($join) {
-    foreach my $single_join (@{$join}) {
-      my ($tablename, $condition, $extra_columns) = @{$single_join};
-      if ($tablename && $condition) {
-        push @tables, $tablename;
-        
-        if($constraint) {
-          $constraint .= " AND $condition";
-        } else {
-          $constraint = " $condition";
-        }
-      } 
-      if ($extra_columns) {
-        $columns .= ", " . join(', ', @{$extra_columns});
-      }
-    }
-  }
-      
-  #construct a nice table string like 'table1 t1, table2 t2'
-  my $tablenames = join(', ', map({ join(' ', @$_) } @tables));
-
-  my $sql = "SELECT $columns FROM $tablenames";
-
-  my $default_where = $self->_default_where_clause;
-
-  #append a where clause if it was defined
-  if($constraint) { 
-    $sql .= " WHERE $constraint ";
-    if($default_where) {
-      $sql .= " AND $default_where ";
-    }
-  } elsif($default_where) {
-    $sql .= " WHERE $default_where ";
-  }
-
-  #append additional clauses which may have been defined
-  $sql .= " $final_clause" if($final_clause);
-
-  my $sth = $self->prepare($sql);
-  $sth->execute;  
-
-  #print STDOUT $sql,"\n";
-
-  return $self->_objs_from_sth($sth);
-}
-
-
-sub _tables {
-  my $self = shift;
-
-  return (['job', 'j']);
-}
-
-
-sub _columns {
-  my $self = shift;
-
-  return qw (j.job_id  
-             j.prev_job_id
-             j.analysis_id	      
-             j.input_id 
-             j.param_id_stack 
-             j.accu_id_stack 
-             j.worker_id	      
-             j.status 
-             j.retry_count          
-             j.completed
-             j.runtime_msec
-             j.query_count
-             j.semaphore_count
-             j.semaphored_job_id
-            );
-}
-
-
-sub _objs_from_sth {
-  my ($self, $sth) = @_;
-  
-  my %column;
-  $sth->bind_columns( \( @column{ @{$sth->{NAME_lc} } } ));
-
-  my @jobs = ();
-    
-  while ($sth->fetch()) {
-
-    my $input_id = ($column{'input_id'} =~ /^_ext(?:\w+)_data_id (\d+)$/)
-            ? $self->db->get_AnalysisDataAdaptor->fetch_by_dbID($1)
-            : $column{'input_id'};
-
-    my $param_id_stack = ($column{'param_id_stack'} =~ /^_ext(?:\w+)_data_id (\d+)$/)
-            ? $self->db->get_AnalysisDataAdaptor->fetch_by_dbID($1)
-            : $column{'param_id_stack'};
-
-    my $accu_id_stack = ($column{'accu_id_stack'} =~ /^_ext(?:\w+)_data_id (\d+)$/)
-            ? $self->db->get_AnalysisDataAdaptor->fetch_by_dbID($1)
-            : $column{'accu_id_stack'};
-
-
-    my $job = Bio::EnsEMBL::Hive::AnalysisJob->new(
-        -dbID               => $column{'job_id'},
-        -analysis_id        => $column{'analysis_id'},
-        -input_id           => $input_id,
-        -param_id_stack     => $param_id_stack,
-        -accu_id_stack      => $accu_id_stack,
-        -worker_id          => $column{'worker_id'},
-        -status             => $column{'status'},
-        -retry_count        => $column{'retry_count'},
-        -completed          => $column{'completed'},
-        -runtime_msec       => $column{'runtime_msec'},
-        -query_count        => $column{'query_count'},
-        -semaphore_count    => $column{'semaphore_count'},
-        -semaphored_job_id  => $column{'semaphored_job_id'},
-        -adaptor            => $self,
-    );
-
-    push @jobs, $job;    
-  }
-  $sth->finish;
-  
-  return \@jobs
-}
-
-
+########################
 #
 # STORE / UPDATE METHODS
 #
-################
+########################
 
 
 sub decrease_semaphore_count_for_jobid {    # used in semaphore annihilation or unsuccessful creation
@@ -495,7 +292,7 @@ sub store_out_files {
 
   Arg [1]    : int $job_id
   Arg [2]    : int $worker_id (optional)
-  Description: resets a job to to 'READY' (if no $worker_id given) or directly to 'CLAIMED' so it can be run again, and fetches it..
+  Description: resets a job to to 'READY' (if no $worker_id given) or directly to 'CLAIMED' so it can be run again, and fetches it.
                NB: Will also reset a previously 'SEMAPHORED' job to READY.
                The retry_count will be set to 1 for previously run jobs (partially or wholly) to trigger PRE_CLEANUP for them,
                but will not change retry_count if a job has never *really* started.
@@ -513,7 +310,7 @@ sub reset_or_grab_job_by_dbID {
         # Note: the order of the fields being updated is critical!
     my $sql = qq{
         UPDATE job
-           SET retry_count = CASE WHEN (status='COMPILATION' OR status='READY' OR status='CLAIMED') THEN retry_count ELSE 1 END
+           SET retry_count = CASE WHEN (status='READY' OR status='CLAIMED') THEN retry_count ELSE 1 END
              , status=?
              , worker_id=?
          WHERE job_id=?
@@ -525,8 +322,7 @@ sub reset_or_grab_job_by_dbID {
         or die "Could not run\n\t$sql\nwith data:\n\t(".join(',', @values).')';
     $sth->finish;
 
-    my $constraint = "j.job_id='$job_id' AND j.status='$new_status'";
-    my ($job) = @{ $self->_generic_fetch($constraint) };
+    my $job = $self->fetch_by_job_id_AND_status($job_id, $new_status) ;
 
     return $job;
 }
@@ -590,9 +386,7 @@ sub grab_jobs_for_worker {
         }
     }
 
-#   my $constraint = "j.analysis_id='$analysis_id' AND j.worker_id='$worker_id' AND j.status='CLAIMED'";
-    my $constraint = "j.worker_id='$worker_id' AND j.status='CLAIMED'";
-    return $self->_generic_fetch($constraint);
+    return $self->fetch_all_by_worker_id_AND_status($worker_id, 'CLAIMED') ;
 }
 
 
@@ -604,7 +398,7 @@ sub grab_jobs_for_worker {
   Description: If a worker has died some of its jobs need to be reset back to 'READY'
                so they can be rerun.
                Jobs in state CLAIMED as simply reset back to READY.
-               If jobs was 'in progress' (COMPILATION, PRE_CLEANUP, FETCH_INPUT, RUN, WRITE_OUTPUT, POST_CLEANUP) 
+               If jobs was 'in progress' (PRE_CLEANUP, FETCH_INPUT, RUN, WRITE_OUTPUT, POST_CLEANUP) 
                the retry_count is increased and the status set back to READY.
                If the retry_count >= $max_retry_count (3 by default) the job is set
                to 'FAILED' and not rerun again.
@@ -633,7 +427,7 @@ sub release_undone_jobs_from_worker {
         SELECT job_id
           FROM job
          WHERE worker_id='$worker_id'
-           AND status in ('COMPILATION','PRE_CLEANUP','FETCH_INPUT','RUN','WRITE_OUTPUT','POST_CLEANUP')
+           AND status in ('PRE_CLEANUP','FETCH_INPUT','RUN','WRITE_OUTPUT','POST_CLEANUP')
     } );
     $sth->execute();
 
@@ -684,7 +478,7 @@ sub release_and_age_job {
                retry_count=retry_count+1,
                runtime_msec=$runtime_msec
          WHERE job_id=$job_id
-           AND status in ('COMPILATION','PRE_CLEANUP','FETCH_INPUT','RUN','WRITE_OUTPUT','POST_CLEANUP')
+           AND status in ('CLAIMED','PRE_CLEANUP','FETCH_INPUT','RUN','WRITE_OUTPUT','POST_CLEANUP')
     } );
 }
 
@@ -698,8 +492,10 @@ sub release_and_age_job {
 sub gc_dataflow {
     my ($self, $analysis, $job_id, $branch_name) = @_;
 
-    unless(@{ $self->db->get_DataflowRuleAdaptor->fetch_all_by_from_analysis_id_and_branch_code($analysis->dbID, $branch_name) }) {
-        return 0;   # no corresponding gc_dataflow rule has been defined
+    my $branch_code = Bio::EnsEMBL::Hive::DBSQL::DataflowRuleAdaptor::branch_name_2_code($branch_name);
+
+    unless( $self->db->get_DataflowRuleAdaptor->count_all_by_from_analysis_id_AND_branch_code($analysis->dbID, $branch_code) ) {
+        return 0;   # just return if no corresponding gc_dataflow rule has been defined
     }
 
     my $job = $self->fetch_by_dbID($job_id);
@@ -741,7 +537,7 @@ sub reset_jobs_for_analysis_id {
 
     my $sql = qq{
             UPDATE job
-           SET retry_count = CASE WHEN (status='COMPILATION' OR status='READY' OR status='CLAIMED') THEN 0 ELSE 1 END,
+           SET retry_count = CASE WHEN (status='READY' OR status='CLAIMED') THEN 0 ELSE 1 END,
         }. ( ($self->dbc->driver eq 'pgsql')
         ? "status = CAST(CASE WHEN semaphore_count>0 THEN 'SEMAPHORED' ELSE 'READY' END AS jw_status) "
         : "status =      CASE WHEN semaphore_count>0 THEN 'SEMAPHORED' ELSE 'READY' END "
@@ -780,7 +576,7 @@ sub balance_semaphores {
                      };
 
     my $update_sql  = "UPDATE job SET "
-        ." semaphore_count=? , "
+        ." semaphore_count=semaphore_count+? , "
         .( ($self->dbc->driver eq 'pgsql')
         ? "status = CAST(CASE WHEN semaphore_count>0 THEN 'SEMAPHORED' ELSE 'READY' END AS jw_status) "
         : "status =      CASE WHEN semaphore_count>0 THEN 'SEMAPHORED' ELSE 'READY' END "
@@ -791,9 +587,16 @@ sub balance_semaphores {
 
     $find_sth->execute();
     while(my ($job_id, $was, $should) = $find_sth->fetchrow_array()) {
-        warn "Balancing semaphore: job_id=$job_id ($was -> $should)\n";
-        $update_sth->execute($should, $job_id);
-        $self->db->get_LogMessageAdaptor->store_job_message( $job_id, "Re-balancing the semaphore_count: $was -> $should", 1 );
+        my $msg;
+        if(0<$should and $should<$was) {    # we choose not to lower the counter if it's not time to unblock yet
+            $msg = "Semaphore count may need rebalancing, but it is not critical now, so leaving it on automatic: $was -> $should";
+            $self->db->get_LogMessageAdaptor->store_job_message( $job_id, $msg, 0 );
+        } else {
+            $update_sth->execute($should-$was, $job_id);
+            $msg = "Semaphore count needed rebalancing now, so performing: $was -> $should";
+            $self->db->get_LogMessageAdaptor->store_job_message( $job_id, $msg, 1 );
+        }
+        warn "[Job $job_id] $msg\n";    # TODO: integrate the STDERR diagnostic output with LogMessageAdaptor calls in general
     }
     $find_sth->finish;
     $update_sth->finish;
@@ -815,7 +618,7 @@ sub fetch_input_ids_for_job_ids {
 
         while(my ($job_id, $input_id) = $sth->fetchrow_array() ) {
             if($input_id =~ /^_ext(?:\w+)_data_id (\d+)$/) {
-                $input_id = $self->db->get_AnalysisDataAdaptor->fetch_by_dbID($1);
+                $input_id = $self->db->get_AnalysisDataAdaptor->fetch_by_analysis_data_id_TO_data($1);
             }
             $input_ids{$job_id * $id_scale + $id_offset} = $input_id;
         }

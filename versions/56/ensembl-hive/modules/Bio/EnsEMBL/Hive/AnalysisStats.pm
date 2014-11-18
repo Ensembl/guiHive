@@ -10,7 +10,7 @@
 
 =head1 LICENSE
 
-    Copyright [1999-2013] Wellcome Trust Sanger Institute and the EMBL-European Bioinformatics Institute
+    Copyright [1999-2014] Wellcome Trust Sanger Institute and the EMBL-European Bioinformatics Institute
 
     Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.
     You may obtain a copy of the License at
@@ -23,7 +23,7 @@
 
 =head1 CONTACT
 
-    Please contact ehive-users@ebi.ac.uk mailing list with questions/suggestions.
+    Please subscribe to the Hive mailing list:  http://listserver.ebi.ac.uk/mailman/listinfo/ehive-users  to discuss Hive-related questions or to be notified of our updates
 
 =head1 APPENDIX
 
@@ -36,11 +36,11 @@
 package Bio::EnsEMBL::Hive::AnalysisStats;
 
 use strict;
-use Scalar::Util ('weaken');
 
-use Bio::EnsEMBL::Utils::Argument ('rearrange');
-
+use Bio::EnsEMBL::Hive::Utils ('throw');
 use Bio::EnsEMBL::Hive::Analysis;
+
+use base ( 'Bio::EnsEMBL::Hive::Storable' );
 
 
     ## Minimum amount of time in msec that a worker should run before reporting
@@ -49,40 +49,11 @@ sub min_batch_time {
     return 2*60*1000;
 }
 
-
-sub new {
-    my $class = shift;
-    my $self = bless {}, $class;
-
-    my ($analysis_id, $batch_size, $hive_capacity, $status) = 
-      rearrange([qw(analysis_id batch_size hive_capacity status) ], @_);
-
-    $self->analysis_id($analysis_id)                    if(defined($analysis_id));
-    $self->batch_size($batch_size)                      if(defined($batch_size));
-    $self->hive_capacity($hive_capacity)                if(defined($hive_capacity));
-    $self->status($status)                              if(defined($status));
-
-    return $self;
-}
-
-
 ## pre-settable storable object's getters/setters:
 
-
-sub adaptor {
+sub analysis_id {   # an alias
     my $self = shift;
-
-    if(@_) {
-        $self->{'_adaptor'} = shift;
-        weaken $self->{'_adaptor'};
-    }
-    return $self->{'_adaptor'};
-}
-
-sub analysis_id {
-    my $self = shift;
-    $self->{'_analysis_id'} = shift if(@_);
-    return $self->{'_analysis_id'};
+    return $self->dbID(@_);
 }
 
 sub batch_size {
@@ -206,10 +177,15 @@ sub avg_output_msec_per_job {
 }
 
 
-## other storable ttributes:
+## other storable attributes:
 
+sub last_update {                   # this method is called by the initial store() [at which point it returns undef]
+    my $self = shift;
+    $self->{'_last_update'} = shift if(@_);
+    return $self->{'_last_update'};
+}
 
-sub seconds_since_last_update {
+sub seconds_since_last_update {     # this method is mostly used to convert between server time and local time
     my( $self, $value ) = @_;
     $self->{'_last_update'} = time() - $value if(defined($value));
     return time() - $self->{'_last_update'};
@@ -247,6 +223,9 @@ sub update_status {
 sub get_analysis {
     my $self = shift;
     unless($self->{'_analysis'}) {
+        unless($self->analysis_id) {
+            throw("self->analysis_id undefined, please investigate");
+        }
         $self->{'_analysis'} = $self->adaptor->db->get_AnalysisAdaptor->fetch_by_dbID($self->analysis_id);
     }
     return $self->{'_analysis'};
@@ -383,10 +362,10 @@ sub determine_status {
             my $absolute_tolerance = $analysis->failed_job_tolerance * $self->total_job_count / 100.0;
             if ($self->failed_job_count > $absolute_tolerance) {
                 $self->status('FAILED');
-                print "\n##################################################\n";
-                printf("##   ERROR: %-35s ##\n", $analysis->logic_name." failed!");
-                printf("##     %d jobs failed (tolerance: %d (%3d%%)) ##\n", $self->failed_job_count, $absolute_tolerance, $analysis->failed_job_tolerance);
-                print "##################################################\n\n";
+                warn       "\n##################################################\n";
+                warn sprintf("##   ERROR: %-35s ##\n", $analysis->logic_name." failed!");
+                warn sprintf("##     %d jobs failed (tolerance: %d (%3d%%)) ##\n", $self->failed_job_count, $absolute_tolerance, $analysis->failed_job_tolerance);
+                warn         "##################################################\n\n";
             } else {
                 $self->status('DONE');
             }

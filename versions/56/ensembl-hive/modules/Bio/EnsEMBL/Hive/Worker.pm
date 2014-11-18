@@ -46,7 +46,7 @@
 
 =head1 LICENSE
 
-    Copyright [1999-2013] Wellcome Trust Sanger Institute and the EMBL-European Bioinformatics Institute
+    Copyright [1999-2014] Wellcome Trust Sanger Institute and the EMBL-European Bioinformatics Institute
 
     Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.
     You may obtain a copy of the License at
@@ -59,7 +59,7 @@
 
 =head1 CONTACT
 
-    Please contact ehive-users@ebi.ac.uk mailing list with questions/suggestions.
+    Please subscribe to the Hive mailing list:  http://listserver.ebi.ac.uk/mailman/listinfo/ehive-users  to discuss Hive-related questions or to be notified of our updates
 
 =head1 APPENDIX
 
@@ -74,11 +74,8 @@ package Bio::EnsEMBL::Hive::Worker;
 use strict;
 use POSIX;
 
-use Bio::EnsEMBL::Utils::Argument ('rearrange');
-
 use Bio::EnsEMBL::Hive::Analysis;
 use Bio::EnsEMBL::Hive::AnalysisStats;
-use Bio::EnsEMBL::Hive::Extensions;
 use Bio::EnsEMBL::Hive::Limiter;
 use Bio::EnsEMBL::Hive::Process;
 use Bio::EnsEMBL::Hive::DBSQL::AccumulatorAdaptor;
@@ -89,34 +86,7 @@ use Bio::EnsEMBL::Hive::Utils::RedirectStack;
 use Bio::EnsEMBL::Hive::Utils::Stopwatch;
 use Bio::EnsEMBL::Hive::Utils ('stringify');
 
-use base (  'Bio::EnsEMBL::Storable',       # inherit dbID(), adaptor() and new() methods
-         );
-
-
-sub new {
-    my $class = shift @_;
-
-    my $self = $class->SUPER::new( @_ );    # deal with Storable stuff
-
-    my($analysis_id, $meadow_type, $meadow_name, $host, $process_id, $resource_class_id, $work_done, $status, $born, $last_check_in, $died, $cause_of_death, $log_dir) =
-        rearrange([qw(analysis_id meadow_type meadow_name host process_id resource_class_id work_done status born last_check_in died cause_of_death log_dir) ], @_);
-
-    $self->analysis_id($analysis_id)                if(defined($analysis_id));
-    $self->meadow_type($meadow_type)                if(defined($meadow_type));
-    $self->meadow_name($meadow_name)                if(defined($meadow_name));
-    $self->host($host)                              if(defined($host));
-    $self->process_id($process_id)                  if(defined($process_id));
-    $self->resource_class_id($resource_class_id)    if(defined($resource_class_id));
-    $self->work_done($work_done)                    if(defined($work_done));
-    $self->status($status)                          if(defined($status));
-    $self->born($born)                              if(defined($born));
-    $self->last_check_in($last_check_in)            if(defined($last_check_in));
-    $self->died($died)                              if(defined($died));
-    $self->cause_of_death($cause_of_death)          if(defined($cause_of_death));
-    $self->log_dir($log_dir)                        if(defined($log_dir));
-
-    return $self;
-}
+use base ( 'Bio::EnsEMBL::Hive::Storable' );
 
 
 sub init {
@@ -507,8 +477,9 @@ sub run {
         $self->{'_interval_partial_timing'} = {};
 
         if( my $special_batch = $self->special_batch() ) {
+            my $special_batch_length = scalar(@$special_batch);     # has to be recorded because the list is gradually destroyed
             $jobs_done_by_batches_loop += $self->run_one_batch( $special_batch );
-            $self->cause_of_death('JOB_LIMIT');
+            $self->cause_of_death( $jobs_done_by_batches_loop == $special_batch_length ? 'JOB_LIMIT' : 'CONTAMINATED');
         } else {    # a proper "BATCHES" loop
 
             while (!$self->cause_of_death and $batches_stopwatch->get_elapsed < $min_batch_time) {

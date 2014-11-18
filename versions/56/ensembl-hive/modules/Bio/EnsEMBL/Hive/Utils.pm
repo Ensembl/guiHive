@@ -1,3 +1,4 @@
+
 =pod
 
 =head1 NAME
@@ -30,7 +31,7 @@
 
 =head1 LICENSE
 
-    Copyright [1999-2013] Wellcome Trust Sanger Institute and the EMBL-European Bioinformatics Institute
+    Copyright [1999-2014] Wellcome Trust Sanger Institute and the EMBL-European Bioinformatics Institute
 
     Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.
     You may obtain a copy of the License at
@@ -43,7 +44,7 @@
 
 =head1 CONTACT
 
-    Please contact ehive-users@ebi.ac.uk mailing list with questions/suggestions.
+    Please subscribe to the Hive mailing list:  http://listserver.ebi.ac.uk/mailman/listinfo/ehive-users  to discuss Hive-related questions or to be notified of our updates
   
 =cut
 
@@ -52,11 +53,17 @@ package Bio::EnsEMBL::Hive::Utils;
 
 use strict;
 use warnings;
+use Carp ('confess');
 use Data::Dumper;
-use Bio::EnsEMBL::Hive::DBSQL::DBConnection;
+use Bio::EnsEMBL::Hive::Version;
+use Bio::EnsEMBL::Hive::DBSQL::SqlSchemaAdaptor;
+#use Bio::EnsEMBL::Hive::DBSQL::DBConnection;   # causes warnings that all exported functions have been redefined
 
 use Exporter 'import';
-our @EXPORT_OK = qw(stringify destringify dir_revhash parse_cmdline_options find_submodules load_file_or_module script_usage url2dbconn_hash go_figure_dbc);
+our @EXPORT_OK = qw(stringify destringify dir_revhash parse_cmdline_options find_submodules load_file_or_module script_usage url2dbconn_hash go_figure_dbc report_versions throw);
+
+no warnings ('once');   # otherwise the next line complains about $Carp::Internal being used just once
+$Carp::Internal{ (__PACKAGE__) }++;
 
 
 =head2 stringify
@@ -78,7 +85,7 @@ sub stringify {
     local $Data::Dumper::Quotekeys = 1;         # conserve some space
     local $Data::Dumper::Useqq     = 1;         # escape the \n and \t correctly
     local $Data::Dumper::Pair      = ' => ';    # make sure we always produce Perl-parsable structures, no matter what is set externally
-    local $Data::Dumper::Maxdepth  = undef;     # make sure nobody can mess up stringification by setting a lower Maxdepth
+    local $Data::Dumper::Maxdepth  = 0;         # make sure nobody can mess up stringification by setting a lower Maxdepth
 
     return Dumper($structure);
 }
@@ -292,15 +299,18 @@ sub url2dbconn_hash {
 sub go_figure_dbc {
     my ($foo, $schema_type) = @_;
 
-    if(UNIVERSAL::isa($foo, 'Bio::EnsEMBL::DBSQL::DBConnection')) { # already a DBConnection, return it:
+#    if(UNIVERSAL::isa($foo, 'Bio::EnsEMBL::DBSQL::DBConnection')) { # already a DBConnection, return it:
+    if ( ref($foo) =~ /DBConnection$/ ) {   # already a DBConnection, return it:
 
         return $foo;
 
-    } elsif(UNIVERSAL::can($foo, 'dbc') and UNIVERSAL::isa($foo->dbc, 'Bio::EnsEMBL::DBSQL::DBConnection')) {
+#    } elsif(UNIVERSAL::can($foo, 'dbc') and UNIVERSAL::isa($foo->dbc, 'Bio::EnsEMBL::DBSQL::DBConnection')) {
+    } elsif(UNIVERSAL::can($foo, 'dbc') and ref($foo->dbc) =~ /DBConnection$/) {
 
         return $foo->dbc;
 
-    } elsif(UNIVERSAL::can($foo, 'db') and UNIVERSAL::can($foo->db, 'dbc') and UNIVERSAL::isa($foo->db->dbc, 'Bio::EnsEMBL::DBSQL::DBConnection')) { # another data adaptor or Runnable:
+#    } elsif(UNIVERSAL::can($foo, 'db') and UNIVERSAL::can($foo->db, 'dbc') and UNIVERSAL::isa($foo->db->dbc, 'Bio::EnsEMBL::DBSQL::DBConnection')) { # another data adaptor or Runnable:
+    } elsif(UNIVERSAL::can($foo, 'db') and UNIVERSAL::can($foo->db, 'dbc') and ref($foo->db->dbc) =~ /DBConnection$/) { # another data adaptor or Runnable:
 
         return $foo->db->dbc;
 
@@ -313,6 +323,7 @@ sub go_figure_dbc {
             my $dba;
             eval {
                 $schema_type ||= 'hive';
+                require Bio::EnsEMBL::Registry;
                 $dba = Bio::EnsEMBL::Registry->get_DBAdaptor($foo, $schema_type);
             };
             if(UNIVERSAL::can($dba, 'dbc')) {
@@ -322,6 +333,22 @@ sub go_figure_dbc {
         die "Sorry, could not figure out how to make a DBConnection object out of '$foo'";
     }
 }
+
+
+sub report_versions {
+    print "CodeVersion\t".Bio::EnsEMBL::Hive::Version->get_code_version()."\n";
+    print "CompatibleHiveDatabaseSchemaVersion\t".Bio::EnsEMBL::Hive::DBSQL::SqlSchemaAdaptor->get_code_sql_schema_version()."\n";
+}
+
+
+sub throw {
+    my $msg = pop @_;
+
+        # TODO: newer versions of Carp are much more tunable, but I am stuck with v1.08 .
+        #       Alternatively, we could implement our own stack reporter instead of Carp::confess.
+    confess $msg;
+}
+
 
 1;
 

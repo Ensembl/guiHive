@@ -15,7 +15,7 @@
 
 =head1 LICENSE
 
-    Copyright [1999-2013] Wellcome Trust Sanger Institute and the EMBL-European Bioinformatics Institute
+    Copyright [1999-2014] Wellcome Trust Sanger Institute and the EMBL-European Bioinformatics Institute
 
     Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.
     You may obtain a copy of the License at
@@ -28,7 +28,7 @@
 
 =head1 CONTACT
 
-    Please contact ehive-users@ebi.ac.uk mailing list with questions/suggestions.
+    Please subscribe to the Hive mailing list:  http://listserver.ebi.ac.uk/mailman/listinfo/ehive-users  to discuss Hive-related questions or to be notified of our updates
 
 =cut
 
@@ -37,36 +37,10 @@ package Bio::EnsEMBL::Hive::Analysis;
 
 use strict;
 
-use Bio::EnsEMBL::Utils::Argument ('rearrange');
-
 use Bio::EnsEMBL::Hive::Utils ('stringify');
 
-use base (  'Bio::EnsEMBL::Storable',       # inherit dbID(), adaptor() and new() methods
-         );
+use base (  'Bio::EnsEMBL::Hive::Storable' );
  
-
-sub new {
-    my $class = shift @_;
-
-    my $self = $class->SUPER::new( @_ );    # deal with Storable stuff
-
-    my ($logic_name, $module, $parameters, $resource_class_id, $failed_job_tolerance, $max_retry_count, $can_be_empty, $priority, $meadow_type, $analysis_capacity) =
-         rearrange([qw(logic_name module parameters resource_class_id failed_job_tolerance max_retry_count can_be_empty priority meadow_type analysis_capacity) ], @_);
-
-    $self->logic_name($logic_name)                      if($logic_name);
-    $self->module($module)                              if($module);
-    $self->parameters($parameters)                      if($parameters);
-    $self->resource_class_id($resource_class_id)        if($resource_class_id);
-    $self->failed_job_tolerance($failed_job_tolerance)  if($failed_job_tolerance);
-    $self->max_retry_count($max_retry_count)            if($max_retry_count);
-    $self->can_be_empty($can_be_empty)                  if($can_be_empty);
-    $self->priority($priority)                          if($priority);
-    $self->meadow_type($meadow_type)                    if($meadow_type);
-    $self->analysis_capacity($analysis_capacity)        if( defined($analysis_capacity) );
-
-    return $self;
-}
-
 
 sub logic_name {
     my $self = shift;
@@ -174,7 +148,8 @@ sub get_compiled_module_name {
 sub process {
     my $self = shift;
 
-    my $runnable_object = $self->get_compiled_module_name->new( -analysis => $self );
+    my $runnable_object = $self->get_compiled_module_name->new();
+    $runnable_object->analysis( $self );
 
     return $runnable_object;
 }

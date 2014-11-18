@@ -71,7 +71,7 @@
 
 =head1 LICENSE
 
-    Copyright [1999-2013] Wellcome Trust Sanger Institute and the EMBL-European Bioinformatics Institute
+    Copyright [1999-2014] Wellcome Trust Sanger Institute and the EMBL-European Bioinformatics Institute
 
     Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.
     You may obtain a copy of the License at
@@ -84,7 +84,7 @@
 
 =head1 CONTACT
 
-    Please contact ehive-users@ebi.ac.uk mailing list with questions/suggestions.
+    Please subscribe to the Hive mailing list:  http://listserver.ebi.ac.uk/mailman/listinfo/ehive-users  to discuss Hive-related questions or to be notified of our updates
 
 =head1 APPENDIX
 
@@ -99,24 +99,15 @@ package Bio::EnsEMBL::Hive::Process;
 use strict;
 use warnings;
 
-use Bio::EnsEMBL::Registry;
-use Bio::EnsEMBL::Utils::Argument ('rearrange');
-use Bio::EnsEMBL::Utils::Exception ('throw');
-
 use Bio::EnsEMBL::Hive::DBSQL::DBConnection;
 use Bio::EnsEMBL::Hive::Utils ('stringify', 'go_figure_dbc');
 use Bio::EnsEMBL::Hive::Utils::Stopwatch;
 
-use base ('Bio::EnsEMBL::Utils::Exception');   # provide these methods for deriving classes
-
 
 sub new {
-    my ($class, @args) = @_;
+    my $class = shift @_;
 
     my $self = bless {}, $class;
-
-    my ($analysis) = rearrange([qw( ANALYSIS )], @args);
-    $self->analysis($analysis) if($analysis);
 
     return $self;
 }
@@ -224,12 +215,9 @@ sub param_defaults {
 }
 
 
-=head2 pre_cleanup
-
-    Title   :  pre_cleanup
-    Function:  sublcass can implement functions related to cleaning up the database/filesystem after the previous unsuccessful run.
-               
-=cut
+#
+## Function: sublcass can implement functions related to cleaning up the database/filesystem after the previous unsuccessful run.
+#
 
 # sub pre_cleanup {
 #    my $self = shift;
@@ -289,13 +277,10 @@ sub write_output {
 }
 
 
-=head2 post_cleanup
-
-    Title   :  post_cleanup
-    Function:  sublcass can implement functions related to cleaning up after running one job
-               (destroying non-trivial data structures in memory).
-               
-=cut
+#
+## Function:  sublcass can implement functions related to cleaning up after running one job
+#               (destroying non-trivial data structures in memory).
+#
 
 #sub post_cleanup {
 #    my $self = shift;
@@ -384,7 +369,7 @@ sub dbc {
     Title   :   data_dbc
     Usage   :   my $data_dbc = $self->data_dbc;
     Function:   returns a Bio::EnsEMBL::Hive::DBSQL::DBConnection object (the "current" one by default, but can be set up otherwise)
-    Returns :   Bio::EnsEMBL::DBSQL::DBConnection
+    Returns :   Bio::EnsEMBL::Hive::DBSQL::DBConnection
 
 =cut
 
@@ -496,6 +481,13 @@ sub dataflow_output_id {
 }
 
 
+sub throw {
+    my $msg = pop @_;
+
+    Bio::EnsEMBL::Hive::Utils::throw( $msg );   # this module doesn't import 'throw' to avoid namespace clash
+}
+
+
 =head2 debug
 
     Title   :  debug
@@ -537,21 +529,37 @@ sub worker_temp_directory {
     my $self = shift @_;
 
     unless(defined($self->{'_tmp_dir'}) and (-e $self->{'_tmp_dir'})) {
-        my $username = $ENV{'USER'};
-        my $worker_id = $self->worker ? $self->worker->dbID : 'standalone';
-        $self->{'_tmp_dir'} = "/tmp/worker_${username}.${worker_id}/";
+        $self->{'_tmp_dir'} = $self->worker_temp_directory_name();
         mkdir($self->{'_tmp_dir'}, 0777);
         throw("unable to create a writable directory ".$self->{'_tmp_dir'}) unless(-w $self->{'_tmp_dir'});
     }
     return $self->{'_tmp_dir'};
 }
 
+sub worker_temp_directory_name {
+    my $self = shift @_;
+
+    my $username = $ENV{'USER'};
+    my $worker_id = $self->worker ? $self->worker->dbID : "standalone.$$";
+    return "/tmp/worker_${username}.${worker_id}/";
+}
+
+
+=head2 cleanup_worker_temp_directory
+
+    Title   :  cleanup_worker_temp_directory
+    Function:  Cleans up the directory on the local /tmp disk that is used for the
+               worker. It can be used to remove files left there by previous jobs.
+    Usage   :  $self->cleanup_worker_temp_directory;
+
+=cut
 
 sub cleanup_worker_temp_directory {
     my $self = shift @_;
 
-    if($self->{'_tmp_dir'} and (-e $self->{'_tmp_dir'}) ) {
-        my $cmd = "rm -r ". $self->{'_tmp_dir'};
+    my $tmp_dir = $self->worker_temp_directory_name();
+    if(-e $tmp_dir) {
+        my $cmd = "rm -r $tmp_dir";
         system($cmd);
     }
 }

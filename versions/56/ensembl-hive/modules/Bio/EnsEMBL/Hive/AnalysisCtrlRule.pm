@@ -16,7 +16,7 @@
 
 =head1 LICENSE
 
-    Copyright [1999-2013] Wellcome Trust Sanger Institute and the EMBL-European Bioinformatics Institute
+    Copyright [1999-2014] Wellcome Trust Sanger Institute and the EMBL-European Bioinformatics Institute
 
     Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.
     You may obtain a copy of the License at
@@ -29,7 +29,7 @@
 
 =head1 CONTACT
 
-    Please contact ehive-users@ebi.ac.uk mailing list with questions/suggestions.
+    Please subscribe to the Hive mailing list:  http://listserver.ebi.ac.uk/mailman/listinfo/ehive-users  to discuss Hive-related questions or to be notified of our updates
 
 =head1 APPENDIX
 
@@ -42,52 +42,11 @@
 package Bio::EnsEMBL::Hive::AnalysisCtrlRule;
 
 use strict;
-use Scalar::Util ('weaken');
 
-use Bio::EnsEMBL::Utils::Argument ('rearrange');
-use Bio::EnsEMBL::Utils::Exception ('throw');
-
+use Bio::EnsEMBL::Hive::Utils ('throw');
 use Bio::EnsEMBL::Hive::URLFactory;
-use Bio::EnsEMBL::Hive::Extensions;
 
-=head2 new
-
-  Title   : new
-  Usage   : ...AnalysisCtrlRule->new;
-  Function: Constructor for empty AnalysisCtrlRule object
-  Returns : Bio::EnsEMBL::Hive::AnalysisCtrlRule
-  Args    : none
-  
-=cut
-
-sub new {
-    my $class   = shift @_;
-    my $self    = bless {}, $class;
-  
-    my ( $dbID, $adaptor, $condition_analysis_url, $ctrled_analysis_id ) =
-    rearrange( [ qw (DBID ADAPTOR CONDITION_ANALYSIS_URL CTRLED_ANALYSIS_ID) ], @_ );
-
-        # database persistence:
-    $self->dbID( $dbID )                            if(defined($dbID));
-    $self->adaptor( $adaptor )                      if(defined($adaptor));
-
-        # simple scalars:
-    $self->condition_analysis_url( $condition_analysis_url )    if(defined($condition_analysis_url));
-    $self->ctrled_analysis_id( $ctrled_analysis_id )            if(defined($ctrled_analysis_id));
-
-    return $self;
-}
-
-sub adaptor {
-    my $self = shift @_;
-
-    if(@_) {
-        $self->{'_adaptor'} = shift @_;
-        weaken $self->{'_adaptor'};
-    }
-
-    return $self->{'_adaptor'};
-}
+use base ( 'Bio::EnsEMBL::Hive::Storable' );
 
 
 =head2 ctrled_analysis_id

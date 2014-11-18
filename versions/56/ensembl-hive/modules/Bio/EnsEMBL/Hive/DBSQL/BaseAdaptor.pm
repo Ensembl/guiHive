@@ -15,7 +15,7 @@
 
 =head1 LICENSE
 
-    Copyright [1999-2013] Wellcome Trust Sanger Institute and the EMBL-European Bioinformatics Institute
+    Copyright [1999-2014] Wellcome Trust Sanger Institute and the EMBL-European Bioinformatics Institute
 
     Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.
     You may obtain a copy of the License at
@@ -28,7 +28,7 @@
 
 =head1 CONTACT
 
-    Please contact ehive-users@ebi.ac.uk mailing list with questions/suggestions.
+    Please subscribe to the Hive mailing list:  http://listserver.ebi.ac.uk/mailman/listinfo/ehive-users  to discuss Hive-related questions or to be notified of our updates
 
 =cut
 
@@ -39,8 +39,6 @@ use strict;
 no strict 'refs';   # needed to allow AUTOLOAD create new methods
 use DBI 1.6;        # the 1.6 functionality is important for detecting autoincrement fields and other magic.
 
-use base ('Bio::EnsEMBL::DBSQL::BaseAdaptor');
-
 
 sub default_table_name {
     die "Please define table_name either by setting it via table_name() method or by redefining default_table_name() in your adaptor class";
@@ -49,6 +47,97 @@ sub default_table_name {
 
 sub default_insertion_method {
     return 'INSERT_IGNORE';
+}
+
+
+sub default_overflow_limit {
+    return {
+        # 'overflow_column1_name' => column1_size,
+        # 'overflow_column2_name' => column2_size,
+        # ...
+    };
+}
+
+sub default_input_column_mapping {
+    return {
+        # 'original_column1' => "original_column1*10 AS c1_times_ten",
+        # 'original_column2' => "original_column2+1 AS c2_plus_one",
+        # ...
+    };
+}
+
+# ---------------------------------------------------------------------------
+
+sub new {
+    my ( $class, $dbobj ) = @_;
+
+    my $self = bless {}, $class;
+
+    if ( !defined $dbobj || !ref $dbobj ) {
+        throw("Don't have a db [$dbobj] for new adaptor");
+    }
+
+    if ( ref($dbobj) =~ /DBConnection$/ ) {
+        $self->dbc($dbobj);
+    } elsif( UNIVERSAL::can($dbobj, 'dbc') ) {
+        $self->dbc( $dbobj->dbc );
+        $self->db( $dbobj );
+    } else {
+        throw("I was given [$dbobj] for a new adaptor");
+    }
+
+    return $self;
+}
+
+
+sub db {
+    my $self = shift @_;
+
+    if(@_) {    # setter
+        $self->{_db} = shift @_;
+    }
+    return $self->{_db};
+}
+
+
+sub dbc {
+    my $self = shift @_;
+
+    if(@_) {    # setter
+        $self->{_dbc} = shift @_;
+    }
+    return $self->{_dbc};
+}
+
+
+sub prepare {
+    my ( $self, $sql ) = @_;
+
+    # Uncomment next line to cancel caching on the SQL side.
+    # Needed for timing comparisons etc.
+    #$sql =~ s/SELECT/SELECT SQL_NO_CACHE/i;
+
+    return $self->dbc->prepare($sql);
+}
+
+
+sub overflow_limit {
+    my $self = shift @_;
+
+    if(@_) {    # setter
+        $self->{_overflow_limit} = shift @_;
+    }
+    return $self->{_overflow_limit} || $self->default_overflow_limit();
+}
+
+
+sub input_column_mapping {
+    my $self = shift @_;
+
+    if(@_) {    # setter
+        $self->{_input_column_mapping} = shift @_;
+    }
+    return $self->{_input_column_mapping} || $self->default_input_column_mapping();
 }
 
 
@@ -138,20 +227,18 @@ sub _table_info_loader {
     my $sth = $dbh->column_info(undef, undef, $table_name, '%');
     $sth->execute();
     while (my $row = $sth->fetchrow_hashref()) {
-        my ($position, $name, $type, $is_ai) = @$row{'ORDINAL_POSITION','COLUMN_NAME', 'TYPE_NAME', 'mysql_is_auto_increment'};
+        my ($position, $column_name, $column_type, $is_ai) = @$row{'ORDINAL_POSITION','COLUMN_NAME', 'TYPE_NAME', 'mysql_is_auto_increment'};
 
-        $column_set{$name}  = 1;
-        $name2type{$name}   = $type;
-        if($is_ai) {
-            $autoinc_id = $name;
+        $column_set{$column_name}  = 1;
+        $name2type{$column_name}   = $column_type;
+
+        if( $is_ai  # careful! This is only supported by DBD::mysql and will not work with other drivers
+         or ($column_name eq $table_name.'_id')
+         or ($table_name eq 'analysis_base' and $column_name eq 'analysis_id') ) {    # a special case (historical)
+            $autoinc_id = $column_name;    # careful! This is only supported by DBD::mysql and will not work with other drivers
         }
     }
     $sth->finish;
-
-    if( ($driver ne 'mysql')
-     and scalar(@primary_key)==1 and (uc($name2type{$primary_key[0]}) eq 'INTEGER') ) {
-        $autoinc_id = $primary_key[0];
-    }
 
     $self->column_set(  \%column_set );
     $self->primary_key( \@primary_key );
@@ -185,19 +272,14 @@ sub count_all {
 sub fetch_all {
     my ($self, $constraint, $one_per_key, $key_list, $value_column) = @_;
     
-    my $table_name      = $self->table_name();
+    my $table_name              = $self->table_name();
+    my $input_column_mapping    = $self->input_column_mapping();
 
-    my $sql = 'SELECT ' . join(', ', keys %{$self->column_set()}) . " FROM $table_name";
+    my $sql = 'SELECT ' . join(', ', map { $input_column_mapping->{$_} // "$table_name.$_" } keys %{$self->column_set()}) . " FROM $table_name";
 
     if($constraint) { 
             # in case $constraint contains any kind of JOIN (regular, LEFT, RIGHT, etc) do not put WHERE in front:
-        if($constraint=~/\bJOIN\b/i) {
-            $sql = 'SELECT ' . join(', ', map { "$table_name.$_" } keys %{$self->column_set()}) . " FROM $table_name $constraint";
-        } elsif($constraint=~/^LIMIT|ORDER|GROUP/) {
-            $sql .= ' '.$constraint;
-        } else {
-            $sql .= ' WHERE '.$constraint;
-        }
+        $sql .= (($constraint=~/\bJOIN\b/i or $constraint=~/^LIMIT|ORDER|GROUP/) ? ' ' : ' WHERE ') . $constraint;
     }
 
     # warn "SQL: $sql\n";
@@ -205,9 +287,19 @@ sub fetch_all {
     my $sth = $self->prepare($sql);
     $sth->execute;  
 
+    my @overflow_columns = keys %{ $self->overflow_limit() };
+    my $overflow_adaptor = scalar(@overflow_columns) && $self->db->get_AnalysisDataAdaptor();
+
     my $result_struct;  # will be autovivified to the correct data structure
 
     while(my $hashref = $sth->fetchrow_hashref) {
+
+        foreach my $overflow_key (@overflow_columns) {
+            if($hashref->{$overflow_key} =~ /^_ext(?:\w+)_data_id (\d+)$/) {
+                $hashref->{$overflow_key} = $overflow_adaptor->fetch_by_analysis_data_id_TO_data($1);
+            }
+        }
+
         my $pptr = \$result_struct;
         if($key_list) {
             foreach my $syll (@$key_list) {
@@ -296,9 +388,9 @@ sub update {    # update (some or all) non_primary columns from the primary
     }
 
     my $sql = "UPDATE $table_name SET ".join(', ', map { "$_=?" } @$columns_to_update)." WHERE $primary_key_constraint";
-    # print "SQL: $sql\n";
+    # warn "SQL: $sql\n";
     my $sth = $self->prepare($sql);
-    # print "VALUES_TO_UPDATE: ".join(', ', map { "'$_'" } @$values_to_update)."\n";
+    # warn "VALUES_TO_UPDATE: ".join(', ', map { "'$_'" } @$values_to_update)."\n";
     $sth->execute( @$values_to_update);
 
     $sth->finish();
@@ -358,7 +450,7 @@ sub store {
             $self->mark_stored($object, $present);
         } else {
             my ($columns_being_stored, $column_key) = (ref($object) eq 'HASH') ? $self->keys_to_columns($object) : ($all_storable_columns, '*all*');
-            # print "COLUMN_KEY='$column_key'\n";
+            # warn "COLUMN_KEY='$column_key'\n";
 
             my $this_sth;
 
@@ -366,13 +458,13 @@ sub store {
             unless($this_sth = $hashed_sth{$column_key}) {
                     # By using question marks we can insert true NULLs by setting corresponding values to undefs:
                 my $sql = "$insertion_method INTO $table_name (".join(', ', @$columns_being_stored).') VALUES ('.join(',', (('?') x scalar(@$columns_being_stored))).')';
-                # print "STORE: $sql\n";
+                # warn "STORE: $sql\n";
                 $this_sth = $hashed_sth{$column_key} = $self->prepare( $sql ) or die "Could not prepare statement: $sql";
             }
 
-            # print "STORED_COLUMNS: ".join(', ', map { "`$_`" } @$columns_being_stored)."\n";
+            # warn "STORED_COLUMNS: ".join(', ', map { "`$_`" } @$columns_being_stored)."\n";
             my $values_being_stored = $self->slicer( $object, $columns_being_stored );
-            # print "STORED_VALUES: ".join(', ', map { "'$_'" } @$values_being_stored)."\n";
+            # warn "STORED_VALUES: ".join(', ', map { "'$_'" } @$values_being_stored)."\n";
 
             my $return_code = $this_sth->execute( @$values_being_stored )
                     # using $return_code in boolean context allows to skip the value '0E0' ('no rows affected') that Perl treats as zero but regards as true:
@@ -423,7 +515,7 @@ sub AUTOLOAD {
             die "unknown column '$value_column'";
         }
 
-#        print "Setting up '$AUTOLOAD' method\n";
+#        warn "Setting up '$AUTOLOAD' method\n";
         *$AUTOLOAD = sub {
             my $self = shift @_;
             return $self->fetch_all(
@@ -448,7 +540,7 @@ sub AUTOLOAD {
             }
         }
 
-#        print "Setting up '$AUTOLOAD' method\n";
+#        warn "Setting up '$AUTOLOAD' method\n";
         *$AUTOLOAD = sub {
             my $self = shift @_;
             return $self->count_all(
@@ -464,7 +556,7 @@ sub AUTOLOAD {
         my $column_set = $self->column_set();
 
         if($column_set->{$filter_name}) {
-#            print "Setting up '$AUTOLOAD' method\n";
+#            warn "Setting up '$AUTOLOAD' method\n";
             *$AUTOLOAD = sub { my ($self, $filter_value) = @_; return $self->remove_all("$filter_name='$filter_value'"); };
             goto &$AUTOLOAD;    # restart the new method
         } else {
@@ -472,11 +564,11 @@ sub AUTOLOAD {
         }
     } elsif($AUTOLOAD =~ /::update_(\w+)$/) {
         my @columns_to_update = split(/_AND_/i, $1);
-#        print "Setting up '$AUTOLOAD' method\n";
+#        warn "Setting up '$AUTOLOAD' method\n";
         *$AUTOLOAD = sub { my ($self, $object) = @_; return $self->update($object, @columns_to_update); };
         goto &$AUTOLOAD;    # restart the new method
     } else {
-        print "sub '$AUTOLOAD' not implemented";
+        warn "sub '$AUTOLOAD' not implemented";
     }
 }
 
