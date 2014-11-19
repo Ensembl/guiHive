@@ -158,38 +158,6 @@ $(document).ready(function() {
     // });
 });
 
-// function go_to_full_url () {
-//     var full_url = $("#db_url").val();
-
-//     $.ajax({
-// 	url      : "./scripts/url_parser.pl",
-// 	type     : "post",
-// 	data     : "url=" + full_url,
-// 	dataType : "json",
-// 	async    : false,
-// 	success  : function(dbConn) {
-// 	    if (dbConn.status !== "FAILED") {
-// 		console.log(dbConn.out_msg);
-// 		var http_url = $.url();
-// 		var new_http_url = "http://" + http_url.attr("host") + ":" + http_url.attr("port") + "/?username=" + dbConn.out_msg.user + "&host=" + dbConn.out_msg.host + "&dbname=" + dbConn.out_msg.dbname + "&port=" + dbConn.out_msg.port;
-// 		if (dbConn.out_msg.passwd !== undefined && dbConn.out_msg.passwd !== '') {
-// 		    new_http_url = new_http_url + "&passwd=xxxxx";
-// 		}
-// 		window.location.href = new_http_url;
-// 	    } else {
-// 		log(dbConn);
-// 	    }
-// 	},
-// 	error      : function (x, t, m) {
-// 	    if(t==="timeout") {
-// 		log({err_msg : "No response from mysql sever for 10s. Try it later"});
-// 		$("#connection_msg").empty();
-// 	    } else {
-// 		log({err_msg : m});
-// 	    }
-// 	}
-//     });
-// }
 
 function guess_database_url () {
 
