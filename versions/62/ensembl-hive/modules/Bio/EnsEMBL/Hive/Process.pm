@@ -145,43 +145,59 @@ sub life_cycle {
             $self->write_output;
             $job_partial_timing{'WRITE_OUTPUT'} = $partial_stopwatch->get_elapsed();
         } else {
-            print STDERR "\n!!! *no* WRITE_OUTPUT requested, so there will be no AUTOFLOW\n" if($self->debug); 
+            $self->say_with_header( ": *no* WRITE_OUTPUT requested, so there will be no AUTOFLOW" );
         }
     };
 
-    my $error_msg = $@;
+    if(my $life_cycle_msg = $@) {
+        $job->died_somewhere( $job->incomplete );  # it will be OR'd inside
+        $self->warning( $life_cycle_msg, $job->incomplete );
+    }
 
     if( $self->can('post_cleanup') ) {   # may be run to clean up memory even after partially failed attempts
         eval {
+            $job->incomplete(1);    # it could have been reset by a previous call to complete_early
             $self->enter_status('POST_CLEANUP');
             $self->post_cleanup;
         };
-        if($@) {
-            $error_msg .= $@;
-            $job->incomplete(1);
+        if(my $post_cleanup_msg = $@) {
+            $job->died_somewhere( $job->incomplete );  # it will be OR'd inside
+            $self->warning( $post_cleanup_msg, $job->incomplete );
         }
     }
 
-    if( $error_msg ) {
-        if( $job->incomplete ) {    # retransmit the death message if it was not a suicide, continue otherwise
-            die $error_msg;
+    unless( $job->died_somewhere ) {
+
+        if( $self->execute_writes and $job->autoflow ) {    # AUTOFLOW doesn't have its own status so will have whatever previous state of the job
+            $self->say_with_header( ': AUTOFLOW input->output' );
+            $job->dataflow_output_id();
+        }
+
+        my @zombie_funnel_dataflow_rule_ids = keys %{$job->fan_cache};
+        if( scalar(@zombie_funnel_dataflow_rule_ids) ) {
+            $job->transient_error(0);
+            die "There are cached semaphored fans for which a funnel job (dataflow_rule_id(s) ".join(',',@zombie_funnel_dataflow_rule_ids).") has never been dataflown";
+        }
+
+        $job->incomplete(0);
+
+        return \%job_partial_timing;
+    }
+}
+
+
+sub say_with_header {
+    my ($self, $msg, $important) = @_;
+
+    $important //= $self->debug();
+
+    if($important) {
+        if(my $worker = $self->worker) {
+            $worker->worker_say( $msg );
         } else {
-            $self->warning( $error_msg );
+            print STDERR "StandaloneJob $msg\n";
         }
     }
-
-    if( $self->execute_writes and $job->autoflow ) {    # AUTOFLOW doesn't have its own status so will have whatever previous state of the job
-        print STDERR "\njob ".$job->dbID." : AUTOFLOW input->output\n" if($self->debug);
-        $job->dataflow_output_id();
-    }
-
-    my @zombie_funnel_dataflow_rule_ids = keys %{$job->fan_cache};
-    if( scalar(@zombie_funnel_dataflow_rule_ids) ) {
-        $job->transient_error(0);
-        die "There are cached semaphored fans for which a funnel job (dataflow_rule_id(s) ".join(',',@zombie_funnel_dataflow_rule_ids).") has never been dataflown";
-    }
-
-    return \%job_partial_timing;
 }
 
 
@@ -190,14 +206,28 @@ sub enter_status {
 
     my $job = $self->input_job();
 
-    $job->update_status( $status );
-
-    my $status_msg  = 'Job '.$job->dbID.' : '.$status;
+    $job->set_and_update_status( $status );
 
     if(my $worker = $self->worker) {
-        $worker->enter_status( $status, $status_msg );
-    } elsif($self->debug) {
-        print STDERR "Standalone$status_msg\n";
+        $worker->set_and_update_status( $status );
+    }
+
+    $self->say_with_header( '-> '.$status );
+}
+
+
+sub warning {
+    my ($self, $msg, $is_error) = @_;
+
+    $is_error //= 0;
+    chomp $msg;
+
+    $self->say_with_header( ($is_error ? 'Fatal' : 'Warning')." : $msg", 1 );
+
+    my $job = $self->input_job;
+
+    if(my $job_adaptor = $job->adaptor) {
+        $job_adaptor->db->get_LogMessageAdaptor()->store_job_message($job->dbID, $msg, $is_error);
     }
 }
 
@@ -234,12 +264,9 @@ sub param_defaults {
 }
 
 
-=head2 pre_cleanup
-
-    Title   :  pre_cleanup
-    Function:  sublcass can implement functions related to cleaning up the database/filesystem after the previous unsuccessful run.
-               
-=cut
+#
+## Function: sublcass can implement functions related to cleaning up the database/filesystem after the previous unsuccessful run.
+#
 
 # sub pre_cleanup {
 #    my $self = shift;
@@ -298,13 +325,10 @@ sub write_output {
 }
 
 
-=head2 post_cleanup
-
-    Title   :  post_cleanup
-    Function:  sublcass can implement functions related to cleaning up after running one job
-               (destroying non-trivial data structures in memory).
-               
-=cut
+#
+## Function:  sublcass can implement functions related to cleaning up after running one job
+#               (destroying non-trivial data structures in memory).
+#
 
 #sub post_cleanup {
 #    my $self = shift;
@@ -423,13 +447,14 @@ sub data_dbc {
 =cut
 
 sub input_job {
-  my( $self, $job ) = @_;
-  if($job) {
-    throw("Not a Bio::EnsEMBL::Hive::AnalysisJob object")
-        unless ($job->isa("Bio::EnsEMBL::Hive::AnalysisJob"));
-    $self->{'_input_job'} = $job;
-  }
-  return $self->{'_input_job'};
+    my $self = shift @_;
+
+    if(@_) {
+        if(my $job = $self->{'_input_job'} = shift) {
+            throw("Not a Bio::EnsEMBL::Hive::AnalysisJob object") unless ($job->isa("Bio::EnsEMBL::Hive::AnalysisJob"));
+        }
+    }
+    return $self->{'_input_job'};
 }
 
 
@@ -471,12 +496,6 @@ sub param_substitute {
     return $self->input_job->param_substitute(@_);
 }
 
-sub warning {
-    my $self = shift @_;
-
-    return $self->input_job->warning(@_);
-}
-
 sub dataflow_output_id {
     my $self = shift @_;
 
@@ -488,6 +507,14 @@ sub throw {
     my $msg = pop @_;
 
     Bio::EnsEMBL::Hive::Utils::throw( $msg );   # this module doesn't import 'throw' to avoid namespace clash
+}
+
+
+sub complete_early {
+    my ($self, $msg) = @_;
+
+    $self->input_job->incomplete(0);
+    die $msg;
 }
 
 

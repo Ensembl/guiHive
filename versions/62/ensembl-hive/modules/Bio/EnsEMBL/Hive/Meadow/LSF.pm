@@ -73,7 +73,8 @@ sub count_pending_workers_by_rc_name {
     my ($self) = @_;
 
     my $jnp = $self->job_name_prefix();
-    my $cmd = "bjobs -w -J '${jnp}*' -u all 2>/dev/null | grep PEND";
+    my $cmd = "bjobs -w -J '${jnp}*' 2>/dev/null | grep PEND";  # "-u all" has been removed to ensure one user's PEND processes
+                                                                #   do not affect another user helping to run the same pipeline.
 
 #    warn "LSF::count_pending_workers_by_rc_name() running cmd:\n\t$cmd\n";
 
@@ -209,7 +210,7 @@ sub parse_report_source_line {
             foreach (@lines) {
                 if( /^(\w+\s+\w+\s+\d+\s+\d+:\d+:\d+):\s+Completed\s<(\w+)>(?:\.|;\s+(\w+))/ ) {
                     $died           = _yearless_2_datetime($1);
-                    $cause_of_death = $status_2_cod{$3};
+                    $cause_of_death = $3 && $status_2_cod{$3};
                     $exit_status = $2 . ($3 ? "/$3" : '');
                 }
                 elsif(/^\s*EXCEPTION STATUS:\s*(.*?)\s*$/) {

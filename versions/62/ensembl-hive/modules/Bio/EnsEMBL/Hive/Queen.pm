@@ -191,7 +191,7 @@ sub create_new_worker {
 }
 
 
-=head2 specialize_new_worker
+=head2 specialize_worker
 
   Description: If analysis_id or logic_name is specified it will try to specialize the Worker into this analysis.
                If not specified the Queen will analyze the hive and pick the most suitable analysis.
@@ -199,7 +199,7 @@ sub create_new_worker {
 
 =cut
 
-sub specialize_new_worker {
+sub specialize_worker {
     my $self    = shift @_;
     my $worker  = shift @_;
     my %flags   = @_;
@@ -281,15 +281,11 @@ sub specialize_new_worker {
         die "No analysis suitable for the worker was found\n";
     }
 
-    my $role_adaptor = $self->db->get_RoleAdaptor;
-    if( my $old_role = $worker->current_role ) {
-        $role_adaptor->finalize_role( $old_role );
-    }
     my $new_role = Bio::EnsEMBL::Hive::Role->new(
         'worker'        => $worker,
         'analysis_id'   => $analysis_id,
     );
-    $role_adaptor->store( $new_role );
+    $self->db->get_RoleAdaptor->store( $new_role );
     $worker->current_role( $new_role );
 
     if($job_id) {
@@ -325,15 +321,21 @@ sub register_worker_death {
 
     return unless($worker);
 
-    my $current_role    = $worker->current_role;
     my $worker_id       = $worker->dbID;
     my $work_done       = $worker->work_done;
     my $cause_of_death  = $worker->cause_of_death || 'UNKNOWN';    # make sure we do not attempt to insert a void
     my $worker_died     = $worker->died;
 
-    if( $current_role ) {
+    my $current_role    = $worker->current_role;
+
+    unless( $current_role ) {
+        $worker->current_role( $current_role = $self->db->get_RoleAdaptor->fetch_last_unfinished_by_worker_id( $worker_id ) );
+    }
+
+    if( $current_role and !$current_role->when_finished() ) {
+        $current_role->worker($worker); # So that release_undone_jobs_from_role() has the correct cause_of_death and work_done
         $current_role->when_finished( $worker_died );
-        $self->db->get_RoleAdaptor->finalize_role( $current_role );
+        $self->db->get_RoleAdaptor->finalize_role( $current_role, $self_burial );
     }
 
     my $sql = "UPDATE worker SET status='DEAD', work_done='$work_done', cause_of_death='$cause_of_death'"
@@ -342,30 +344,6 @@ sub register_worker_death {
             . " WHERE worker_id='$worker_id' ";
 
     $self->dbc->do( $sql );
-
-    if( my $analysis_id = $current_role && $current_role->analysis_id ) {
-        my $analysis_stats_adaptor = $self->db->get_AnalysisStatsAdaptor;
-
-        unless( $self->db->hive_use_triggers() ) {
-            $analysis_stats_adaptor->decrease_running_workers( $analysis_id );
-        }
-
-        unless( $cause_of_death eq 'NO_ROLE'
-            or  $cause_of_death eq 'NO_WORK'
-            or  $cause_of_death eq 'JOB_LIMIT'
-            or  $cause_of_death eq 'HIVE_OVERLOAD'
-            or  $cause_of_death eq 'LIFESPAN'
-        ) {
-                $self->db->get_AnalysisJobAdaptor->release_undone_jobs_from_role( $current_role );
-        }
-
-            # re-sync the analysis_stats when a worker dies as part of dynamic sync system
-        if($self->safe_synchronize_AnalysisStats( $current_role->analysis->stats )->status ne 'DONE') {
-            # since I'm dying I should make sure there is someone to take my place after I'm gone ...
-            # above synch still sees me as a 'living worker' so I need to compensate for that
-            $analysis_stats_adaptor->increase_required_workers( $analysis_id );
-        }
-    }
 }
 
 
@@ -407,8 +385,6 @@ sub check_for_dead_workers {    # scans the whole Valley for lost Workers (but i
         warn "GarbageCollector:\t[$meadow_type Meadow:]\t".join(', ', map { "$_:$worker_status_counts{$meadow_type}{$_}" } keys %{$worker_status_counts{$meadow_type}})."\n\n";
     }
 
-    my $role_adaptor = $self->db->get_RoleAdaptor;
-
     while(my ($meadow_type, $pid_to_lost_worker) = each %mt_and_pid_to_lost_worker) {
         my $this_meadow = $valley->available_meadow_hash->{$meadow_type};
 
@@ -432,7 +408,6 @@ sub check_for_dead_workers {    # scans the whole Valley for lost Workers (but i
             while(my ($process_id, $worker) = each %$pid_to_lost_worker) {
                 $worker->died(              $report_entries->{$process_id}{'died'} );
                 $worker->cause_of_death(    $report_entries->{$process_id}{'cause_of_death'} );
-                $worker->current_role( $role_adaptor->fetch_last_by_worker_id( $worker->dbID ) );
                 $self->register_worker_death( $worker );
             }
 
@@ -537,21 +512,20 @@ sub fetch_overdue_workers {
 =cut
 
 sub synchronize_hive {
-  my $self          = shift;
-  my $filter_analysis = shift; # optional parameter
+    my ($self, $filter_analysis) = @_;
 
-  my $start_time = time();
+    my $start_time = time();
 
-  my $list_of_analyses = $filter_analysis ? [$filter_analysis] : $self->db->get_AnalysisAdaptor->fetch_all;
+    my $list_of_analyses = $filter_analysis ? [$filter_analysis] : $self->db->get_AnalysisAdaptor->fetch_all;
 
-  print STDERR "\nSynchronizing the hive (".scalar(@$list_of_analyses)." analyses this time):\n";
-  foreach my $analysis (@$list_of_analyses) {
-    $self->synchronize_AnalysisStats($analysis->stats);
-    print STDERR ( ($analysis->stats()->status eq 'BLOCKED') ? 'x' : 'o');
-  }
-  print STDERR "\n";
+    print STDERR "\nSynchronizing the hive (".scalar(@$list_of_analyses)." analyses this time):\n";
+    foreach my $analysis (@$list_of_analyses) {
+        $self->synchronize_AnalysisStats($analysis->stats);
+        print STDERR ( ($analysis->stats()->status eq 'BLOCKED') ? 'x' : 'o');
+    }
+    print STDERR "\n";
 
-  print STDERR ''.((time() - $start_time))." seconds to synchronize_hive\n\n";
+    print STDERR ''.((time() - $start_time))." seconds to synchronize_hive\n\n";
 }
 
 
@@ -572,58 +546,71 @@ sub safe_synchronize_AnalysisStats {
 
     my $max_refresh_attempts = 5;
     while($stats->sync_lock and $max_refresh_attempts--) {   # another Worker/Beekeeper is synching this analysis right now
+            # ToDo: it would be nice to report the detected collision
         sleep(1);
         $stats->refresh();  # just try to avoid collision
     }
 
-    return $stats if($stats->status eq 'DONE');
-    return $stats if(($stats->status eq 'WORKING') and
-                   defined($stats->seconds_since_last_update) and
-                   ($stats->seconds_since_last_update < 3*60));
+    unless( ($stats->status eq 'DONE')
+         or ( ($stats->status eq 'WORKING') and defined($stats->seconds_since_last_update) and ($stats->seconds_since_last_update < 3*60) ) ) {
 
-        # try to claim the sync_lock
-    my $sql = "UPDATE analysis_stats SET status='SYNCHING', sync_lock=1 ".
-              "WHERE sync_lock=0 and analysis_id=" . $stats->analysis_id;
-    my $row_count = $self->dbc->do($sql);  
-    return $stats unless($row_count == 1);        # return the un-updated status if locked
-  
-        # if we managed to obtain the lock, let's go and perform the sync:
-    $self->synchronize_AnalysisStats($stats);
+        my $sql = "UPDATE analysis_stats SET status='SYNCHING', sync_lock=1 ".
+                  "WHERE sync_lock=0 and analysis_id=" . $stats->analysis_id;
 
-    return $stats;
+        my $row_count = $self->dbc->do($sql);   # try to claim the sync_lock
+
+        if( $row_count == 1 ) {     # if we managed to obtain the lock, let's go and perform the sync:
+            $self->synchronize_AnalysisStats($stats);   
+        } # otherwise assume it's locked and just return un-updated
+    }
 }
 
 
 =head2 synchronize_AnalysisStats
 
   Arg [1]    : Bio::EnsEMBL::Hive::AnalysisStats object
-  Example    : $self->synchronize($analysisStats);
+  Example    : $self->synchronize_AnalysisStats( $stats );
   Description: Queries the job and worker tables to get summary counts
-               and rebuilds the AnalysisStats object.  Then updates the
-               analysis_stats table with the new summary info
-  Returntype : newly synced Bio::EnsEMBL::Hive::AnalysisStats object
+               and rebuilds the AnalysisStats object.
+               Then updates the analysis_stats table with the new summary info.
   Exceptions : none
   Caller     : general
 
 =cut
 
 sub synchronize_AnalysisStats {
-    my $self = shift;
-    my $analysisStats = shift;
+    my ($self, $stats) = @_;
 
-    return $analysisStats unless($analysisStats);
-    return $analysisStats unless($analysisStats->analysis_id);
+    if( $stats and $stats->analysis_id ) {
 
-    $analysisStats->refresh(); ## Need to get the new hive_capacity for dynamic analyses
+        $stats->refresh(); ## Need to get the new hive_capacity for dynamic analyses
 
-    my $job_counts = $self->db->hive_use_triggers() ? undef : $self->db->get_AnalysisJobAdaptor->fetch_job_counts_hashed_by_status( $analysisStats->analysis_id );
+        my $job_counts = $self->db->hive_use_triggers() ? undef : $self->db->get_AnalysisJobAdaptor->fetch_job_counts_hashed_by_status( $stats->analysis_id );
 
-    $analysisStats->recalculate_from_job_counts( $job_counts );
+        $stats->recalculate_from_job_counts( $job_counts );
 
-    # $analysisStats->sync_lock(0); ## do we perhaps need it here?
-    $analysisStats->update;  #update and release sync_lock
+        # $stats->sync_lock(0); ## do we perhaps need it here?
+        $stats->update;  #update and release sync_lock
+    }
+}
 
-    return $analysisStats;
+
+sub check_nothing_to_run_but_semaphored {   # make sure it is run after a recent sync
+    my ($self, $filter_analysis) = @_;
+
+    my $list_of_analyses = $filter_analysis ? [$filter_analysis] : $self->db->get_AnalysisAdaptor->fetch_all;
+
+    my $only_semaphored_jobs_to_run = 1;
+    my $total_semaphored_job_count  = 0;
+
+    foreach my $analysis (@$list_of_analyses) {
+        my $stats = $analysis->stats;
+
+        $only_semaphored_jobs_to_run = 0 if( $stats->total_job_count != $stats->done_job_count + $stats->failed_job_count + $stats->semaphored_job_count );
+        $total_semaphored_job_count += $stats->semaphored_job_count;
+    }
+
+    return ( $total_semaphored_job_count && $only_semaphored_jobs_to_run );
 }
 
 
@@ -658,30 +645,34 @@ sub get_num_failed_analyses {
     }
 
     return $filter_analysis ? $filter_analysis_failed : scalar(@$failed_analyses);
-}
+        }
 
 
 sub get_remaining_jobs_show_hive_progress {
-  my $self = shift;
-  my $sql = "SELECT sum(done_job_count), sum(failed_job_count), sum(total_job_count), ".
-            "sum(ready_job_count * analysis_stats.avg_msec_per_job)/1000/60/60 ".
-            "FROM analysis_stats";
-  my $sth = $self->prepare($sql);
-  $sth->execute();
-  my ($done, $failed, $total, $cpuhrs) = $sth->fetchrow_array();
-  $sth->finish;
+    my ($self, $filter_analysis) = @_;
 
-  $done   ||= 0;
-  $failed ||= 0;
-  $total  ||= 0;
-  my $completed = $total
+    my $sql =qq{    SELECT  sum(done_job_count), sum(failed_job_count), sum(total_job_count),
+                            sum(ready_job_count * analysis_stats.avg_msec_per_job)/1000/60/60
+                    FROM analysis_stats }
+            . ($filter_analysis ? " WHERE analysis_id=".$filter_analysis->dbID : '');
+
+    my $sth = $self->prepare($sql);
+    $sth->execute();
+    my ($done, $failed, $total, $cpuhrs) = $sth->fetchrow_array();
+    $sth->finish;
+
+    $done   ||= 0;
+    $failed ||= 0;
+    $total  ||= 0;
+    my $completed = $total
     ? ((100.0 * ($done+$failed))/$total)
     : 0.0;
-  my $remaining = $total - $done - $failed;
-  warn sprintf("hive %1.3f%% complete (< %1.3f CPU_hrs) (%d todo + %d done + %d failed = %d total)\n",
-          $completed, $cpuhrs, $remaining, $done, $failed, $total);
-  return $remaining;
-}
+    my $remaining = $total - $done - $failed;
+    warn sprintf("%30s %1.3f%% complete (< %1.3f CPU_hrs) (%d todo + %d done + %d failed = %d total)\n",
+                ($filter_analysis ? "analysis '".$filter_analysis->logic_name."'" : 'hive'), $completed, $cpuhrs, $remaining, $done, $failed, $total);
+
+    return $remaining;
+    }
 
 
 sub print_analysis_status {

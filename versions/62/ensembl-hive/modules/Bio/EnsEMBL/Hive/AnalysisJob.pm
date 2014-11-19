@@ -134,12 +134,14 @@ sub semaphored_job_id {
     return $self->{'_semaphored_job_id'};
 }
 
-
-sub update_status {
+sub set_and_update_status {
     my ($self, $status ) = @_;
+
     $self->status($status);
-    return unless($self->adaptor);
-    $self->adaptor->update_status($self);
+
+    if(my $adaptor = $self->adaptor) {
+        $adaptor->check_in_job($self);
+    }
 }
 
 sub dataflow_rules {    # if ever set will prevent the Job from fetching rules from the DB
@@ -226,23 +228,16 @@ sub incomplete {            # Job should set this to 0 prior to throwing if the 
     return $self->{'_incomplete'};
 }
 
+
+sub died_somewhere {
+    my $self = shift;
+
+    $self->{'_died_somewhere'} ||= shift if(@_);    # NB: the '||=' only applies in this case - do not copy around!
+    return $self->{'_died_somewhere'} ||=0;
+}
+
 ##-----------------[/indicators to the Worker]-------------------------------
 
-=head2 warning
-
-    Description:    records a non-error message in 'log_message' table linked to the current job
-
-=cut
-
-sub warning {
-    my ($self, $msg) = @_;
-
-    if( my $job_adaptor = $self->adaptor ) {
-        $job_adaptor->db->get_LogMessageAdaptor()->store_job_message($self->dbID, $msg, 0);
-    } else {
-        print STDERR "Warning: $msg\n";
-    }
-}
 
 sub fan_cache {     # a self-initializing getter (no setting)
                     # Returns a hash-of-lists { 2 => [list of jobs waiting to be funneled into 2], 3 => [list of jobs waiting to be funneled into 3], etc}

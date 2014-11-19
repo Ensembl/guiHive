@@ -74,16 +74,17 @@ use base ('Bio::EnsEMBL::Hive::Configurable');
 =cut
 
 sub new {
-  my ($class, $hive_dba, $config_file_name) = @_;
+    my $class       = shift @_;
+    my $hive_dba    = shift @_;
 
-  my $self = bless({}, ref($class) || $class);
+    my $self = bless({}, ref($class) || $class);
 
-  $self->hive_dba($hive_dba);
-  my $config = Bio::EnsEMBL::Hive::Utils::Config->new( $config_file_name ? $config_file_name : () );
-  $self->config($config);
-  $self->context( [ 'Graph' ] );
+    $self->hive_dba($hive_dba);
+    my $config = Bio::EnsEMBL::Hive::Utils::Config->new( @_ );
+    $self->config($config);
+    $self->context( [ 'Graph' ] );
 
-  return $self;
+    return $self;
 }
 
 
@@ -185,10 +186,20 @@ sub build {
             if(UNIVERSAL::isa($target_object, 'Bio::EnsEMBL::Hive::Analysis')) {
                 $target_object->{'_inflow_count'}++;
             }
-        } elsif( $df_rule->to_analysis->isa('Bio::EnsEMBL::Hive::Analysis') ) { # dataflow target is a foreign Analysis
-            $target_object = $df_rule->to_analysis();
-            $target_object->{'_foreign'}=1;
-            Bio::EnsEMBL::Hive::Analysis->collection()->add( $target_object );  # add it to the collection
+        } else {
+            $target_object = $df_rule->to_analysis
+                or die "Could not fetch a target object for url='".$df_rule->to_analysis_url."', please check your database for consistency.\n";
+
+            if( UNIVERSAL::isa($target_object, 'Bio::EnsEMBL::Hive::Analysis') ) { # dataflow target is a foreign Analysis
+                $target_object->{'_foreign'}=1;
+                Bio::EnsEMBL::Hive::Analysis->collection()->add( $target_object );  # add it to the collection
+                my $foreign_stats = $target_object->stats or die "Could not fetch foreign stats for ".$target_object->display_name( $self->hive_dba );
+                Bio::EnsEMBL::Hive::AnalysisStats->collection()->add( $foreign_stats ); # add it to the collection
+            } elsif( UNIVERSAL::isa($target_object, 'Bio::EnsEMBL::Hive::NakedTable') ) {
+            } elsif( UNIVERSAL::isa($target_object, 'Bio::EnsEMBL::Hive::Accumulator') ) {
+            } else {
+                warn "Do not know how to handle the type '".ref($target_object)."'";
+            }
         }
 
         if( my $funnel_dataflow_rule  = $df_rule->funnel_dataflow_rule ) {
@@ -201,6 +212,8 @@ sub build {
             my $condition_analysis = $c_rule->condition_analysis();
             $condition_analysis->{'_foreign'}=1;
             Bio::EnsEMBL::Hive::Analysis->collection()->add( $condition_analysis ); # add it to the collection
+            my $foreign_stats = $condition_analysis->stats or die "Could not fetch foreign stats for ".$condition_analysis->display_name( $self->hive_dba );
+            Bio::EnsEMBL::Hive::AnalysisStats->collection()->add( $foreign_stats ); # add it to the collection
         }
     }
 
@@ -277,7 +290,9 @@ sub _propagate_allocation {
     my ($self, $source_analysis ) = @_;
 
     foreach my $df_rule ( @{ $source_analysis->dataflow_rules_collection } ) {    # this will only work if the analyses objects are ALL cached before loading DFRs
-        my $target_object       = $df_rule->to_analysis();
+        my $target_object       = $df_rule->to_analysis
+            or die "Could not fetch a target object for url='".$df_rule->to_analysis_url."', please check your database for consistency.\n";
+
         my $target_node_name;
 
         if(UNIVERSAL::isa($target_object, 'Bio::EnsEMBL::Hive::Analysis')) {
@@ -287,7 +302,7 @@ sub _propagate_allocation {
         } elsif(UNIVERSAL::isa($target_object, 'Bio::EnsEMBL::Hive::Accumulator')) {
             next;
         } else {
-            warn('Do not know how to handle the type '.ref($target_object));
+            warn("Do not know how to handle the type '".ref($target_object)."'");
             next;
         }
 
@@ -449,8 +464,12 @@ sub _add_dataflow_rules {
 
     foreach my $df_rule ( @$dataflow_rules ) {
     
-        my ($from_analysis, $branch_code, $funnel_dataflow_rule, $target_object) =
-            ($df_rule->from_analysis, $df_rule->branch_code, $df_rule->funnel_dataflow_rule, $df_rule->to_analysis);
+        my ($from_analysis, $branch_code, $funnel_dataflow_rule) =
+            ($df_rule->from_analysis, $df_rule->branch_code, $df_rule->funnel_dataflow_rule);
+
+        my $target_object       = $df_rule->to_analysis
+            or die "Could not fetch a target object for url='".$df_rule->to_analysis_url."', please check your database for consistency.\n";
+
         my $from_node_name = $self->_analysis_node_name( $from_analysis );
         my $target_node_name;
     
@@ -469,7 +488,7 @@ sub _add_dataflow_rules {
             $target_node_name = _midpoint_name( $from_analysis->{'_funnel_dfr'} );
 
         } else {
-            warn('Do not know how to handle the type '.ref($target_object));
+            warn("Do not know how to handle the type '".ref($target_object)."'");
             next;
         }
 

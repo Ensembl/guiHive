@@ -90,6 +90,13 @@ use Bio::EnsEMBL::Hive::Utils ('stringify', 'throw');
 use base ( 'Bio::EnsEMBL::Hive::Storable' );
 
 
+=head1 AUTOLOADED
+
+    resource_class_id / resource_class
+
+=cut
+
+
 sub init {
     my $self = shift;
 
@@ -130,13 +137,6 @@ sub process_id {
     my $self = shift;
     $self->{'_process_id'} = shift if(@_);
     return $self->{'_process_id'};
-}
-
-
-sub resource_class_id {
-    my $self = shift;
-    $self->{'_resource_class_id'} = shift if(@_);
-    return $self->{'_resource_class_id'};
 }
 
 
@@ -377,8 +377,11 @@ sub worker_say {
 
     my $worker_id       = $self->dbID();
     my $current_role    = $self->current_role;
+    my $job_id          = $self->runnable_object && $self->runnable_object->input_job && $self->runnable_object->input_job->dbID;
     print "Worker $worker_id [ ". ( $current_role
-                                    ? ('Role '.$current_role->dbID.' , '.$current_role->analysis->logic_name.'('.$current_role->analysis_id.')')
+                                    ? ('Role '.$current_role->dbID.' , '.$current_role->analysis->logic_name.'('.$current_role->analysis_id.')'
+                                        . ($job_id ? ", Job $job_id" : '')
+                                      )
                                     : 'UNSPECIALIZED'
                                   )." ] $msg\n";
 }
@@ -517,14 +520,17 @@ sub run {
             }
         }
 
-        if( $self->cause_of_death() eq 'NO_WORK') {
+        my $cod = $self->cause_of_death() || '';
+
+        if( $cod eq 'NO_WORK') {
             $self->adaptor->db->get_AnalysisStatsAdaptor->update_status( $self->current_role->analysis_id, 'ALL_CLAIMED' );
         }
 
-        if( $self->cause_of_death() =~ /^(NO_WORK|HIVE_OVERLOAD)$/ and $self->can_respecialize and !$specialization_arglist ) {
-            $self->adaptor->db->get_AnalysisStatsAdaptor->decrease_running_workers( $self->current_role->analysis->dbID );  # FIXME: tidy up this counting of active roles
+        if( $cod =~ /^(NO_WORK|HIVE_OVERLOAD)$/ and $self->can_respecialize and !$specialization_arglist ) {
+            my $old_role = $self->current_role;
+            $self->adaptor->db->get_RoleAdaptor->finalize_role( $old_role, 1 );
             $self->cause_of_death(undef);
-            $self->specialize_and_compile_wrapper();
+            $self->specialize_and_compile_wrapper( $specialization_arglist, $old_role->analysis );
         }
 
     }     # /Worker's lifespan loop
@@ -536,7 +542,9 @@ sub run {
         }
     }
 
-    $self->adaptor->register_worker_death($self, 1);
+    # The second arguments ("self_burial") controls whether we need to
+    # release the current (unfinished) batch
+    $self->adaptor->register_worker_death($self, ($self->cause_of_death eq 'CONTAMINATED' ? 0 : 1));
 
     if($self->debug) {
         $self->worker_say( 'AnalysisStats : '.$self->current_role->analysis->stats->toString ) if( $self->current_role );
@@ -553,17 +561,17 @@ sub run {
 
 
 sub specialize_and_compile_wrapper {
-    my ($self, $specialization_arglist) = @_;
+    my ($self, $specialization_arglist, $prev_analysis) = @_;
 
     eval {
         $self->enter_status('SPECIALIZATION');
-        my $old_role = $self->current_role();
-        $self->adaptor->specialize_new_worker( $self, $specialization_arglist ? @$specialization_arglist : () );
-        my $new_role = $self->current_role();
+        $self->adaptor->specialize_worker( $self, $specialization_arglist ? @$specialization_arglist : () );
 
+        my $new_role = $self->current_role();
         my $specialization_to = $new_role->analysis->logic_name.'('.$new_role->analysis_id.')';
-        if($old_role) {
-            my $respecialization_from = $old_role->analysis->logic_name.'('.$old_role->analysis_id.')';
+
+        if( $prev_analysis ) {
+            my $respecialization_from = $prev_analysis && $prev_analysis->logic_name.'('.$prev_analysis->dbID.')';
             $self->worker_say( "respecializing from $respecialization_from to $specialization_to" );
         } else {
             $self->worker_say( "specializing to $specialization_to" );
@@ -666,30 +674,26 @@ sub run_one_batch {
 
             $runnable_object->input_job( $job );    # "take" the job
             $job_partial_timing = $runnable_object->life_cycle();
-            $runnable_object->input_job( undef );   # release an extra reference to the job
-
-            $job->incomplete(0);
         };
-        my $msg_thrown          = $@;
-
-        $job->runtime_msec( $job_stopwatch->get_elapsed );  # whether successful or not
-        $job->query_count( $self->adaptor->db->dbc->query_count );
-
-        my $job_completion_line = "Job $job_id : complete";
-
-        if($msg_thrown) {   # record the death message
-            my $job_status_at_the_moment = $job->status();
-            $job_completion_line = "Job $job_id : died in status '$job_status_at_the_moment' for the following reason: $msg_thrown";
-            $self->adaptor->db->get_LogMessageAdaptor()->store_job_message($job_id, $msg_thrown, $job->incomplete );
+        if(my $msg = $@) {
+            $job->died_somewhere( $job->incomplete );  # it will be OR'd inside
+            $self->runnable_object->input_job->warning( $msg, $job->incomplete );
         }
 
-        print STDERR "\n$job_completion_line\n" if($self->log_dir and ($self->debug or $job->incomplete));      # one copy goes to the job's STDERR
+            # whether the job completed successfully or not:
+        $self->runnable_object->input_job( undef );   # release an extra reference to the job
+        $job->runtime_msec( $job_stopwatch->get_elapsed );
+        $job->query_count( $self->adaptor->db->dbc->query_count );
+
+        my $job_completion_line = "Job $job_id : ". ($job->died_somewhere ? 'died' : 'complete' );
+
+        print STDERR "\n$job_completion_line\n" if($self->log_dir and ($self->debug or $job->died_somewhere));  # one copy goes to the job's STDERR
         $self->stop_job_output_redirection($job);                                                               # and then we switch back to worker's STDERR
         $self->worker_say( $job_completion_line );                                                              # one copy goes to the worker's STDERR
 
-        $self->current_role->register_attempt( ! $job->incomplete );
+        $self->current_role->register_attempt( ! $job->died_somewhere );
 
-        if($job->incomplete) {
+        if($job->died_somewhere) {
                 # If the job specifically said what to do next, respect that last wish.
                 # Otherwise follow the default behaviour set by the beekeeper in $worker:
                 #
@@ -708,7 +712,7 @@ sub run_one_batch {
         } else {    # job successfully completed:
             $self->more_work_done( $job_partial_timing );
             $jobs_done_here++;
-            $job->update_status('DONE');
+            $job->set_and_update_status('DONE');
 
             if(my $semaphored_job_id = $job->semaphored_job_id) {
                 my $dbc = $self->adaptor->db->dbc;
@@ -724,7 +728,7 @@ sub run_one_batch {
             }
         }
 
-        $self->prev_job_error( $job->incomplete );
+        $self->prev_job_error( $job->died_somewhere );
         $self->enter_status('READY');
     } # /while(my $job = shift @$jobs)
 
@@ -732,17 +736,25 @@ sub run_one_batch {
 }
 
 
-sub enter_status {
-    my ($self, $status, $msg) = @_;
+sub set_and_update_status {
+    my ($self, $status ) = @_;
 
-    $msg ||= ": $status";
+    $self->status($status);
+
+    if(my $adaptor = $self->adaptor) {
+        $adaptor->check_in_worker( $self );
+    }
+}
+
+
+sub enter_status {
+    my ($self, $status) = @_;
 
     if($self->debug) {
-        $self->worker_say( $msg );
+        $self->worker_say( '-> '.$status );
     }
 
-    $self->status( $status );
-    $self->adaptor->check_in_worker( $self );
+    $self->set_and_update_status( $status );
 }
 
 
@@ -767,7 +779,7 @@ sub stop_job_output_redirection {
         $self->get_stdout_redirector->pop();
         $self->get_stderr_redirector->pop();
 
-        my $force_cleanup = !($self->debug || $job->incomplete);
+        my $force_cleanup = !($self->debug || $job->died_somewhere);
 
         if($force_cleanup or -z $job->stdout_file) {
             $self->worker_say( "Deleting '".$job->stdout_file."' file" );
