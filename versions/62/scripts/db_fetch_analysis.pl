@@ -38,29 +38,14 @@ my $json_data = shift @ARGV || '{"version":["53"],"url":["mysql://ensro@127.0.0.
 
 ## Input
 my $var = decode_json($json_data);
-my $url = $var->{url}->[0];
 my $analysis_id = $var->{analysis_id}->[0];
-my $version = $var->{version}->[0];
 
 my $project_dir = $ENV{GUIHIVE_BASEDIR};
 my $details_template = $project_dir . "static/analysis_details.html";
 
 ## Initialization
-my $dbConn = Bio::EnsEMBL::Hive::DBSQL::DBAdaptor->new( -no_sql_schema_version_check => 1, -url => $url );
+my $dbConn = check_db_versions_match($var);
 my $response = msg->new();
-
-if (defined $dbConn) {
-
-  ## First check if the code version is OK
-  my $code_version = get_hive_code_version();
-  my $hive_db_version = get_hive_db_version($dbConn);
-
-  if ($code_version != $version) {
-    $response->status("VERSION MISMATCH");
-    $response->err_msg("$code_version $hive_db_version");
-    print $response->toJSON;
-    exit 0;
-  }
 
   my $analysis;
   eval {
@@ -75,10 +60,6 @@ if (defined $dbConn) {
       $response->status("FAILED");
   }
   $response->out_msg(formAnalysisInfo($analysis));
-} else {
-  $response->err_msg("The provided URL seems to be invalid. Please check the URL and try again");
-  $response->status("FAILED");
-}
 
 print $response->toJSON;
 
@@ -298,7 +279,7 @@ sub template_mappings_SELECT {
   $curr_val = "NULL" unless(defined $curr_val);
 
   my $newVals = insert_val_if_needed($vals,$curr_val);
-  if ((defined $displays) && (length(@$newVals) != length(@$vals))) {
+  if ((defined $displays) && (scalar(@$newVals) != scalar(@$vals))) {
     $displays = insert_val_if_needed($displays,$curr_val);
   }
 
