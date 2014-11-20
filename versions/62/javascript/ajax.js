@@ -332,6 +332,9 @@ function onSuccess_dbConnect(res) {
 	// Showing the resources
 	fetch_resources();
 
+	// And the pipeline-wide parameters
+	fetch_and_setup_change_listener( "scripts/db_fetch_pipeline_params.pl", "scripts/db_update_nonobject.pl", "#pipeline_wide_parameters", ".update_pwp_param" );
+
 	// We load the jobs form
 	$.get('./scripts/db_jobs_form.pl', {url : guiHive.pipeline_url, version : guiHive.version} ,function(data) {
 	    $('#jobs_form').html(data);
@@ -395,6 +398,51 @@ function onSuccess_fetchResources(resourcesRes, analysis_id, fetch_url) {
     }
     listen_Resources(fetch_url);
 }
+
+
+function fetch_and_setup_change_listener(fetch_url, write_url, target_div, updatable_class, callback) {
+
+    function doFetch() {
+        $.ajax({
+            url        : fetch_url,
+            type       : "post",
+            data       : "url=" + guiHive.pipeline_url + "&version=" + guiHive.version,
+            dataType   : "json",
+            success    : onFetchSuccess_handler,
+            error      : function(resp,error) {log({err_msg : error})},
+        });
+    }
+
+    function onFetchSuccess_handler(resp) {
+        if (resp.status != "ok") {
+            log(resp);
+        } else {
+            $(target_div).html(resp.out_msg);
+        }
+        $(updatable_class).click( onClick_handler );
+    };
+
+    function onClick_handler(obj) {
+        $.ajax({
+            url        : write_url,
+            type       : "post",
+            data       : buildURL(this),
+            dataType   : "json",
+            async      : false,
+            cache      : false,
+            success    : function(updateRes) {
+                if(updateRes.status !== "ok") {
+                    log(updateRes);
+                };
+            },
+            complete   : doFetch
+        });
+    }
+
+    doFetch();
+}
+
+
 
 function change_refresh_time() {
     guiHive.monitorTimeout = $(this).val()
@@ -719,6 +767,9 @@ function buildURL(obj) {
 	"&version="+guiHive.version;
     if ($(obj).attr("data-analysisID")) {
 	URL = URL.concat("&analysis_id="+$(obj).attr("data-analysisID"));
+    }
+    if ($(obj).attr("data-fields")) {
+	URL = URL.concat("&fields="+$(obj).attr("data-fields"));
     }
 
     return(URL);

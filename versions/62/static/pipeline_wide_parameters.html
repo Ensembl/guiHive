@@ -1,0 +1,74 @@
+<!-- Copyright [1999-2014] Wellcome Trust Sanger Institute and the EMBL-European Bioinformatics Institute
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-->
+
+<table id="pw_param_table">
+    <tr>
+        <th>Name</th>
+        <th>Value</th>
+        <th></th>
+        <th></th>
+    </tr>
+
+    <TMPL_LOOP NAME=existing_parameters>
+    <tr>
+        <td><span id="<TMPL_VAR NAME=parameterKeyID>" data-value="<TMPL_VAR NAME=key>">
+                <TMPL_VAR NAME=key>
+        </span></td>
+        <td><input
+            id="<TMPL_VAR NAME=parameterValueID>"
+            type="text"
+            data-value="<TMPL_VAR NAME=value ESCAPE=HTML>"
+            value="<TMPL_VAR NAME=value ESCAPE=HTML>">
+        </td>
+        <TMPL_LOOP NAME=change_parameter>
+        <td class="button-cell"><a class="update_pwp_param btn btn-mini"
+                data-analysisID="<TMPL_VAR NAME=id>"
+                data-adaptor="<TMPL_VAR NAME=adaptor>"
+                data-method="<TMPL_VAR NAME=method>"
+                data-fields="<TMPL_VAR NAME=fields>"
+                data-linkTo="<TMPL_VAR NAME=parameterKeyID>,<TMPL_VAR NAME=parameterValueID>"><i class="icon-plus-sign"></i></a>
+        </td>
+        </TMPL_LOOP> <!-- change_paramter -->
+        <TMPL_LOOP NAME=delete_parameter>
+        <td class="button-cell"><a class="update_pwp_param btn btn-mini"
+                data-analysisID="<TMPL_VAR NAME=id>"
+                data-adaptor="<TMPL_VAR NAME=adaptor>"
+                data-method="<TMPL_VAR NAME=method>"
+                data-fields="<TMPL_VAR NAME=fields>"
+                data-linkTo="<TMPL_VAR NAME=parameterKeyID>"><i class="icon-minus-sign"></i></a>
+        </td>
+        </TMPL_LOOP> <!-- delete_parameter -->
+    </tr>
+    </TMPL_LOOP> <!-- existing_parameters -->
+
+    <TMPL_LOOP NAME=new_parameter>
+    <tr>
+        <td><input type="text" id="p_new_key" placeholder="new parameter's name"></td>
+        <td><input type="text" id="p_new_value" placeholder="new parameter's value"></td>
+        <td class="button-cell"><a class="update_pwp_param btn btn-mini"
+                data-analysisID="<TMPL_VAR NAME=id>"
+                data-adaptor="<TMPL_VAR NAME=adaptor>"
+                data-method="<TMPL_VAR NAME=method>"
+                data-fields="<TMPL_VAR NAME=fields>"
+                data-linkTo="p_new_key,p_new_value"><i class="icon-plus-sign"></i></a>
+        </td>
+        <td></td>
+    </tr>
+    </TMPL_LOOP> <!-- new parameter -->
+
+</table>
+
+<div class="footer_spacer"></div>
+

@@ -228,6 +228,44 @@ html, body {
     right            : 5px;
 }
 
+
+/****************************/
+/* pipeline-wide parameters */
+/****************************/
+
+#pw_param_table {
+    font-size        : 12px;
+    background-color : #E6EBF0;
+    margin-left      : 10px;
+}
+
+#pw_param_table th {
+    padding: 5px;
+}
+
+#pw_param_table tr td:first-child {
+    padding-left : 10px;
+    padding-right: 10px;
+}
+
+#pw_param_table tr td {
+    padding-bottom: 3px;
+    padding-top   : 3px;
+}
+
+#pw_param_table tr:last-child td {
+    padding-top: 6px;
+}
+
+#pw_param_table tr td:nth-child(2) input {
+    width: 500px;
+}
+
+
+.footer_spacer {
+    height: 40px;
+}
+
 /******************/
 /* resources table /
 /******************/
