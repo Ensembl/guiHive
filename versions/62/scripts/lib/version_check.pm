@@ -60,7 +60,7 @@ sub _fail_with_status_message {
 }
 
 sub check_db_versions_match {
-    my ($decoded_json) = @_;
+    my ($decoded_json, $silent) = @_;
 
     # Input data
     my $url = $decoded_json->{url}->[0];
@@ -74,6 +74,7 @@ sub check_db_versions_match {
         $dbConn = Bio::EnsEMBL::Hive::DBSQL::DBAdaptor->new( -no_sql_schema_version_check => 1, -url => $url );
     };
     if ($@) {
+        exit(0) if $silent;
         _fail_with_status_message('FAILED', $@);
     }
 
@@ -85,14 +86,17 @@ sub check_db_versions_match {
             $hive_db_version = get_hive_db_version($dbConn);
         };
         if ($@) {
+            exit(0) if $silent;
             _fail_with_status_message('FAILED', $@);
         }
 
         if ($code_version != $hive_db_version) {
+            exit(0) if $silent;
             _fail_with_status_message('VERSION MISMATCH', "code=$code_version db=$hive_db_version");
         }
 
     } else {
+        exit(0) if $silent;
         _fail_with_status_message('FAILED', "The provided URL seems to be invalid. Please check the URL and try again\n");
     }
 
