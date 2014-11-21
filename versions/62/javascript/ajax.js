@@ -333,7 +333,7 @@ function onSuccess_dbConnect(res) {
 	fetch_resources();
 
 	// And the pipeline-wide parameters
-	fetch_and_setup_change_listener( "scripts/db_fetch_pipeline_params.pl", "scripts/db_update_nonobject.pl", "#pipeline_wide_parameters", ".update_pwp_param" );
+	fetch_and_setup_change_listener( "scripts/db_fetch_pipeline_params.pl", "scripts/db_update_nonobject.pl", "#pipeline_wide_parameters" );
 
 	// We load the jobs form
 	$.get('./scripts/db_jobs_form.pl', {url : guiHive.pipeline_url, version : guiHive.version} ,function(data) {
@@ -400,7 +400,7 @@ function onSuccess_fetchResources(resourcesRes, analysis_id, fetch_url) {
 }
 
 
-function fetch_and_setup_change_listener(fetch_url, write_url, target_div, updatable_class, callback) {
+function fetch_and_setup_change_listener(fetch_url, write_url, target_div) {
 
     function doFetch() {
         $.ajax({
@@ -417,12 +417,35 @@ function fetch_and_setup_change_listener(fetch_url, write_url, target_div, updat
         if (resp.status != "ok") {
             log(resp);
         } else {
-            $(target_div).html(resp.out_msg);
+            var d = $(target_div);
+            d.html(resp.out_msg);
+            d.find(".ajaxable_btn").click( onClick_handler );
+            d.find(".monitored_input").keyup( onChange_handler );
+            d.find(".input_restorer").click( onRestoreRequest_handler );
         }
-        $(updatable_class).click( onClick_handler );
     };
 
-    function onClick_handler(obj) {
+    function onChange_handler(evt) {
+        var curr_val = this.value;
+        var ref_val = this.dataset.value;
+        var target_container = $('#' + this.id + "_monitor");
+        var targets = target_container.find(".btn");
+        if (curr_val === ref_val) {
+            targets.addClass("disabled");
+        } else {
+            targets.removeClass("disabled");
+        }
+    };
+
+
+    function onRestoreRequest_handler(evt) {
+        var target_name = $(this).attr("data-linkTo");
+        var elem = $('#'+target_name);
+        elem.val(elem.data("value"));
+        $('#' + target_name + "_monitor").find(".btn").addClass("disabled");
+    }
+
+    function onClick_handler(evt) {
         $.ajax({
             url        : write_url,
             type       : "post",

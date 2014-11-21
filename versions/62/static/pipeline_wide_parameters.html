@@ -28,28 +28,26 @@
         </span></td>
         <td><input
             id="<TMPL_VAR NAME=parameterValueID>"
+            class="monitored_input"
             type="text"
             data-value="<TMPL_VAR NAME=value ESCAPE=HTML>"
             value="<TMPL_VAR NAME=value ESCAPE=HTML>">
         </td>
-        <TMPL_LOOP NAME=change_parameter>
-        <td class="button-cell"><a class="update_pwp_param btn btn-mini"
-                data-analysisID="<TMPL_VAR NAME=id>"
+        <td id="<TMPL_VAR NAME=parameterValueID>_monitor">
+            <a class="ajaxable_btn btn btn-mini disabled"
                 data-adaptor="<TMPL_VAR NAME=adaptor>"
-                data-method="<TMPL_VAR NAME=method>"
-                data-fields="<TMPL_VAR NAME=fields>"
-                data-linkTo="<TMPL_VAR NAME=parameterKeyID>,<TMPL_VAR NAME=parameterValueID>"><i class="icon-plus-sign"></i></a>
+                data-method="<TMPL_VAR NAME=update_method>"
+                data-fields="<TMPL_VAR NAME=key_field>,<TMPL_VAR NAME=key_value>"
+                data-linkTo="<TMPL_VAR NAME=parameterKeyID>,<TMPL_VAR NAME=parameterValueID>"><i class="icon-ok-sign"></i></a>
+            <a class="input_restorer btn btn-mini disabled"
+                data-linkTo="<TMPL_VAR NAME=parameterValueID>"><i class="icon-remove-sign"></i></a>
         </td>
-        </TMPL_LOOP> <!-- change_paramter -->
-        <TMPL_LOOP NAME=delete_parameter>
-        <td class="button-cell"><a class="update_pwp_param btn btn-mini"
-                data-analysisID="<TMPL_VAR NAME=id>"
+        <td><a class="ajaxable_btn btn btn-mini"
                 data-adaptor="<TMPL_VAR NAME=adaptor>"
-                data-method="<TMPL_VAR NAME=method>"
-                data-fields="<TMPL_VAR NAME=fields>"
+                data-method="<TMPL_VAR NAME=delete_method>"
+                data-fields="<TMPL_VAR NAME=key_field>"
                 data-linkTo="<TMPL_VAR NAME=parameterKeyID>"><i class="icon-minus-sign"></i></a>
         </td>
-        </TMPL_LOOP> <!-- delete_parameter -->
     </tr>
     </TMPL_LOOP> <!-- existing_parameters -->
 
@@ -57,8 +55,7 @@
     <tr>
         <td><input type="text" id="p_new_key" placeholder="new parameter's name"></td>
         <td><input type="text" id="p_new_value" placeholder="new parameter's value"></td>
-        <td class="button-cell"><a class="update_pwp_param btn btn-mini"
-                data-analysisID="<TMPL_VAR NAME=id>"
+        <td><a class="ajaxable_btn btn btn-mini"
                 data-adaptor="<TMPL_VAR NAME=adaptor>"
                 data-method="<TMPL_VAR NAME=method>"
                 data-fields="<TMPL_VAR NAME=fields>"

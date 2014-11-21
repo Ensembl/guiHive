@@ -76,22 +76,14 @@ sub template_mappings_PARAMS {
     for my $param (sort keys %$all_params_hash) {
         my $this_param_data = {
             "key"              => $param,
+            "value"            => stringify_if_needed($all_params_hash->{$param}),
             "parameterKeyID"   => "p_$param",
             "parameterValueID" => "v_$param",
-            "value"            => stringify_if_needed($all_params_hash->{$param}),
-            "delete_parameter" => [{
-                "adaptor"        => "PipelineWideParameters",
-                "method"         => "remove",
-                "fields"         => "param_name",
-                "parameterKeyID" => "p_$param",
-            }],
-            "change_parameter" => [{
-                "adaptor"          => "PipelineWideParameters",
-                "method"           => "update",
-                "fields"           => "param_name,param_value",
-                "parameterKeyID"   => "p_$param",
-                "parameterValueID" => "v_$param",
-            }],
+            "adaptor"          => "PipelineWideParameters",
+            "key_field"        => "param_name",
+            "key_value"        => "param_value",
+            "update_method"    => "update",
+            "delete_method"    => "remove",
         };
         push @{$vals->{existing_parameters}}, $this_param_data;
     }
