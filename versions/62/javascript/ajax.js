@@ -402,6 +402,10 @@ function onSuccess_fetchResources(resourcesRes, analysis_id, fetch_url) {
 
 function fetch_and_setup_change_listener(fetch_url, write_url, target_div) {
 
+    var tooltip_onlyalpha = 'Only alpha-numeric characters and the underscore are allowed';
+    var tooltip_uniquename = 'Parameter names have to be unique';
+
+    // Replace the div with the output of fetch_url
     function doFetch() {
         $.ajax({
             url        : fetch_url,
@@ -413,8 +417,8 @@ function fetch_and_setup_change_listener(fetch_url, write_url, target_div) {
         });
     }
 
+    // Read the data objects and build the post data to send to write_url
     function get_url_data(ref_object) {
-        console.log(ref_object);
         var url_data = "url="+ guiHive.pipeline_url +
             "&method="+$(ref_object).attr("data-method") +
             "&version="+guiHive.version;
@@ -424,8 +428,6 @@ function fetch_and_setup_change_listener(fetch_url, write_url, target_div) {
                 var blocks = $(ref_object).attr(name).split(",");
                 var vals = jQuery.map(blocks, function(e,i) {
                     var parts = e.split("=");
-                    console.log(parts);
-                    console.log($('#'+parts[1]));
                     return parts[0] + "=" + f($('#'+parts[1])[0]);
                 });
                 return "&" + vals.join("&");
@@ -438,6 +440,33 @@ function fetch_and_setup_change_listener(fetch_url, write_url, target_div) {
         return url_data
     };
 
+    // Check that input_object has a valid key name (not duplicated, and alphanumeric only)
+    function key_check(d, input_object) {
+        var inp = $(input_object);
+        var is_error = false;
+        jQuery.map(d.find("input[id^='pw_key_']").add(d.find("#p_new_key")), function(obj, i) {
+            var same_name = (obj.id !== input_object.id) && ((obj.value === input_object.value) || (obj.defaultValue === input_object.value));
+            $(obj).closest('.control-group').toggleClass('warning', same_name);
+            if (same_name) {
+                is_error = true;
+                inp.tooltip({title: tooltip_uniquename});
+                inp.tooltip('show');
+            }
+        });
+        if (inp.hasClass('onlyalpha') && !(input_object.value.match(/^[0-9a-zA-Z\_]*$/))) {
+                inp.tooltip({title: tooltip_onlyalpha});
+                inp.tooltip('show');
+                is_error = true;
+        }
+        if (!is_error) {
+            inp.tooltip('destroy');
+        }
+        inp.closest('.control-group').toggleClass("error", is_error);
+        inp.closest('.control-group').toggleClass("info", !is_error);
+        return is_error;
+    };
+
+    // Setup all the listeners
     function onFetchSuccess_handler(resp) {
         if (resp.status != "ok") {
             log(resp);
@@ -447,113 +476,94 @@ function fetch_and_setup_change_listener(fetch_url, write_url, target_div) {
         var d = $(target_div);
         d.html(resp.out_msg);
 
-        d.find(".monitored_input").map( function(i, obj) {
-            var target_container = $(obj);
-            target_container.addClass("control-group");
-            target_container.addClass("input-append");
-            var monitored_input = target_container.find("input")[0];
+        d.find("input.monitored").map( function(i, monitored_input) {
+            var ref_object = $(monitored_input);
 
-            var input_sender = $('<a class="btn btn-mini add-on"><i class="icon-ok-sign"></i></a>');
-            target_container.append(input_sender);
-            var input_restorer = $('<a class="btn btn-mini add-on"><i class="icon-remove-sign"></i></a>');
-            target_container.append(input_restorer);
-            var targets = target_container.find(".btn");
+            var control_group = ref_object.parent();
+            control_group.addClass('control-group');
+
+            var input_append_group = $('<div class="input-append"></div>');
+            input_append_group.appendTo(control_group);
+            ref_object.appendTo(input_append_group);
+
+            var controls_container = $('<div class="control_container"></div>');
+            input_append_group.append(controls_container);
+            var input_sender = $('<a class="btn btn-mini add-on"><i class="icon-ok"></i></a>');
+            controls_container.append(input_sender);
+            var input_restorer = $('<a class="btn btn-mini add-on"><i class="icon-refresh"></i></a>');
+            controls_container.append(input_restorer);
+            var targets = controls_container.children();
             targets.hide();
 
             $(monitored_input).keyup( function(evt) {
                 var is_change = (monitored_input.value !== monitored_input.defaultValue);
-                var is_valid_input = !target_container.hasClass("onlyalpha") || (monitored_input.value.match(/^[0-9a-zA-Z\_]*$/) !== null);
+                var is_valid_input = !key_check(d, this);
                 input_restorer.toggle(is_change);
                 input_sender.toggle(is_change && is_valid_input);
-                target_container.toggleClass("info", is_change && is_valid_input);
-                target_container.toggleClass("error", is_change && !is_valid_input);
             });
 
             input_restorer.click( function(evt) {
                 monitored_input.value = monitored_input.defaultValue;
                 targets.hide();
-                target_container.removeClass("success");
-                target_container.removeClass("info");
-                target_container.removeClass("error");
+                input_append_group.tooltip('destroy');
+                control_group.removeClass("success");
+                control_group.removeClass("info");
+                control_group.removeClass("error");
             });
 
             input_sender.click( function(evt) {
                 var url_data = get_url_data(monitored_input);
-                target_container.removeClass("info");
-                console.log(url_data);
-                $.ajax({
-                    url        : write_url,
-                    type       : "post",
-                    data       : url_data,
-                    dataType   : "json",
-                    async      : false,
-                    cache      : false,
-                    success    : function(updateRes) {
-                        console.log(updateRes);
-                        if (updateRes.status === "ok") {
-                            monitored_input.defaultValue = monitored_input.value;
-                            targets.hide();
-                            target_container.addClass("success");
-                        } else {
-                            target_container.addClass("error");
-                            log(updateRes);
-                        };
-                    },
-                });
+                control_group.removeClass("info");
+                function success(updateRes) {
+                    if (updateRes.status === "ok") {
+                        monitored_input.defaultValue = monitored_input.value;
+                        targets.hide();
+                        control_group.addClass("success");
+                    } else {
+                        control_group.addClass("error");
+                        log(updateRes);
+                    };
+                };
+                onClick_handler(url_data, success, null);
             });
         });
 
         d.find(".ajaxable_btn").click( function(evt) {
             var url_data = get_url_data(this);
-            //console.log("evt", evt);
-            //console.log("this", this);
-            console.log(url_data);
-            $.ajax({
-                url        : write_url,
-                type       : "post",
-                data       : url_data,
-                dataType   : "json",
-                async      : false,
-                cache      : false,
-                success    : function(updateRes) {
-                    if (updateRes.status !== "ok") {
-                        log(updateRes);
-                    };
-                },
-                complete   : doFetch
-            });
+            var o = $(this);
+            var refresh = true;
+            function success(updateRes) {
+                if (updateRes.status !== "ok") {
+                    log(updateRes);
+                } else if (o.hasClass("remove_row")) {
+                    o.closest("tr").remove();
+                    refresh = false;
+                };
+            };
+            function complete() {
+                if (refresh) {
+                    doFetch();
+                }
+            };
+            onClick_handler(url_data, success, complete);
         });
 
         d.find("#p_new_key").keyup( function(evt) {
-            var is_error = false;
-            jQuery.map(d.find(".control-group"), function(obj, i) {
-                if ($(obj).children("input[value='"+evt.target.value+"']").length) {
-                    $(obj).addClass("warning");
-                    is_error = true;
-                } else {
-                    $(obj).removeClass("warning");
-                }
-            });
-            is_error = is_error || !(evt.target.value.match(/^[0-9a-zA-Z\_]*$/));
-            d.find(".btn[data-method^='store']").toggleClass("disabled", is_error);
-            d.find("#row_new_pw_param").find('td.control-group').toggleClass("error", is_error);
+            var is_error = key_check(d, this);
+            $(this).closest("tr").find(".btn").toggleClass("disabled", is_error);
         });
     };
 
-    function onClick_handler(evt) {
+    function onClick_handler(url_data, fs, fc) {
         $.ajax({
             url        : write_url,
             type       : "post",
-            data       : buildURL(this),
+            data       : url_data,
             dataType   : "json",
             async      : false,
             cache      : false,
-            success    : function(updateRes) {
-                if(updateRes.status !== "ok") {
-                    log(updateRes);
-                };
-            },
-            complete   : doFetch
+            success    : fs,
+            complete   : fc
         });
     }
 

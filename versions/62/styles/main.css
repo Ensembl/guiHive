@@ -233,18 +233,21 @@ html, body {
 /* pipeline-wide parameters */
 /****************************/
 
+.control_container {
+    width: 60px;
+    display: inline-block;
+}
+
 #pw_param_table {
-    font-size        : 12px;
     margin-left      : 10px;
-    width            : 1000px;
+    width            : auto;
 }
 
-#pw_param_table tr td {
-    padding-bottom: 3px;
-    padding-top   : 3px;
+#pw_param_table td, #pw_param_table th {
+    padding: 3px;
 }
 
-#pw_param_table tr:last-child td {
+#row_new_pw_param td {
     padding-top: 6px;
 }
 

@@ -15,19 +15,17 @@
 
 <table id="pw_param_table" class="table table-striped">
     <tr>
-        <th class="input-large">Name</th>
-        <th class="input-mini"></th>
-        <th class="input-xxlarge">Value</th>
-        <th class="input-mini"></th>
+        <th>Name</th>
+        <th>Value</th>
         <th></th>
     </tr>
 
     <TMPL_LOOP NAME=existing_parameters>
     <tr>
-        <td class="monitored_input onlyalpha" colspan="2">
+        <td>
             <input
             id="pw_key_<TMPL_VAR NAME=param_index>"
-            class="input-large"
+            class="monitored onlyalpha input-large"
             type="text"
             value="<TMPL_VAR NAME=key>"
             data-method="update_key"
@@ -35,30 +33,32 @@
             data-linkToDef="inikey=pw_key_<TMPL_VAR NAME=param_index>"
             >
         </td>
-        <td class="monitored_input" colspan="2">
+        <td>
             <input
             id="pw_value_<TMPL_VAR NAME=param_index>"
             type="text"
-            class="input-xxlarge"
+            class="monitored input-xxlarge"
             value="<TMPL_VAR NAME=value ESCAPE=HTML>"
             data-method="update"
             data-linkTo="value=pw_value_<TMPL_VAR NAME=param_index>"
             data-linkToDef="key=pw_key_<TMPL_VAR NAME=param_index>"
             >
         </td>
-        <td><a class="ajaxable_btn btn btn-mini"
+        <td><a class="ajaxable_btn btn btn-mini remove_row"
                 data-method="remove"
-                data-linkToDef="key=pw_key_<TMPL_VAR NAME=param_index>"><i class="icon-minus-sign"></i></a>
+                data-linkToDef="key=pw_key_<TMPL_VAR NAME=param_index>"><i class="icon-remove"></i></a>
         </td>
     </tr>
     </TMPL_LOOP> <!-- existing_parameters -->
 
     <tr id="row_new_pw_param">
-        <td class="control-group onlyalpha" colspan="2"><input class="input-large" type="text" id="p_new_key" placeholder="new parameter's name"></td>
-        <td colspan="2"><input class="input-xxlarge" type="text" id="p_new_value" placeholder="new parameter's value"></td>
+        <td class="control-group onlyalpha">
+            <input class="input-large onlyalpha" type="text" id="p_new_key" placeholder="new parameter's name">
+        </td>
+        <td><input class="input-xxlarge" type="text" id="p_new_value" placeholder="new parameter's value"></td>
         <td><a class="ajaxable_btn btn btn-mini"
                 data-method="store"
-                data-linkTo="key=p_new_key,value=p_new_value"><i class="icon-plus-sign"></i></a>
+                data-linkTo="key=p_new_key,value=p_new_value"><i class="icon-plus"></i></a>
         </td>
     </tr>
 
