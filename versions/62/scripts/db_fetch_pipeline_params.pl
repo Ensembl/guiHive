@@ -46,12 +46,12 @@ sub main {
     my $dbConn = check_db_versions_match($decoded_json);
     my $response = msg->new();
 
-    my $all_params_hash;
     eval {
-        $all_params_hash = $dbConn->get_PipelineWideParametersAdaptor()->fetch_param_hash();
-        $response->out_msg(formPipelineWideParameters($all_params_hash)) if $all_params_hash;
+        my $all_params_hash = $dbConn->get_PipelineWideParametersAdaptor()->fetch_param_hash();
+        die "all_params_hash is undefined\n" unless $all_params_hash;
+        $response->out_msg(formPipelineWideParameters($all_params_hash));
     };
-    if ($@ or (not $all_params_hash)) {
+    if ($@) {
         $response->err_msg("I can't retrieve the pipeline-wide parameters: $@");
         $response->status("FAILED");
     }
@@ -72,27 +72,18 @@ sub formPipelineWideParameters {
 
 sub template_mappings_PARAMS {
     my ($all_params_hash) = @_;
-    my $vals;
+    my @existing_parameters;
+    my $i = 0;
     for my $param (sort keys %$all_params_hash) {
         my $this_param_data = {
             "key"              => $param,
             "value"            => stringify_if_needed($all_params_hash->{$param}),
-            "parameterKeyID"   => "p_$param",
-            "parameterValueID" => "v_$param",
-            "adaptor"          => "PipelineWideParameters",
-            "key_field"        => "param_name",
-            "key_value"        => "param_value",
-            "update_method"    => "update",
-            "delete_method"    => "remove",
+            "param_index"      => $i,
         };
-        push @{$vals->{existing_parameters}}, $this_param_data;
+        push @existing_parameters, $this_param_data;
+        $i++;
     }
-    $vals->{new_parameter} = [{
-        "adaptor" => "PipelineWideParameters",
-        "method"  => "store",
-        "fields"  => "param_name,param_value",
-    }],
-    return $vals;
+    return { 'existing_parameters' => \@existing_parameters };
 }
 
 sub stringify_if_needed {

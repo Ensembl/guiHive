@@ -13,57 +13,54 @@
  limitations under the License.
 -->
 
-<table id="pw_param_table">
+<table id="pw_param_table" class="table table-striped">
     <tr>
-        <th>Name</th>
-        <th>Value</th>
-        <th></th>
+        <th class="input-large">Name</th>
+        <th class="input-mini"></th>
+        <th class="input-xxlarge">Value</th>
+        <th class="input-mini"></th>
         <th></th>
     </tr>
 
     <TMPL_LOOP NAME=existing_parameters>
     <tr>
-        <td><span id="<TMPL_VAR NAME=parameterKeyID>" data-value="<TMPL_VAR NAME=key>">
-                <TMPL_VAR NAME=key>
-        </span></td>
-        <td><input
-            id="<TMPL_VAR NAME=parameterValueID>"
-            class="monitored_input"
+        <td class="monitored_input onlyalpha" colspan="2">
+            <input
+            id="pw_key_<TMPL_VAR NAME=param_index>"
+            class="input-large"
             type="text"
-            data-value="<TMPL_VAR NAME=value ESCAPE=HTML>"
-            value="<TMPL_VAR NAME=value ESCAPE=HTML>">
+            value="<TMPL_VAR NAME=key>"
+            data-method="update_key"
+            data-linkTo="key=pw_key_<TMPL_VAR NAME=param_index>"
+            data-linkToDef="inikey=pw_key_<TMPL_VAR NAME=param_index>"
+            >
         </td>
-        <td id="<TMPL_VAR NAME=parameterValueID>_monitor">
-            <a class="ajaxable_btn btn btn-mini disabled"
-                data-adaptor="<TMPL_VAR NAME=adaptor>"
-                data-method="<TMPL_VAR NAME=update_method>"
-                data-fields="<TMPL_VAR NAME=key_field>,<TMPL_VAR NAME=key_value>"
-                data-linkTo="<TMPL_VAR NAME=parameterKeyID>,<TMPL_VAR NAME=parameterValueID>"><i class="icon-ok-sign"></i></a>
-            <a class="input_restorer btn btn-mini disabled"
-                data-linkTo="<TMPL_VAR NAME=parameterValueID>"><i class="icon-remove-sign"></i></a>
+        <td class="monitored_input" colspan="2">
+            <input
+            id="pw_value_<TMPL_VAR NAME=param_index>"
+            type="text"
+            class="input-xxlarge"
+            value="<TMPL_VAR NAME=value ESCAPE=HTML>"
+            data-method="update"
+            data-linkTo="value=pw_value_<TMPL_VAR NAME=param_index>"
+            data-linkToDef="key=pw_key_<TMPL_VAR NAME=param_index>"
+            >
         </td>
         <td><a class="ajaxable_btn btn btn-mini"
-                data-adaptor="<TMPL_VAR NAME=adaptor>"
-                data-method="<TMPL_VAR NAME=delete_method>"
-                data-fields="<TMPL_VAR NAME=key_field>"
-                data-linkTo="<TMPL_VAR NAME=parameterKeyID>"><i class="icon-minus-sign"></i></a>
+                data-method="remove"
+                data-linkToDef="key=pw_key_<TMPL_VAR NAME=param_index>"><i class="icon-minus-sign"></i></a>
         </td>
     </tr>
     </TMPL_LOOP> <!-- existing_parameters -->
 
-    <TMPL_LOOP NAME=new_parameter>
-    <tr>
-        <td><input type="text" id="p_new_key" placeholder="new parameter's name"></td>
-        <td><input type="text" id="p_new_value" placeholder="new parameter's value"></td>
+    <tr id="row_new_pw_param">
+        <td class="control-group onlyalpha" colspan="2"><input class="input-large" type="text" id="p_new_key" placeholder="new parameter's name"></td>
+        <td colspan="2"><input class="input-xxlarge" type="text" id="p_new_value" placeholder="new parameter's value"></td>
         <td><a class="ajaxable_btn btn btn-mini"
-                data-adaptor="<TMPL_VAR NAME=adaptor>"
-                data-method="<TMPL_VAR NAME=method>"
-                data-fields="<TMPL_VAR NAME=fields>"
-                data-linkTo="p_new_key,p_new_value"><i class="icon-plus-sign"></i></a>
+                data-method="store"
+                data-linkTo="key=p_new_key,value=p_new_value"><i class="icon-plus-sign"></i></a>
         </td>
-        <td></td>
     </tr>
-    </TMPL_LOOP> <!-- new parameter -->
 
 </table>
 

@@ -235,17 +235,8 @@ html, body {
 
 #pw_param_table {
     font-size        : 12px;
-    background-color : #E6EBF0;
     margin-left      : 10px;
-}
-
-#pw_param_table th {
-    padding: 5px;
-}
-
-#pw_param_table tr td:first-child {
-    padding-left : 10px;
-    padding-right: 10px;
+    width            : 1000px;
 }
 
 #pw_param_table tr td {
@@ -255,10 +246,6 @@ html, body {
 
 #pw_param_table tr:last-child td {
     padding-top: 6px;
-}
-
-#pw_param_table tr td:nth-child(2) input {
-    width: 500px;
 }
 
 

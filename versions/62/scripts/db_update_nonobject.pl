@@ -37,41 +37,29 @@ use version_check;
 my $json_data = shift @ARGV || '{"adaptor":["PipelineWideParameters"],"method":["store"],"url":["mysql://ensro@127.0.0.1:4306/mm14_protein_trees_78"],"fields":["param_name,param_value"],"args":["a,2"],"version":["62"]}';
 
 my $var = decode_json($json_data);
-my $url          = $var->{url}->[0];
-my $args         = uri_unescape($var->{args}->[0]);
-my $adaptor_name = $var->{adaptor}->[0];
-my $method       = $var->{method}->[0];
-my $version      = $var->{version}->[0];
-my $fields       = $var->{fields}->[0];
-
-my @fields = split(/,/,$fields);
-my @args = split(/,/,$args,scalar(@fields));
-
-##### This if is copied over from a script, but I don't know if it's really needed
-# If we pass the 'NULL' string, then we undef the value to update a NULL mysql value:
-if ((scalar @args == 1) && ($args[0] eq "NULL")) {
-  @args = undef;
-}
-
 my $dbConn = check_db_versions_match($var);
-
 my $response = msg->new();
 
-$adaptor_name = "get_".$adaptor_name."Adaptor";
-my $adaptor = $dbConn->$adaptor_name;
+warn Dumper $var;
 
-warn Dumper(\@fields, \@args);
-
-my %obj = ();
-@obj{@fields} = @args;
-warn Dumper(\%obj);
 eval {
-    $adaptor->$method(\%obj);
+    my $method = $var->{method}->[0];
+
+    my $adaptor = $dbConn->get_PipelineWideParametersAdaptor();
+
+    if ($method eq 'update_key') {
+        my $objs = $adaptor->fetch_all(sprintf('param_name = "%s"', $var->{inikey}->[0]));
+        die "I was expecting to find a single object for $var->{inikey}->[0]\n" if not $objs or (scalar(@$objs) != 1);
+        $adaptor->remove($objs->[0]);
+        my $new_obj = bless { 'param_name' => $var->{key}->[0], 'param_value' => $objs->[0]->{param_value} }, 'Bio::EnsEMBL::Hive::PipelineWideParameters';
+        $adaptor->store($new_obj);
+    } else {
+        my $obj = bless { 'param_name' => $var->{key}->[0], 'param_value' => $var->{value}->[0] }, 'Bio::EnsEMBL::Hive::PipelineWideParameters';
+        $adaptor->$method($obj);
+    }
 };
 $response->err_msg($@);
 $response->status($response->err_msg) if ($@);
-
-
 
 print $response->toJSON();
 

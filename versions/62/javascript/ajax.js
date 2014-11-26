@@ -333,7 +333,7 @@ function onSuccess_dbConnect(res) {
 	fetch_resources();
 
 	// And the pipeline-wide parameters
-	fetch_and_setup_change_listener( "scripts/db_fetch_pipeline_params.pl", "scripts/db_update_nonobject.pl", "#pipeline_wide_parameters" );
+        fetch_and_setup_change_listener( "scripts/db_fetch_pipeline_params.pl", "scripts/db_update_nonobject.pl", "#pipeline_wide_parameters"  );
 
 	// We load the jobs form
 	$.get('./scripts/db_jobs_form.pl', {url : guiHive.pipeline_url, version : guiHive.version} ,function(data) {
@@ -413,37 +413,132 @@ function fetch_and_setup_change_listener(fetch_url, write_url, target_div) {
         });
     }
 
+    function get_url_data(ref_object) {
+        console.log(ref_object);
+        var url_data = "url="+ guiHive.pipeline_url +
+            "&method="+$(ref_object).attr("data-method") +
+            "&version="+guiHive.version;
+
+        function add_links(name, f) {
+            if ($(ref_object).attr(name)) {
+                var blocks = $(ref_object).attr(name).split(",");
+                var vals = jQuery.map(blocks, function(e,i) {
+                    var parts = e.split("=");
+                    console.log(parts);
+                    console.log($('#'+parts[1]));
+                    return parts[0] + "=" + f($('#'+parts[1])[0]);
+                });
+                return "&" + vals.join("&");
+            } else {
+                return "";
+            }
+        };
+        url_data = url_data + add_links('data-linkTo', function(o) {return o.value});
+        url_data = url_data + add_links('data-linkToDef', function(o) {return o.defaultValue});
+        return url_data
+    };
+
     function onFetchSuccess_handler(resp) {
         if (resp.status != "ok") {
             log(resp);
-        } else {
-            var d = $(target_div);
-            d.html(resp.out_msg);
-            d.find(".ajaxable_btn").click( onClick_handler );
-            d.find(".monitored_input").keyup( onChange_handler );
-            d.find(".input_restorer").click( onRestoreRequest_handler );
+            return;
         }
+
+        var d = $(target_div);
+        d.html(resp.out_msg);
+
+        d.find(".monitored_input").map( function(i, obj) {
+            var target_container = $(obj);
+            target_container.addClass("control-group");
+            target_container.addClass("input-append");
+            var monitored_input = target_container.find("input")[0];
+
+            var input_sender = $('<a class="btn btn-mini add-on"><i class="icon-ok-sign"></i></a>');
+            target_container.append(input_sender);
+            var input_restorer = $('<a class="btn btn-mini add-on"><i class="icon-remove-sign"></i></a>');
+            target_container.append(input_restorer);
+            var targets = target_container.find(".btn");
+            targets.hide();
+
+            $(monitored_input).keyup( function(evt) {
+                var is_change = (monitored_input.value !== monitored_input.defaultValue);
+                var is_valid_input = !target_container.hasClass("onlyalpha") || (monitored_input.value.match(/^[0-9a-zA-Z\_]*$/) !== null);
+                input_restorer.toggle(is_change);
+                input_sender.toggle(is_change && is_valid_input);
+                target_container.toggleClass("info", is_change && is_valid_input);
+                target_container.toggleClass("error", is_change && !is_valid_input);
+            });
+
+            input_restorer.click( function(evt) {
+                monitored_input.value = monitored_input.defaultValue;
+                targets.hide();
+                target_container.removeClass("success");
+                target_container.removeClass("info");
+                target_container.removeClass("error");
+            });
+
+            input_sender.click( function(evt) {
+                var url_data = get_url_data(monitored_input);
+                target_container.removeClass("info");
+                console.log(url_data);
+                $.ajax({
+                    url        : write_url,
+                    type       : "post",
+                    data       : url_data,
+                    dataType   : "json",
+                    async      : false,
+                    cache      : false,
+                    success    : function(updateRes) {
+                        console.log(updateRes);
+                        if (updateRes.status === "ok") {
+                            monitored_input.defaultValue = monitored_input.value;
+                            targets.hide();
+                            target_container.addClass("success");
+                        } else {
+                            target_container.addClass("error");
+                            log(updateRes);
+                        };
+                    },
+                });
+            });
+        });
+
+        d.find(".ajaxable_btn").click( function(evt) {
+            var url_data = get_url_data(this);
+            //console.log("evt", evt);
+            //console.log("this", this);
+            console.log(url_data);
+            $.ajax({
+                url        : write_url,
+                type       : "post",
+                data       : url_data,
+                dataType   : "json",
+                async      : false,
+                cache      : false,
+                success    : function(updateRes) {
+                    if (updateRes.status !== "ok") {
+                        log(updateRes);
+                    };
+                },
+                complete   : doFetch
+            });
+        });
+
+        d.find("#p_new_key").keyup( function(evt) {
+            var is_error = false;
+            jQuery.map(d.find(".control-group"), function(obj, i) {
+                if ($(obj).children("input[value='"+evt.target.value+"']").length) {
+                    $(obj).addClass("warning");
+                    is_error = true;
+                } else {
+                    $(obj).removeClass("warning");
+                }
+            });
+            is_error = is_error || !(evt.target.value.match(/^[0-9a-zA-Z\_]*$/));
+            d.find(".btn[data-method^='store']").toggleClass("disabled", is_error);
+            d.find("#row_new_pw_param").find('td.control-group').toggleClass("error", is_error);
+        });
     };
-
-    function onChange_handler(evt) {
-        var curr_val = this.value;
-        var ref_val = this.dataset.value;
-        var target_container = $('#' + this.id + "_monitor");
-        var targets = target_container.find(".btn");
-        if (curr_val === ref_val) {
-            targets.addClass("disabled");
-        } else {
-            targets.removeClass("disabled");
-        }
-    };
-
-
-    function onRestoreRequest_handler(evt) {
-        var target_name = $(this).attr("data-linkTo");
-        var elem = $('#'+target_name);
-        elem.val(elem.data("value"));
-        $('#' + target_name + "_monitor").find(".btn").addClass("disabled");
-    }
 
     function onClick_handler(evt) {
         $.ajax({
