@@ -404,6 +404,7 @@ function fetch_and_setup_change_listener(fetch_url, write_url, target_div) {
 
     var tooltip_onlyalpha = 'Only alpha-numeric characters and the underscore are allowed';
     var tooltip_uniquename = 'Parameter names have to be unique';
+    var tooltip_nonempty = 'The parameter name must be defined'
 
     // Replace the div with the output of fetch_url
     function doFetch() {
@@ -455,6 +456,11 @@ function fetch_and_setup_change_listener(fetch_url, write_url, target_div) {
         });
         if (inp.hasClass('onlyalpha') && !(input_object.value.match(/^[0-9a-zA-Z\_]*$/))) {
                 inp.tooltip({title: tooltip_onlyalpha});
+                inp.tooltip('show');
+                is_error = true;
+        }
+        if (input_object.value === "") {
+                inp.tooltip({title: tooltip_nonempty});
                 inp.tooltip('show');
                 is_error = true;
         }
