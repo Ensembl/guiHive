@@ -441,34 +441,37 @@ function fetch_and_setup_change_listener(fetch_url, write_url, target_div) {
         return url_data
     };
 
-    // Check that input_object has a valid key name (not duplicated, and alphanumeric only)
-    function key_check(d, input_object) {
-        var inp = $(input_object);
-        var is_error = false;
-        jQuery.map(d.find("input[id^='pw_key_']").add(d.find("#p_new_key")), function(obj, i) {
-            var same_name = (obj.id !== input_object.id) && ((obj.value === input_object.value) || (obj.defaultValue === input_object.value));
-            $(obj).closest('.control-group').toggleClass('warning', same_name);
-            if (same_name) {
-                is_error = true;
-                inp.tooltip({title: tooltip_uniquename});
-                inp.tooltip('show');
+    // Check that input_object has a valid key name (not empty, not duplicated, and alphanumeric only)
+    function key_check(d, input_object, check_empty) {
+        var new_tooltip = null;
+        var control_group = $(input_object).closest('.control-group');
+
+        if (check_empty && (input_object.value === "")) {
+            new_tooltip = tooltip_nonempty;
+        } else if ($(input_object).hasClass('onlyalpha') && !(input_object.value.match(/^[0-9a-zA-Z\_]*$/))) {
+            new_tooltip = tooltip_onlyalpha;
+        } else if ((input_object.value !== input_object.defaultValue) || control_group.hasClass("error")) {
+            jQuery.map(d.find("input[id^='pw_key_']").add(d.find("#p_new_key")), function(obj, i) {
+                var same_name = (obj.id !== input_object.id) && ((obj.value === input_object.value) || (obj.defaultValue === input_object.value));
+                $(obj).closest('.control-group').toggleClass('warning', same_name);
+                if (same_name) {
+                    new_tooltip = tooltip_uniquename
+                }
+            });
+        }
+        var is_error = !!new_tooltip;
+        var tooltip_placeholder = $(input_object).closest('.input-append');
+        if (is_error) {
+            if (!tooltip_placeholder.data("tooltip") || (tooltip_placeholder.data("tooltip").options.title !== new_tooltip)) {
+                tooltip_placeholder.tooltip('destroy');
+                tooltip_placeholder.tooltip({title: new_tooltip});
+                tooltip_placeholder.tooltip('show');
             }
-        });
-        if (inp.hasClass('onlyalpha') && !(input_object.value.match(/^[0-9a-zA-Z\_]*$/))) {
-                inp.tooltip({title: tooltip_onlyalpha});
-                inp.tooltip('show');
-                is_error = true;
+        } else {
+            tooltip_placeholder.tooltip('destroy');
         }
-        if (input_object.value === "") {
-                inp.tooltip({title: tooltip_nonempty});
-                inp.tooltip('show');
-                is_error = true;
-        }
-        if (!is_error) {
-            inp.tooltip('destroy');
-        }
-        inp.closest('.control-group').toggleClass("error", is_error);
-        inp.closest('.control-group').toggleClass("info", !is_error);
+        control_group.toggleClass("error", is_error);
+        control_group.toggleClass("info", !is_error);
         return is_error;
     };
 
@@ -503,15 +506,15 @@ function fetch_and_setup_change_listener(fetch_url, write_url, target_div) {
 
             $(monitored_input).keyup( function(evt) {
                 var is_change = (monitored_input.value !== monitored_input.defaultValue);
-                var is_valid_input = !key_check(d, this);
+                var is_valid_input = !key_check(d, this, true);
                 input_restorer.toggle(is_change);
                 input_sender.toggle(is_change && is_valid_input);
             });
 
             input_restorer.click( function(evt) {
                 monitored_input.value = monitored_input.defaultValue;
+                key_check(d, this, false);
                 targets.hide();
-                input_append_group.tooltip('destroy');
                 control_group.removeClass("success");
                 control_group.removeClass("info");
                 control_group.removeClass("error");
@@ -555,8 +558,8 @@ function fetch_and_setup_change_listener(fetch_url, write_url, target_div) {
         });
 
         d.find("#p_new_key").keyup( function(evt) {
-            var is_error = key_check(d, this);
-            $(this).closest("tr").find(".btn").toggleClass("disabled", is_error);
+            var is_error = key_check(d, this, false);
+            $(this).closest("tr").find(".btn").toggleClass("disabled", (is_error || (this.value === "")))
         });
     };
 
