@@ -331,7 +331,7 @@ function onSuccess_dbConnect(res) {
 	draw_diagram(res.out_msg.graph);
 
 	// Showing the resources
-	fetch_resources();
+        fetch_and_setup_change_listener( "scripts/db_fetch_resource.pl", "scripts/db_update_resource.pl", "#resource_details" );
 
 	// And the pipeline-wide parameters
         fetch_and_setup_change_listener( "scripts/db_fetch_pipeline_params.pl", "scripts/db_update_nonobject.pl", "#pipeline_wide_parameters"  );
@@ -384,22 +384,6 @@ function display(analysis_id, fetch_url, callback) {
 	   });
 }
 
-function fetch_resources() {
-    var fetch_url = "./scripts/db_fetch_resource.pl";
-    display("", fetch_url, onSuccess_fetchResources);
-}
-
-// TODO: analysis_id is not going to be used, so maybe we should move it
-// to the last position (and avoid the 'undef' in the calling code)
-function onSuccess_fetchResources(resourcesRes, analysis_id, fetch_url) {
-    if (resourcesRes.status != "ok") {
-	log(resourcesRes);
-    } else {
-	$("#resource_details").html(resourcesRes.out_msg);
-    }
-    listen_Resources(fetch_url);
-}
-
 
 function fetch_and_setup_change_listener(fetch_url, write_url, target_div) {
 
@@ -423,6 +407,7 @@ function fetch_and_setup_change_listener(fetch_url, write_url, target_div) {
     function get_url_data(ref_object) {
         var url_data = "url="+ guiHive.pipeline_url +
             "&method="+$(ref_object).attr("data-method") +
+            "&" + $(ref_object).attr("data-args") +
             "&version="+guiHive.version;
 
         function add_links(name, f) {
@@ -558,6 +543,28 @@ function fetch_and_setup_change_listener(fetch_url, write_url, target_div) {
             onClick_handler(url_data, success, complete);
         });
 
+        jQuery.map(d.find("ul.dropdown-menu[data-target]"), function(e,i) {
+            var target = $("#" + $(e).attr("data-target"));
+            var vals = [];
+            jQuery.map($(e).find("a"), function(x,j) {
+                vals.push(x.innerHTML);
+            });
+            $(target).autocomplete( {
+                source: vals,
+                position: {
+                    my: 'left bottom',
+                    at: 'left top'
+                }
+            });
+            /*$(e).find("a").click( function(evt) {
+                target.val(this.innerHTML);
+            });*/
+        });
+
+        jQuery.map(d.find("select.combobox"), function(e,i) {
+            $(e).combobox();
+        });
+
         d.find("#p_new_key").keyup( function(evt) {
             var is_error = key_check(d, this, false);
             $(this).closest("tr").find(".btn").toggleClass("disabled", (is_error || (this.value === "")))
@@ -594,20 +601,6 @@ function listen_config() {
     $("#ClearLog").click(function(){$("#log").html("Log"); $("#log-tab").css("color","#B8B8B8")});
 }
 
-function listen_Resources(fetch_url) {
-    $(".update_resource").click(
-	{ //reload:$("#show_resources"),
-	  fetch_url:fetch_url, 
-	  script:"./scripts/db_update.pl",
-	  callback:onSuccess_fetchResources},
-	update_db);
-    $(".create_resource").click(
-	{ //reload:$("#show_resources"),
-	  fetch_url:fetch_url,
-	  script:"./scripts/db_create.pl",
-	  callback:onSuccess_fetchResources},
-	update_db);
-}
 
 function listen_jobs() {
     $("#jobs_select").change(fetch_jobs);

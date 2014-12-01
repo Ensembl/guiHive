@@ -232,6 +232,7 @@ html, body {
 
 /****************************/
 /* pipeline-wide parameters */
+/*  and resources tables     /
 /****************************/
 
 .control_container {
@@ -239,12 +240,12 @@ html, body {
     display: inline-block;
 }
 
-#pw_param_table {
+#pw_param_table, #resources_table {
     margin-left      : 10px;
     width            : auto;
 }
 
-#pw_param_table td, #pw_param_table th {
+#pw_param_table td, #pw_param_table th, #resources_table td, #resources_table th {
     padding: 3px;
 }
 
@@ -253,36 +254,35 @@ html, body {
 }
 
 
+#resources_table .dropdown-menu {
+    min-width: 0px;
+}
+
 .footer_spacer {
     height: 40px;
 }
 
-/******************/
-/* resources table /
-/******************/
-#resources_table {
-    font-size        : 12px;
-    width            : 850px;
-    background-color : #E6EBF0;
-    padding          : active;
+#resources_table select {
+    width: auto;
 }
 
-.short-field {
-    display          : inline-block;
-    width            : 80px;
+
+.custom-combobox {
+    position: relative;
+    display: inline-block;
 }
-.short-input {
-    width            : 80px;
+.custom-combobox-toggle {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    margin-left: -1px;
+    padding: 0;
+}
+.custom-combobox-input {
+    margin: 0;
+    padding: 5px 10px;
 }
 
-.large-field {
-    display          : inline-block;
-    width            : 300px;
-}
-
-.large-input {
-    width            : 300px;
-}
 /******************/
 
 /* jobs_chart div */
