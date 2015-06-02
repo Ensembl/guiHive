@@ -227,23 +227,25 @@ func main() {
 	relPath := os.Getenv("GUIHIVE_PROJECTDIR")
 
 	http.Handle("/", http.FileServer(http.Dir(relPath)))
-
 	http.HandleFunc("/versions/", unknown)
-	http.Handle("/versions/56/", http.FileServer(http.Dir(relPath)))
-	http.Handle("/versions/62/", http.FileServer(http.Dir(relPath)))
-	http.Handle("/versions/72/", http.FileServer(http.Dir(relPath)))
-
 	http.Handle("/styles/", http.FileServer(http.Dir(relPath)))
 	http.Handle("/javascript/", http.FileServer(http.Dir(relPath)))
-	http.Handle("/versions/56/javascript/", http.FileServer(http.Dir(relPath)))
-	http.Handle("/versions/62/javascript/", http.FileServer(http.Dir(relPath)))
-	http.Handle("/versions/72/javascript/", http.FileServer(http.Dir(relPath)))
-
 	http.Handle("/images/", http.FileServer(http.Dir(relPath)))
 	http.HandleFunc("/scripts/", scriptHandler)
-	http.HandleFunc("/versions/56/scripts/", scriptHandler)
-	http.HandleFunc("/versions/62/scripts/", scriptHandler)
-	http.HandleFunc("/versions/72/scripts/", scriptHandler)
+
+	versionRootDir := relPath + "/versions/"
+	dir, terr := os.Open(versionRootDir)
+	checkError("Can't open dir " + versionRootDir, terr)
+	files, terr := dir.Readdir(-1)
+	for _, verdir := range files {
+		if (verdir.IsDir()) {
+			debug("Found eHive version %s", verdir.Name())
+			http.Handle(fmt.Sprintf("/versions/%s/", verdir.Name()), http.FileServer(http.Dir(relPath)))
+			http.Handle(fmt.Sprintf("/versions/%s/javascript/", verdir.Name()), http.FileServer(http.Dir(relPath)))
+			http.HandleFunc(fmt.Sprintf("/versions/%s/scripts/", verdir.Name()), scriptHandler)
+		}
+	}
+
 	debug("Listening to port: %s", port)
 	err := http.ListenAndServe(":"+port, nil)
 	checkError("ListenAndServe ", err)
