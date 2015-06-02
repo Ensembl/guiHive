@@ -126,7 +126,7 @@ sub formJobsInfo {
 			     'adaptor'   => $adaptor,
 			     'method'    => 'retry_count'
 			   },
-		    "6" => $job->completed(),
+		    "6" => $job->when_completed(),
 		    "7" => $job->runtime_msec(),
 		    "8" => { 'value'     => $job->semaphore_count(),
 			     'job_label' => $unique_job_label,

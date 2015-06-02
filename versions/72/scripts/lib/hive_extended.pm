@@ -274,7 +274,7 @@ use Bio::EnsEMBL::Hive::Utils;
   $sth->execute();
   $sth->finish();
 
-  unless ($job->completed) {
+  unless ($job->when_completed) {
     $self->update_status($job);
   }
 };

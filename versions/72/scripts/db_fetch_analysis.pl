@@ -98,6 +98,8 @@ sub formAnalysisInfo {
 				}
 			       ];
 
+  # FIXME: there should be a select box for the "language".
+
   $info->{parameters}        = template_mappings_PARAMS($analysis,
 							"parameters",
 							$analysis->dbID);
