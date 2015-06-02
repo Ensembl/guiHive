@@ -77,7 +77,7 @@ sub formResources {
     for my $rc (sort {$a->dbID <=> $b->dbID} @$all_resources) {
         my $all_rds = $rd_adaptor->fetch_all_by_resource_class_id($rc->dbID);
         my @param_rd = ();
-        foreach my $rd (@$all_rds) {
+        foreach my $rd (sort {$a->meadow_type <=> $b->meadow_type} @$all_rds) {
             $meadow_types{$rd->meadow_type} = 1;
             push @param_rd, {
                 'rcID' => $rc->dbID,
