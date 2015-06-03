@@ -238,7 +238,11 @@ func main() {
 	checkError("Can't open dir " + versionRootDir, terr)
 	files, terr := dir.Readdir(-1)
 	for _, verdir := range files {
-		if (verdir.IsDir()) {
+		if ((verdir.Mode() & os.ModeSymlink) != 0) {
+			targetF, _ := os.Lstat(versionRootDir + verdir.Name())
+			debug("Found a symlink from %s to version %s", verdir.Name(), targetF.Name())
+			verdir = targetF
+		} else if (verdir.IsDir()) {
 			debug("Found eHive version %s", verdir.Name())
 			http.Handle(fmt.Sprintf("/versions/%s/", verdir.Name()), http.FileServer(http.Dir(relPath)))
 			http.Handle(fmt.Sprintf("/versions/%s/javascript/", verdir.Name()), http.FileServer(http.Dir(relPath)))
