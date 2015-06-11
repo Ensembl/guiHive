@@ -239,9 +239,11 @@ func main() {
 	files, terr := dir.Readdir(-1)
 	for _, verdir := range files {
 		if ((verdir.Mode() & os.ModeSymlink) != 0) {
-			targetF, _ := os.Lstat(versionRootDir + verdir.Name())
-			debug("Found a symlink from %s to version %s", verdir.Name(), targetF.Name())
-			verdir = targetF
+			targetF, _ := os.Readlink(versionRootDir + verdir.Name())
+			debug("Found a symlink from %s to version %s", verdir.Name(), targetF)
+			http.Handle(fmt.Sprintf("/versions/%s/", verdir.Name()), http.FileServer(http.Dir(relPath)))
+			http.Handle(fmt.Sprintf("/versions/%s/javascript/", verdir.Name()), http.FileServer(http.Dir(relPath)))
+			http.HandleFunc(fmt.Sprintf("/versions/%s/scripts/", verdir.Name()), scriptHandler)
 		} else if (verdir.IsDir()) {
 			debug("Found eHive version %s", verdir.Name())
 			http.Handle(fmt.Sprintf("/versions/%s/", verdir.Name()), http.FileServer(http.Dir(relPath)))
