@@ -34,9 +34,6 @@ my $var = decode_json($json_data);
 my $url = $var->{url}->[0];
 my $job_id = $var->{job_id}->[0];
 $job_id =~ s/job_//;
-my $version = $var->{version}->[0];
-
-my $project_dir = $ENV{GUIHIVE_BASEDIR} . "versions/$version/";
 
 my $dbConn = Bio::EnsEMBL::Hive::DBSQL::DBAdaptor->new(-no_sql_schema_version_check => 1, -url => $url);
 

@@ -44,13 +44,11 @@ my $job_colors = {
 my $json_data = shift @ARGV || '{"url":["mysql://ensro@127.0.0.1:2912/mp12_compara_nctrees_69d"], "analysis_id":["22"]}';
 
 my $var         = decode_json($json_data);
-my $url         = $var->{url}->[0];
 my $analysis_id = $var->{analysis_id}->[0];
 
-my $dbConn = Bio::EnsEMBL::Hive::DBSQL::DBAdaptor->new( -no_sql_schema_version_check => 1, -url => $url );
+my $dbConn = check_db_versions_match($var);
 my $response = msg->new();
 
-if (defined $dbConn) {
     my $analysis_stats;
     eval {
 	$analysis_stats = $dbConn->get_AnalysisStatsAdaptor->fetch_by_analysis_id($analysis_id);
@@ -64,10 +62,6 @@ if (defined $dbConn) {
 	$response->status("FAILED");
     }
     $response->out_msg(formMonitorInfo($analysis_stats));
-} else {
-    $response->err_msg("The provided URL seems to be invalid. Please check it and try again");
-    $response->status("FAILED");
-}
 
 print $response->toJSON;
 

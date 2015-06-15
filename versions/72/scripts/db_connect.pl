@@ -35,67 +35,27 @@ use msg;
 use version_check;
 
 my $json_url = shift @ARGV || '{"version":["53"],"url":["mysql://ensro@127.0.0.1:2912/mp12_compara_nctrees_74clean2"]}';
-my $hive_config_file = $ENV{GUIHIVE_BASEDIR} . "config/hive_config.json";
+my $hive_config_file = $ENV{EHIVE_ROOT_DIR} . "/../config/hive_config.json";
 
 # Input data
-my $url = decode_json($json_url)->{url}->[0];
-my $version = decode_json($json_url)->{version}->[0];
+my $decoded_json = decode_json($json_url);
 
 # Set up @INC and paths for static content
-my $project_dir = $ENV{GUIHIVE_BASEDIR} . "versions/$version/";
-my $connection_template = "${project_dir}static/connection_details.html";
+my $connection_template = $ENV{GUIHIVE_BASEDIR} . "static/connection_details.html";
 
 my $response = msg->new();
 
+my $dbConn = check_db_versions_match($decoded_json);
 
-# Initialization
-my $dbConn;
+$dbConn->load_collections();
+
 eval {
-  $dbConn = Bio::EnsEMBL::Hive::DBSQL::DBAdaptor->new( -no_sql_schema_version_check => 1, -url => $url );
+    my $graph = formAnalyses($dbConn);
+    my $html = formResponse($dbConn);
+    $response->out_msg({"graph" => $graph, "html" => $html});
 };
 if ($@) {
-  $response->err_msg($@);
-  $response->status("FAILED");
-  print $response->toJSON;
-  exit(0);
-}
-
-if (defined $dbConn) {
-  ## Check if the code version is OK
-  my $code_version = get_hive_code_version();
-  my $hive_db_version;
-  eval {
-    $hive_db_version = get_hive_db_version($dbConn);
-  };
-  if ($@) {
-    $response->err_msg($@);
-    $response->status("FAILED");
-    print $response->toJSON;
-    exit(0);
-  }
-
-  if ($code_version != $hive_db_version) {
-    $response->status("VERSION MISMATCH");
-    $response->err_msg("$code_version $hive_db_version");
-    print $response->toJSON;
-    exit 0;
-  }
-
-  $dbConn->load_collections();
-  my ($graph, $html);
-  eval {
-	$graph = formAnalyses($dbConn);
-	$html = formResponse($dbConn);
-    };
-    if ($@) {
-	$response->err_msg("I have problems retrieving data from the database:$@");
-	$response->status("FAILED");
-    } else {
-	$response->out_msg({"graph" => $graph,
-			    "html" => $html});
-    }
-} else {
-    $response->err_msg("The provided URL seems to be invalid. Please check the URL and try again\n") unless($response->err_msg);
+    $response->err_msg("I have problems retrieving data from the database:$@");
     $response->status("FAILED");
 }
 
@@ -112,9 +72,9 @@ sub formResponse {
     $info->{username}  = $dbConn->dbc->username;
     $info->{hive_db_version} = get_hive_db_version($dbConn);
     $info->{hive_code_version} = get_hive_code_version();
-    $info->{pipeline_name} = get_hive_pipeline_name($dbConn);
-    $info->{hive_auto_rebalance_semaphores} = get_hive_auto_rebalance_semaphores($dbConn) ? 'Enabled' : 'Disabled';
-    $info->{hive_use_param_stack} = get_hive_use_param_stack($dbConn) ? 'Enabled' : 'Disabled';
+    $info->{pipeline_name} = get_hive_db_meta_key($dbConn, 'hive_pipeline_name');
+    $info->{hive_auto_rebalance_semaphores} = get_hive_db_meta_key($dbConn, 'hive_auto_rebalance_semaphores') ? 'Enabled' : 'Disabled';
+    $info->{hive_use_param_stack} = get_hive_db_meta_key($dbConn, 'hive_use_param_stack') ? 'Enabled' : 'Disabled';
 
     my $template = HTML::Template->new(filename => $connection_template);
     $template->param(%$info);

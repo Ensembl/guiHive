@@ -158,38 +158,6 @@ $(document).ready(function() {
     // });
 });
 
-// function go_to_full_url () {
-//     var full_url = $("#db_url").val();
-
-//     $.ajax({
-// 	url      : "./scripts/url_parser.pl",
-// 	type     : "post",
-// 	data     : "url=" + full_url,
-// 	dataType : "json",
-// 	async    : false,
-// 	success  : function(dbConn) {
-// 	    if (dbConn.status !== "FAILED") {
-// 		console.log(dbConn.out_msg);
-// 		var http_url = $.url();
-// 		var new_http_url = "http://" + http_url.attr("host") + ":" + http_url.attr("port") + "/?username=" + dbConn.out_msg.user + "&host=" + dbConn.out_msg.host + "&dbname=" + dbConn.out_msg.dbname + "&port=" + dbConn.out_msg.port;
-// 		if (dbConn.out_msg.passwd !== undefined && dbConn.out_msg.passwd !== '') {
-// 		    new_http_url = new_http_url + "&passwd=xxxxx";
-// 		}
-// 		window.location.href = new_http_url;
-// 	    } else {
-// 		log(dbConn);
-// 	    }
-// 	},
-// 	error      : function (x, t, m) {
-// 	    if(t==="timeout") {
-// 		log({err_msg : "No response from mysql sever for 10s. Try it later"});
-// 		$("#connection_msg").empty();
-// 	    } else {
-// 		log({err_msg : m});
-// 	    }
-// 	}
-//     });
-// }
 
 function guess_database_url () {
 
@@ -364,6 +332,9 @@ function onSuccess_dbConnect(res) {
 	// Showing the resources
 	fetch_resources();
 
+	// And the pipeline-wide parameters
+        fetch_and_setup_change_listener( "scripts/db_fetch_pipeline_params.pl", "scripts/db_update_nonobject.pl", "#pipeline_wide_parameters"  );
+
 	// We load the jobs form
 	$.get('./scripts/db_jobs_form.pl', {url : guiHive.pipeline_url, version : guiHive.version} ,function(data) {
 	    $('#jobs_form').html(data);
@@ -427,6 +398,188 @@ function onSuccess_fetchResources(resourcesRes, analysis_id, fetch_url) {
     }
     listen_Resources(fetch_url);
 }
+
+
+function fetch_and_setup_change_listener(fetch_url, write_url, target_div) {
+
+    var tooltip_onlyalpha = 'Only alpha-numeric characters and the underscore are allowed';
+    var tooltip_uniquename = 'Parameter names have to be unique';
+    var tooltip_nonempty = 'The parameter name must be defined'
+
+    // Replace the div with the output of fetch_url
+    function doFetch() {
+        $.ajax({
+            url        : fetch_url,
+            type       : "post",
+            data       : "url=" + guiHive.pipeline_url + "&version=" + guiHive.version,
+            dataType   : "json",
+            success    : onFetchSuccess_handler,
+            error      : function(resp,error) {log({err_msg : error})},
+        });
+    }
+
+    // Read the data objects and build the post data to send to write_url
+    function get_url_data(ref_object) {
+        var url_data = "url="+ guiHive.pipeline_url +
+            "&method="+$(ref_object).attr("data-method") +
+            "&version="+guiHive.version;
+
+        function add_links(name, f) {
+            if ($(ref_object).attr(name)) {
+                var blocks = $(ref_object).attr(name).split(",");
+                var vals = jQuery.map(blocks, function(e,i) {
+                    var parts = e.split("=");
+                    return parts[0] + "=" + f($('#'+parts[1])[0]);
+                });
+                return "&" + vals.join("&");
+            } else {
+                return "";
+            }
+        };
+        url_data = url_data + add_links('data-linkTo', function(o) {return o.value});
+        url_data = url_data + add_links('data-linkToDef', function(o) {return o.defaultValue});
+        return url_data
+    };
+
+    // Check that input_object has a valid key name (not empty, not duplicated, and alphanumeric only)
+    function key_check(d, input_object, check_empty) {
+        var new_tooltip = null;
+        var control_group = $(input_object).closest('.control-group');
+
+        if (check_empty && (input_object.value === "")) {
+            new_tooltip = tooltip_nonempty;
+        } else if ($(input_object).hasClass('onlyalpha') && !(input_object.value.match(/^[0-9a-zA-Z\_]*$/))) {
+            new_tooltip = tooltip_onlyalpha;
+        } else if ((input_object.value !== input_object.defaultValue) || control_group.hasClass("error")) {
+            jQuery.map(d.find("input[id^='pw_key_']").add(d.find("#p_new_key")), function(obj, i) {
+                var same_name = (obj.id !== input_object.id) && ((obj.value === input_object.value) || (obj.defaultValue === input_object.value));
+                $(obj).closest('.control-group').toggleClass('warning', same_name);
+                if (same_name) {
+                    new_tooltip = tooltip_uniquename
+                }
+            });
+        }
+        var is_error = !!new_tooltip;
+        var tooltip_placeholder = $(input_object).closest('.input-append');
+        if (is_error) {
+            if (!tooltip_placeholder.data("tooltip") || (tooltip_placeholder.data("tooltip").options.title !== new_tooltip)) {
+                tooltip_placeholder.tooltip('destroy');
+                tooltip_placeholder.tooltip({title: new_tooltip});
+                tooltip_placeholder.tooltip('show');
+            }
+        } else {
+            tooltip_placeholder.tooltip('destroy');
+        }
+        control_group.toggleClass("error", is_error);
+        control_group.toggleClass("info", !is_error);
+        return is_error;
+    };
+
+    // Setup all the listeners
+    function onFetchSuccess_handler(resp) {
+        if (resp.status != "ok") {
+            log(resp);
+            return;
+        }
+
+        var d = $(target_div);
+        d.html(resp.out_msg);
+
+        d.find("input.monitored").map( function(i, monitored_input) {
+            var ref_object = $(monitored_input);
+
+            var control_group = ref_object.parent();
+            control_group.addClass('control-group');
+
+            var input_append_group = $('<div class="input-append"></div>');
+            input_append_group.appendTo(control_group);
+            ref_object.appendTo(input_append_group);
+
+            var controls_container = $('<div class="control_container"></div>');
+            input_append_group.append(controls_container);
+            var input_sender = $('<a class="btn btn-mini add-on"><i class="icon-ok"></i></a>');
+            controls_container.append(input_sender);
+            var input_restorer = $('<a class="btn btn-mini add-on"><i class="icon-refresh"></i></a>');
+            controls_container.append(input_restorer);
+            var targets = controls_container.children();
+            targets.hide();
+
+            $(monitored_input).keyup( function(evt) {
+                var is_change = (monitored_input.value !== monitored_input.defaultValue);
+                var is_valid_input = !key_check(d, this, true);
+                input_restorer.toggle(is_change);
+                input_sender.toggle(is_change && is_valid_input);
+            });
+
+            input_restorer.click( function(evt) {
+                monitored_input.value = monitored_input.defaultValue;
+                key_check(d, this, false);
+                targets.hide();
+                control_group.removeClass("success");
+                control_group.removeClass("info");
+                control_group.removeClass("error");
+            });
+
+            input_sender.click( function(evt) {
+                var url_data = get_url_data(monitored_input);
+                control_group.removeClass("info");
+                function success(updateRes) {
+                    if (updateRes.status === "ok") {
+                        monitored_input.defaultValue = monitored_input.value;
+                        targets.hide();
+                        control_group.addClass("success");
+                    } else {
+                        control_group.addClass("error");
+                        log(updateRes);
+                    };
+                };
+                onClick_handler(url_data, success, null);
+            });
+        });
+
+        d.find(".ajaxable_btn").click( function(evt) {
+            var url_data = get_url_data(this);
+            var o = $(this);
+            var refresh = true;
+            function success(updateRes) {
+                if (updateRes.status !== "ok") {
+                    log(updateRes);
+                } else if (o.hasClass("remove_row")) {
+                    o.closest("tr").remove();
+                    refresh = false;
+                };
+            };
+            function complete() {
+                if (refresh) {
+                    doFetch();
+                }
+            };
+            onClick_handler(url_data, success, complete);
+        });
+
+        d.find("#p_new_key").keyup( function(evt) {
+            var is_error = key_check(d, this, false);
+            $(this).closest("tr").find(".btn").toggleClass("disabled", (is_error || (this.value === "")))
+        });
+    };
+
+    function onClick_handler(url_data, fs, fc) {
+        $.ajax({
+            url        : write_url,
+            type       : "post",
+            data       : url_data,
+            dataType   : "json",
+            async      : false,
+            cache      : false,
+            success    : fs,
+            complete   : fc
+        });
+    }
+
+    doFetch();
+}
+
+
 
 function change_refresh_time() {
     guiHive.monitorTimeout = $(this).val()
@@ -751,6 +904,9 @@ function buildURL(obj) {
 	"&version="+guiHive.version;
     if ($(obj).attr("data-analysisID")) {
 	URL = URL.concat("&analysis_id="+$(obj).attr("data-analysisID"));
+    }
+    if ($(obj).attr("data-fields")) {
+	URL = URL.concat("&fields="+$(obj).attr("data-fields"));
     }
 
     return(URL);

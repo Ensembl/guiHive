@@ -38,7 +38,6 @@ my $json_data = shift @ARGV || '{"version":["53"],"url":["mysql://ensro@127.0.0.
 
 # Input
 my $var = decode_json($json_data);
-my $url            = $var->{url}->[0];
 my $analysis_id    = $var->{analysis_id}->[0];
 
 my $sSearch        = $var->{sSearch}->[0];
@@ -47,27 +46,14 @@ my $iSortingCols   = $var->{iSortingCols}->[0];
 my $sEcho          = $var->{sEcho}->[0];
 my $version        = $var->{version}->[0];
 
-my $project_dir = $ENV{GUIHIVE_BASEDIR} . "versions/$version/";
+my $project_dir = $ENV{GUIHIVE_BASEDIR};
 my $jobs_template = $project_dir . "static/jobs.html";
 my $input_ids_template = $project_dir . "static/jobs_input_ids.html";
 
 # Initialization
-my $dbConn = Bio::EnsEMBL::Hive::DBSQL::DBAdaptor->new( -no_sql_schema_version_check => 1, -url => $url );
+my $dbConn = check_db_versions_match($var);
 my $response = msg->new();
 
-
-if (defined $dbConn) {
-
-  ## First check if the code version is OK
-  my $code_version = get_hive_code_version();
-  my $hive_db_version = get_hive_db_version($dbConn);
-
-  if ($code_version != $version) {
-    $response->status("VERSION MISMATCH");
-    $response->err_msg("$code_version $hive_db_version");
-    print $response->toJSON;
-    exit 0;
-  }
 
     my $jobs;
     my $njobs;
@@ -88,10 +74,6 @@ if (defined $dbConn) {
 	$response->status("FAILED");
     }
     $response->out_msg(formJobsInfo($jobs, $analysis_id, $njobs));
-} else {
-    $response->err_msg("The provided URL seems to be invalid. Please check the URL and try again");
-    $response->status("FAILED");
-}
 
 print encode_json($response->out_msg);
 #print $response->toJSON;
