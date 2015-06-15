@@ -47,7 +47,7 @@ my $adaptor_name = $var->{adaptor}->[0];
 my $method       = $var->{method}->[0];
 my $version      = $var->{version}->[0];
 
-my $project_dir = $ENV{GUIHIVE_BASEDIR} . "versions/$version/";
+my $project_dir = $ENV{GUIHIVE_BASEDIR};
 
 my @dbIDs = split(/,/,$dbIDs);
 my @args  = ($args); #split(/,/,$args); ### TODO: JEditable only gives one value, so it is not possible to

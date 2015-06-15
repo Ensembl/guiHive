@@ -65,8 +65,8 @@
 		</span></td>
 	      <td class="td-input-value"><input class="input-value" id="<TMPL_VAR NAME=parameterValueID>"
 			 type="text" 
-			 data-value="<TMPL_VAR NAME=value>"
-			 value="<TMPL_VAR NAME=value>">
+			 data-value="<TMPL_VAR NAME=value ESCAPE=HTML>"
+			 value="<TMPL_VAR NAME=value ESCAPE=HTML>">
 	      </td>
 	      <TMPL_LOOP NAME=change_parameter>
 		<td class="button-cell"><a class="update_param btn btn-mini"

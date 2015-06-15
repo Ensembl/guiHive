@@ -22,15 +22,25 @@ package version_check;
 
 use strict;
 use warnings;
+use JSON;
 use Bio::EnsEMBL::Hive::DBSQL::SqlSchemaAdaptor;
 use vars qw(@ISA @EXPORT);
 
 @ISA = qw(Exporter);
-@EXPORT = qw(get_hive_code_version get_hive_db_version get_hive_pipeline_name get_hive_use_param_stack get_hive_auto_rebalance_semaphores);
+@EXPORT = qw(get_hive_code_version get_hive_db_version get_hive_db_meta_key check_db_versions_match);
 
 sub get_hive_code_version {
   return Bio::EnsEMBL::Hive::DBSQL::SqlSchemaAdaptor->get_code_sql_schema_version();
 }
+
+sub get_hive_db_meta_key {
+  my ($dbConn, $key_name) = @_;
+  my $metaAdaptor = $dbConn->get_MetaAdaptor;
+  my $val;
+  eval { $val = $metaAdaptor->get_value_by_key( $key_name ); };
+  return $val;
+}
+
 
 sub get_hive_db_version {
   my ($dbConn) = @_;
@@ -40,28 +50,58 @@ sub get_hive_db_version {
   return $db_sql_schema_version;
 }
 
-sub get_hive_pipeline_name {
-  my ($dbConn) = @_;
-  my $metaAdaptor = $dbConn->get_MetaAdaptor;
-  my $db_sql_schema_version;
-  eval { $db_sql_schema_version = $metaAdaptor->get_value_by_key( 'hive_pipeline_name' ); };
-  return $db_sql_schema_version;
+sub _fail_with_status_message {
+    my ($status, $message) = @_;
+    my $response = msg->new();
+    $response->err_msg($message);
+    $response->status($status);
+    print $response->toJSON;
+    exit(0);
 }
 
-sub get_hive_use_param_stack {
-  my ($dbConn) = @_;
-  my $metaAdaptor = $dbConn->get_MetaAdaptor;
-  my $db_sql_schema_version;
-  eval { $db_sql_schema_version = $metaAdaptor->get_value_by_key( 'hive_use_param_stack' ); };
-  return $db_sql_schema_version;
+sub check_db_versions_match {
+    my ($decoded_json, $silent) = @_;
+
+    # Input data
+    my $url = $decoded_json->{url}->[0];
+    my $version = $decoded_json->{version}->[0];
+
+    my $response = msg->new();
+
+    # Initialization
+    my $dbConn;
+    eval {
+        $dbConn = Bio::EnsEMBL::Hive::DBSQL::DBAdaptor->new( -no_sql_schema_version_check => 1, -url => $url );
+    };
+    if ($@) {
+        exit(0) if $silent;
+        _fail_with_status_message('FAILED', $@);
+    }
+
+    if (defined $dbConn) {
+        ## Check if the code version is OK
+        my $code_version = get_hive_code_version();
+        my $hive_db_version;
+        eval {
+            $hive_db_version = get_hive_db_version($dbConn);
+        };
+        if ($@) {
+            exit(0) if $silent;
+            _fail_with_status_message('FAILED', $@);
+        }
+
+        if ($code_version != $hive_db_version) {
+            exit(0) if $silent;
+            _fail_with_status_message('VERSION MISMATCH', "code=$code_version db=$hive_db_version");
+        }
+
+    } else {
+        exit(0) if $silent;
+        _fail_with_status_message('FAILED', "The provided URL seems to be invalid. Please check the URL and try again\n");
+    }
+
+    return $dbConn;
 }
 
-sub get_hive_auto_rebalance_semaphores {
-  my ($dbConn) = @_;
-  my $metaAdaptor = $dbConn->get_MetaAdaptor;
-  my $db_sql_schema_version;
-  eval { $db_sql_schema_version = $metaAdaptor->get_value_by_key( 'hive_auto_rebalance_semaphores' ); };
-  return $db_sql_schema_version;
-}
 
 1;
