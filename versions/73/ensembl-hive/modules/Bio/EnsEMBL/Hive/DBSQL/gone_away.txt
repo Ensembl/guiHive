@@ -1,0 +1,48 @@
+    Dear All,
+
+Thank you for your continued attention to this problem.
+
+I believe we finally have a simple yet working solution for eHive system
+that doesn't involve complex manipulation with the DBconnection on the users' side.
+It has been a nightmare to try and babysit every single database-related operation
+that could potentially overrun the timeout (given that we sometimes have no control
+neither over the external binaries that we run nor over the timeout on a particular server,
+with the added bonus of workers locking each other out when updating shared tables).
+
+Our new solution doesn't rely on ping'ing the connection before using it.
+Instead, we found a cheap way of intercepting "MySQL server has gone away" events from each call to DBI and DBI::st.
+When the disconnect is detected, the new code reconnects, re-prepares and re-executes where necessary.
+
+To make all of this possible the StatementHandle.pm and a chunk of DBConnection.pm had to be rewritten
+to properly dispatch control to the methods of the underlying DBI and DBI::st.
+The interface was kept the same, so most of the standard EnsEMBL code like this:
+
+            my $sth = $dbc->prepare( $sql );
+            $sth->execute( @params );
+            my ($x, $y) = $sth->fetchrow();
+
+            $dbc->do( $sql2 );
+
+should continue working.
+
+The only thing we discourage people from doing is running DBI methods on the bare $dbc->db_handle,
+as all operations against it will remain unprotected. Please make sure you have found
+all occurences of $dbc->db_handle and replaced all the method calls by directly calling
+them on $dbc, for example:
+
+            $ary_ref  = $dbc->selectall_arrayref($statement);
+            $hash_ref = $dbc->selectall_hashref($statement, $key_field);
+
+            $ary_ref  = $dbc->selectcol_arrayref($statement);
+            $ary_ref  = $dbc->selectcol_arrayref($statement, \%attr);
+
+            @row_ary  = $dbc->selectrow_array($statement);
+            $ary_ref  = $dbc->selectrow_arrayref($statement);
+            $hash_ref = $dbc->selectrow_hashref($statement);
+
+The new solution is currently being tested in production, and if we find no significant shortcomings,
+it will be merged into eHive version/2.3 branch.
+
+Please note that due to the sharing of DBConnections when under eHive supervision they will be managed
+by Hive::DBSQL::DBConnection, so if you are doing anything fancy with your DBConnections, it will show.
+

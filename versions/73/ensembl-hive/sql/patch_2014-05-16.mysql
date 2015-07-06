@@ -1,0 +1,76 @@
+
+-- ---------------------------------------------------------------------------------------------------
+-- Remove   constraints to deleting `job`.worker_id AND `job_file`.worker_id
+-- Drop     `job`.worker_id AND `job_file`.worker_id
+-- Add      `job`.role_id AND `job_file`.role_id
+-- FKeys    link `job` and `job_file` via the new role_id field (ON DELETE CASCADE)
+-- ---------------------------------------------------------------------------------------------------
+
+SET @expected_version = 61;
+
+    -- make MySQL stop immediately after it encounters division by zero:
+SET SESSION sql_mode='TRADITIONAL';
+
+    -- warn that we detected the schema version mismatch:
+SELECT CONCAT(  'The patch only applies to schema version ',
+                @expected_version,
+                ', but the current schema version is ',
+                meta_value,
+                ', so skipping the rest.') AS ''
+    FROM hive_meta WHERE meta_key='hive_sql_schema_version' AND meta_value<>@expected_version;
+
+    -- cause division by zero only if current version differs from the expected one:
+INSERT INTO hive_meta (meta_key, meta_value)
+    SELECT 'this_should_never_be_inserted', 1 FROM hive_meta WHERE NOT 1/(meta_key<>'hive_sql_schema_version' OR meta_value=@expected_version);
+
+SELECT CONCAT(  'The patch seems to be compatible with schema version ',
+                @expected_version,
+                ', applying the patch...') AS '';
+
+    -- Now undo the change so that we could patch potentially non-TRADITIONAL schema:
+SET SESSION sql_mode='';
+
+-- ----------------------------------<actual_patch> -------------------------------------------------
+
+    -- First remove ALL ForeignKeys from job & job_file tables:
+ALTER TABLE job DROP FOREIGN KEY job_ibfk_1;
+ALTER TABLE job DROP FOREIGN KEY job_ibfk_2;
+ALTER TABLE job DROP FOREIGN KEY job_ibfk_3;
+ALTER TABLE job DROP FOREIGN KEY job_ibfk_4;
+ALTER TABLE job_file DROP FOREIGN KEY job_file_ibfk_1;
+ALTER TABLE job_file DROP FOREIGN KEY job_file_ibfk_2;
+
+    -- Also remove Indices from the old columns:
+ALTER TABLE job DROP INDEX worker_id;
+ALTER TABLE job_file DROP INDEX worker_id;
+
+    -- Use the existing worker_id columns as reference to add role_id columns:
+ALTER TABLE job ADD COLUMN role_id INTEGER DEFAULT NULL AFTER worker_id;
+ALTER TABLE job_file ADD COLUMN role_id INTEGER DEFAULT NULL AFTER worker_id;
+
+    -- Pretend we had role entries from the very beginning (the data is very approximately correct!):
+UPDATE job j, role r SET j.role_id=r.role_id WHERE r.worker_id=j.worker_id AND CASE WHEN completed IS NOT NULL THEN when_started<=completed AND (when_finished IS NULL OR completed<=when_finished) ELSE when_finished IS NULL END;
+UPDATE job_file jf, job j SET jf.role_id=j.role_id WHERE jf.job_id=j.job_id;
+
+    -- Now we can drop the columns themselves:
+ALTER TABLE job DROP COLUMN worker_id;
+ALTER TABLE job_file DROP COLUMN worker_id;
+
+    -- Add new Indices:
+ALTER TABLE job ADD INDEX role_status (role_id, status);
+ALTER TABLE job_file ADD INDEX role (role_id);
+
+
+    -- Add NAMED ForeignKeys on job & job_file tables:
+ALTER TABLE job                     ADD CONSTRAINT  job_analysis_id_fkey        FOREIGN KEY (analysis_id)           REFERENCES analysis_base(analysis_id);
+ALTER TABLE job                     ADD CONSTRAINT  job_prev_job_id_fkey        FOREIGN KEY (prev_job_id)           REFERENCES job(job_id)                  ON DELETE CASCADE;
+ALTER TABLE job                     ADD CONSTRAINT  job_role_id_fkey            FOREIGN KEY (role_id)               REFERENCES role(role_id)                ON DELETE CASCADE;
+ALTER TABLE job                     ADD CONSTRAINT  job_semaphored_job_id_fkey  FOREIGN KEY (semaphored_job_id)     REFERENCES job(job_id)                  ON DELETE CASCADE;
+ALTER TABLE job_file                ADD CONSTRAINT  job_file_job_id_fkey        FOREIGN KEY (job_id)                REFERENCES job(job_id)                  ON DELETE CASCADE;
+ALTER TABLE job_file                ADD CONSTRAINT  job_file_role_id_fkey       FOREIGN KEY (role_id)               REFERENCES role(role_id)                ON DELETE CASCADE;
+
+-- ----------------------------------</actual_patch> -------------------------------------------------
+
+
+    -- increase the schema version by one:
+UPDATE hive_meta SET meta_value=meta_value+1 WHERE meta_key='hive_sql_schema_version';

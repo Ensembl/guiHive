@@ -1,0 +1,63 @@
+<!-- Copyright [1999-2014] Wellcome Trust Sanger Institute and the EMBL-European Bioinformatics Institute
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-->
+
+
+<h4>Connection Details</h4>
+<table id="connection_table">
+  <tr>
+    <td>DB name:</td>
+    <td><TMPL_VAR NAME=db_name></td>
+  </tr>
+  <tr>
+    <td>Host:</td>
+    <td><TMPL_VAR NAME=host></td>
+  </tr>
+  <tr>
+    <td>Port:</td>
+    <td><TMPL_VAR NAME=port></td>
+  </tr>
+  <tr>
+    <td>Driver</td>
+    <td><TMPL_VAR NAME=driver></td>
+  </tr>
+  <tr>
+    <td>Username</td>
+    <td><TMPL_VAR NAME=username></td>
+  </tr>
+  <tr>
+    <td>Hive database version:</td>
+    <td><TMPL_VAR NAME=hive_db_version></td>
+  </tr>
+  <tr>
+    <td>Hive code version:</td>
+    <td><TMPL_VAR NAME=hive_code_version></td>
+  </tr>
+  <tr>
+    <td>Pipeline name:</td>
+    <td><TMPL_VAR NAME=pipeline_name></td>
+  </tr>
+</table>
+<h4>eHive flags</h4>
+<table id="hivemeta_table">
+  <tr>
+    <td>Parameter stack:</td>
+    <td><TMPL_VAR NAME=hive_use_param_stack></td>
+  </tr>
+  <tr>
+    <td>Auto-rebalancing of semaphores:</td>
+    <td><TMPL_VAR NAME=hive_auto_rebalance_semaphores></td>
+  </tr>
+</table>
+
