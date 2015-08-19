@@ -293,7 +293,7 @@ use Bio::EnsEMBL::Hive::Utils;
 
   for my $job (@$jobs) {
     $self->decrease_semaphore_count_for_jobid($job->semaphored_job_id());
-    $job->update_status('DONE');
+    $job->set_and_update_status('DONE');
     my $semaphored_job = $self->fetch_by_dbID($job->semaphored_job_id());
     $semaphored_analysis_ids{$semaphored_job->analysis_id}++ if (defined $semaphored_job)
   }
@@ -319,7 +319,7 @@ use Bio::EnsEMBL::Hive::Utils;
 	my $semaphored_job = $self->fetch_by_dbID($job->semaphored_job_id());
 	$semaphored_analysis_ids{$semaphored_job->analysis_id}++ if (defined $semaphored_job);
 	if ($semaphored_job && ($semaphored_job->status() ne 'SEMAPHORED')) {
-	  $semaphored_job->update_status('SEMAPHORED');
+	  $semaphored_job->set_and_update_status('SEMAPHORED');
 	}
 	$self->increase_semaphore_count_for_jobid($job->semaphored_job_id());
       }
@@ -343,7 +343,7 @@ use Bio::EnsEMBL::Hive::Utils;
   my %semaphored_analysis_ids = ();
   for my $job(@{$self->fetch_all_by_analysis_id_status($analysis_id, 'READY')}) {
     $self->decrease_semaphore_count_for_jobid($job->semaphored_job_id());
-    $job->update_status('DONE');
+    $job->set_and_update_status('DONE');
     if ($job->semaphored_job_id) {
       my $semaphored_job = $self->fetch_by_dbID($job->semaphored_job_id());
       $semaphored_analysis_ids{$semaphored_job->analysis_id}++ if (defined $semaphored_job);
