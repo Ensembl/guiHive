@@ -1,0 +1,113 @@
+{
+    "VERSION" : 0.01,
+    "REMARKS" : [
+        "Colour names and colour scheme names are taken from http://www.graphviz.org/doc/info/colors.html"
+    ],
+    "Valley" : {
+        "SubmitWorkersMax"  : 50
+    },
+    "Meadow" : {
+        "LOCAL" : {
+            "TotalRunningWorkersMax"   : 2,
+            "my-quadcore-desktop" : {
+                "TotalRunningWorkersMax"   : 4
+            },
+            "your-weak-laptop" : {
+                "TotalRunningWorkersMax"   : 1
+            }
+        },
+        "LSF" : {
+            "SubmissionOptions"         : "",
+            "TotalRunningWorkersMax"    : 2000,
+            "farm3" : {
+                "SubmissionOptions"  : "",
+                "TotalRunningWorkersMax"    : 5000
+            },
+            "EBI" : {
+                "SubmissionOptions"  : ""
+            }
+        },
+        "SGE" : {
+            "SubmissionOptions"         : "",
+            "TotalRunningWorkersMax"    : 2000,
+        },
+        "CONDOR" : {
+            "SubmissionOptions"         : "",
+            "TotalRunningWorkersMax"    : 500,
+        }
+    },
+    "Graph" : {
+        "Pad"  : "1.0",
+
+        "Node" : {
+            "Font"        : "Times-Roman",
+            "Colour"      : "cyan",
+            "Details"     : { "Font"   : "Helvetica" },
+
+            "JobStatus"   : {
+                "SEMAPHORED"    : { "Colour" : "grey"        },
+                "READY"         : { "Colour" : "green"       },
+                "INPROGRESS"    : { "Colour" : "yellow"      },
+                "DONE"          : { "Colour" : "DeepSkyBlue" },
+                "FAILED"        : { "Colour" : "red"         }
+            },
+
+            "AnalysisStatus"   : {
+                "EMPTY"       : { "Colour" : "white"       },
+                "BLOCKED"     : { "Colour" : "grey"        },
+                "LOADING"     : { "Colour" : "green"       },
+                "ALL_CLAIMED" : { "Colour" : "grey"        },
+                "SYNCHING"    : { "Colour" : "green"       },
+                "READY"       : { "Colour" : "green"       },
+                "WORKING"     : { "Colour" : "yellow"      },
+                "DONE"        : { "Colour" : "DeepSkyBlue" },
+                "FAILED"      : { "Colour" : "red"         }
+            },
+
+            "Table" : {
+                "Colour"        : "orange",
+                "HeaderColour"  : "orangered",
+                "Font"          : "Courier",
+                "FontColour"    : "black"
+            },
+
+            "AccuSink"  : {
+                "Shape"         : "invhouse",
+                "Style"         : "filled",
+                "Colour"        : "darkgreen",
+                "Font"          : "Courier",
+                "FontColour"    : "white"
+            },
+
+            "Switch"  : {
+                "Shape"         : "diamond",
+                "Style"         : "filled",
+                "Colour"        : "blueviolet",
+                "Font"          : "Courier",
+                "FontColour"    : "white"
+            },
+        },
+        "Edge" : {
+            "Font"        : "Helvetica",
+            "Data"        : { "Colour" : "blue"         },
+            "Control"     : { "Colour" : "red"          },
+            "Semablock"   : { "Colour" : "red"          },
+            "Accu"        : { "Colour" : "darkgreen"    }
+        },
+        "Box"  : {
+            "Semaphore"     : { "ColourScheme" : "blues9",   "ColourOffset" : 1 },
+            "MainPipeline"  : { "ColourScheme" : "pastel19", "ColourOffset" : 3 },
+            "OtherPipeline" : { "ColourScheme" : "pastel19", "ColourOffset" : 8 }
+        },
+
+        "DisplayStats"          : "barchart",
+        "DisplayJobs"           : 0,
+        "DisplayData"           : 0,
+        "DisplayInputIDTemplate": 1,
+
+        "DisplayDetails"        : 1,
+        "DisplayStretched"      : 0,
+        "DisplaySemaphoreBoxes" : 1,
+        "DuplicateTables"       : 0
+    }
+}

@@ -1,0 +1,53 @@
+{
+    "VERSION" : 0.01,
+    "Graph" : {
+        "Pad"  : "1.0",
+
+        "Node" : {
+            "Font"        : "Times-Roman",
+            "Colour"      : "cyan",
+            "Table"       : { "Colour" : "black", "Font" : "Courier" },
+            "Details"     : { "Font"   : "Helvetica" },
+
+            "JobStatus"   : {
+                "SEMAPHORED"    : { "Colour" : "#808080"    },
+                "READY"         : { "Colour" : "#00FF00"    },
+                "INPROGRESS"    : { "Colour" : "#FFFF00"    },
+                "DONE"          : { "Colour" : "#00BFFF"    },
+                "FAILED"        : { "Colour" : "#FF0000"    }
+            },
+
+            "AnalysisStatus"   : {
+                "EMPTY"       : { "Colour" : "#FFFFFF"      },
+                "BLOCKED"     : { "Colour" : "#808080"      },
+                "LOADING"     : { "Colour" : "#00FF00"      },
+                "ALL_CLAIMED" : { "Colour" : "#808080"      },
+                "SYNCHING"    : { "Colour" : "#00FF00"      },
+                "READY"       : { "Colour" : "#00FF00"      },
+                "WORKING"     : { "Colour" : "#FFFF00"      },
+                "DONE"        : { "Colour" : "#00BFFF"      },
+                "FAILED"      : { "Colour" : "#FF0000"      }
+            }
+        },
+        "Edge" : {
+            "Font"        : "Helvetica",
+            "Data"        : { "Colour" : "blue"         },
+            "Control"     : { "Colour" : "red"          },
+            "Semablock"   : { "Colour" : "red"          },
+            "Accu"        : { "Colour" : "darkgreen"    }
+        },
+        "Box"  : {
+            "ColourScheme"  : "blues9",
+            "ColourOffset"  : 1
+        },
+
+        "DisplayStats"          : "text",
+        "DisplayJobs"           : 0,
+        "DisplayData"           : 0,
+
+        "DisplayDetails"        : 1,
+        "DisplayStretched"      : 0,
+        "DisplaySemaphoreBoxes" : 1,
+        "DuplicateTables"       : 0
+    }
+}

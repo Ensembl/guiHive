@@ -108,6 +108,8 @@ sub get_hive_db_version {
       $db_sql_schema_version = $metaAdaptor->fetch_value_by_key( 'hive_sql_schema_version' );
     } elsif ($metaAdaptor->can('get_value_by_key')) {
       $db_sql_schema_version = $metaAdaptor->get_value_by_key( 'hive_sql_schema_version' );
+    } else {
+      $db_sql_schema_version = eval { $metaAdaptor->fetch_by_meta_key( 'hive_sql_schema_version' )->{'meta_value'}; };
     }
   };
   return $db_sql_schema_version;
