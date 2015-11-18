@@ -54,9 +54,11 @@ add_guihive_version () {
 }
 
 link_guihive_version () {
-  echo "checkout $1: guiHive =$2 and eHive sql_$1"
+  DEFAULT_TAG="sql_schema_$((${1}+1))_start^"
+  EHIVE_COMMIT=${3:-$DEFAULT_TAG}
+  echo "checkout $1: guiHive =$2 and eHive $EHIVE_COMMIT"
   safe_symlink "$2" "${GUIHIVE_VERSIONS_DIR}/$1"
-  safe_clone "sql_schema_$((${1}+1))_start^" "$EHIVE_CLONE_LOCATION" "${EHIVE_VERSIONS_DIR}/$1"
+  safe_clone "$EHIVE_COMMIT" "$EHIVE_CLONE_LOCATION" "${EHIVE_VERSIONS_DIR}/$1"
   rm -rf "${EHIVE_VERSIONS_DIR}/$1/docs"
   rm -rf "${EHIVE_VERSIONS_DIR}/$1/wrappers"
 }
@@ -78,7 +80,7 @@ link_guihive_version "66" "73"
 link_guihive_version "67" "73"
 link_guihive_version "68" "73"
 link_guihive_version "69" "73"
-link_guihive_version "70" "73"
+link_guihive_version "70" "73" "sql_schema_71_start^2"	# because the merge of the python branch has swapped its two parents
 link_guihive_version "71" "73"
 link_guihive_version "72" "73"
 link_guihive_version "74" "73"
