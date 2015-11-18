@@ -38,27 +38,15 @@ use version_check;
 
 # Input data
 my $json_url = shift @ARGV || '{"version":["53"],"url":["mysql://ensro@127.0.0.1:2911/mp12_long_mult"]}';
-my $url = decode_json($json_url)->{url}->[0];
-my $version = decode_json($json_url)->{version}->[0];
+
+my $decoded_json = decode_json($json_url);
 
 # Initialization
 my $project_dir = $ENV{GUIHIVE_BASEDIR};
 my $resources_template = $project_dir . 'static/resources.html';
 
-my $dbConn = Bio::EnsEMBL::Hive::DBSQL::DBAdaptor->new( -no_sql_schema_version_check => 1, -url => $url );
+my $dbConn = check_db_versions_match($decoded_json);
 my $response = msg->new();
-
-if (defined $dbConn) {
-
-  ## First check if the code version is OK
-  my $code_version = get_hive_code_version();
-  my $hive_db_version = get_hive_db_version($dbConn);
-  if ($code_version != $version) {
-    $response->status("VERSION MISMATCH");
-    $response->err_msg("$code_version $hive_db_version");
-    print $response->toJSON;
-    exit 0;
-  }
 
     my $all_resources;
     eval {
@@ -70,10 +58,6 @@ if (defined $dbConn) {
     } else {
 	$response->out_msg(formResources($all_resources));
     }
-} else {
-    $response->err_msg("The provided URL seems to be invalid. Please check it and try again\n");
-    $response->status("FAILED");
-}
 
 print $response->toJSON();
 
