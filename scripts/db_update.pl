@@ -37,14 +37,10 @@ use version_check;
 my $json_data = shift @ARGV || '{"version":["53"],"adaptor":["Analysis"],"analysis_id":["2"],"args":["plus9,5+6"],"method":["add_param"],"url":["mysql://ensro@127.0.0.1:2911/mp12_long_mult"]}';#'{"analysis_id":["2"],"adaptor":["ResourceDescription"],"method":["parameters"],"args":["-C0 -M8000000  -R\"select[mem>8000]  rusage[mem=8000]\""],"url":["mysql://ensro@127.0.0.1:2912/mp12_compara_nctrees_69a2"]}'; #'{"url":["mysql://ensro@127.0.0.1:2912/mp12_compara_nctrees_69b"], "column_name":["parameters"], "analysis_id":["27"], "newval":["cmalign_exe"]}';
 
 my $var = decode_json($json_data);
-my $url          = $var->{url}->[0];
 my $args         = uri_unescape($var->{args}->[0]);
 my $analysis_id  = $var->{analysis_id}->[0];
 my $adaptor_name = $var->{adaptor}->[0];
 my $method       = $var->{method}->[0];
-my $version      = $var->{version}->[0];
-
-my $project_dir = $ENV{GUIHIVE_BASEDIR};
 
 my @args = split(/,/,$args,2);
 
@@ -53,22 +49,9 @@ if ((scalar @args == 1) && ($args[0] eq "NULL")) {
   @args = undef;
 }
 
-my $dbConn = Bio::EnsEMBL::Hive::DBSQL::DBAdaptor->new( -no_sql_schema_version_check => 1, -url => $url );
+my $dbConn = check_db_versions_match($var);
 
 my $response = msg->new();
-
-if (defined $dbConn) {
-
-  ## First check if the code version is OK
-  my $code_version = get_hive_code_version();
-  my $hive_db_version = get_hive_db_version($dbConn);
-
-  if ($code_version != $version) {
-    $response->status("VERSION MISMATCH");
-    $response->err_msg("$code_version $hive_db_version");
-    print $response->toJSON;
-    exit 0;
-  }
 
     $adaptor_name = "get_".$adaptor_name."Adaptor";
     my $adaptor = $dbConn->$adaptor_name;
@@ -85,10 +68,6 @@ if (defined $dbConn) {
       $response->err_msg("Error getting the object from the database.");
       $response->status("FAILED");
     }
-} else {
-    $response->err_msg("Error connecting to the database. Please try to connect again");
-    $response->status("FAILED");
-}
 
 print $response->toJSON();
 

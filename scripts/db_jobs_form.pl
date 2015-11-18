@@ -36,31 +36,16 @@ my $json_data = shift @ARGV || '{"version":["53"],"url":["mysql://ensro@127.0.0.
 
 # Input
 my $var = decode_json($json_data);
-my $url = $var->{url}->[0];
-my $version = $var->{version}->[0];
 
 # Set up @INC and paths for static content
-my $project_dir = $ENV{GUIHIVE_BASEDIR};
-my $jobs_form_template = $project_dir . "static/jobs_form.html";
-
-# Initialization
-my $dbConn = Bio::EnsEMBL::Hive::DBSQL::DBAdaptor->new( -no_sql_schema_version_check => 1, -url => $url );
-
-if (defined $dbConn) {
+my $jobs_form_template = $ENV{GUIHIVE_BASEDIR} . "static/jobs_form.html";
 
   ## First check if the code version is OK
-  ## TODO: We are just exiting here if we have a version mismatch.
-  ##       I don't know if this is the best thing to do, though
-  my $code_version = get_hive_code_version();
-  my $hive_db_version = get_hive_db_version($dbConn);
+  ## Don't print any error message
+my $dbConn = check_db_versions_match($var, 1);
 
-  if ($code_version != $hive_db_version) {
-    exit 0;
-  }
-
-  my $form = formJobsForm($dbConn);
-  print $form;
-}
+my $form = formJobsForm($dbConn);
+print $form;
 
 
 sub formJobsForm {

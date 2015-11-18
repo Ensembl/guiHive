@@ -32,25 +32,15 @@ use HTML::Template;
 
 use lib ("./scripts/lib");
 use msg;
+use version_check;
 
 my $url = shift @ARGV;
 my $connection_template = "static/connection_details.html";
 my $hive_config_file = "config/hive_config.json";
 
+my $dbConn = check_db_versions_match($var);
+
 my $response = msg->new();
-
-# Initialization
-my $dbConn;
-eval {
-  $dbConn = Bio::EnsEMBL::Hive::DBSQL::DBAdaptor->new( -no_sql_schema_version_check => 1, -url => $url );
-};
-if ($@) {
-  $response->err_msg($@);
-  $response->status("FAILED");
-}
-
-
-if (defined $dbConn) {
     my ($graph, $status);
     eval {
 	$graph = formAnalyses($dbConn);
@@ -63,10 +53,6 @@ if (defined $dbConn) {
 	$response->status($status);
 	$response->out_msg($graph);
     }
-} else {
-    $response->err_msg("The provided URL seems to be invalid. Please check the URL and try again\n") unless($response->err_msg);
-    $response->status("FAILED");
-}
 
 print $response->toJSON();
 
@@ -79,7 +65,7 @@ sub formResponse {
     $info->{port}      = $dbConn->dbc->port;
     $info->{driver}    = $dbConn->dbc->driver;
     $info->{username}  = $dbConn->dbc->username;
-    $info->{hive_db_version} = get_hive_db_version();
+    $info->{hive_db_version} = get_hive_db_meta_key('hive_sql_schema_version');
     $info->{hive_code_version} = get_hive_code_version();
     # $info->{mysql_url} = "?username=" . $dbConn->dbc->username . "&host=" . $dbConn->dbc->host . "&dbname=" . $dbConn->dbc->dbname . "&port=" . $dbConn->dbc->port;
 
@@ -94,17 +80,5 @@ sub formAnalyses {
     my $graphviz = $graph->build();
 
     return $graphviz->as_svg;
-}
-
-sub get_hive_db_version {
-  my $metaAdaptor      = $dbConn->get_MetaAdaptor;
-  my $db_sql_schema_version   = eval { $metaAdaptor->fetch_value_by_key( 'hive_sql_schema_version' ); };
-  return $db_sql_schema_version;
-}
-
-sub get_hive_code_version {
-  # my $sqlSchemaAdaptor = $dbConn->get_SqlSchemaAdaptor;
-  my $code_sql_schema_version =  Bio::EnsEMBL::Hive::DBSQL::SqlSchemaAdaptor->get_code_sql_schema_version();
-  return $code_sql_schema_version;
 }
 
