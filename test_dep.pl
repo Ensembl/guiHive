@@ -42,19 +42,32 @@ else {
 	      "http://golang.org/doc/install");
 }
 
-# EHIVE_ROOT_DIR
-print " Checking EHIVE_ROOT_DIR environmental variable: ";
-my $ehive_root_dir_envar = $ENV{EHIVE_ROOT_DIR};
-chomp $ehive_root_dir_envar;
-if ($ehive_root_dir_envar) {
-  print "[$ehive_root_dir_envar] ... OK\n";
-} else {
-  not_met_dep( "EHIVE_ROOT_DIR",
-	       "echo \$EHIVE_ROOT_DIR",
-	       "The EHIVE_ROOT_DIR has to be defined in the session where the guiHive server is running",
-	       "Set this env variable to the root dir of your hive code"
-	     );
+print " Checking if some versions have been deployed: ";
+eval {
+    -d "versions" or die;
+    -d "ensembl-hive" or die;
+    opendir my $dir, "versions" or die "Cannot open directory: $!";
+    my @files1 = readdir $dir;
+    closedir $dir;
+    die if scalar(@files1) <= 2;    # There is always "." and ".."
+    opendir $dir, "ensembl-hive" or die "Cannot open directory: $!";
+    my @files2 = readdir $dir;
+    closedir $dir;
+    my %f1 = map {$_ => 1} @files1;
+    my %f2 = map {$_ => 1} @files2;
+    die if grep {!$f1{$_}} @files2;
+    die if grep {!$f2{$_}} @files1;
+    delete $f1{'.'};
+    delete $f1{'..'};
+    print "[".join('/', keys %f1)."] ... OK\n";
+};
+if ($@) {
+  not_met_dep("Deployed versions",
+	      "ls ensembl-hive/ versions/",
+	      "You need to setup guiHive and eHive versions before running the server",
+	      "bash guihive-deploy.sh");
 }
+
 
 ###########################
 ##       eHive           ##
@@ -86,34 +99,6 @@ if ($subvers >= 8) {
 	     );
 }
 
-print  " Checking Ensembl API installation";
-eval {
-  require Bio::EnsEMBL::Registry;
-};
-if ($@) {
-  not_met_dep( "Ensembl",
-	       "perl -MBio::EnsEMBL::Registry -e ''",
-	       "The ensembl API checkout is not found in the system. eHive depends on the core API. BioPerl or any other Ensembl checkout are not needed",
-	       "See http://www.ensembl.org/info/docs/api/api_installation.html"
-	     );
-} else {
-  print " ... OK\n";
-}
-
-## Hive code
-print " Checking eHive API installation";
-eval {
-  require Bio::EnsEMBL::Hive;
-};
-if ($@) {
-  not_met_dep( "Hive",
-	       "perl -MBio::EnsEMBL::Hive -e ''",
-	       "The hive API checkout is not found in the system",
-	       "See http://www.ensembl.org/info/docs/eHive.html"
-	     );
-} else {
-  print " ... OK\n";
-}
 
 print "\nCHECKING EHIVE DEPENDENCIES:\n";
 
