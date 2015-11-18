@@ -47,17 +47,15 @@ my $response = msg->new();
 
 my $dbConn = check_db_versions_match($decoded_json);
 
-  eval {
-	$graph = formAnalyses($dbConn);
-	$html = formResponse($dbConn);
-    };
-    if ($@) {
-	$response->err_msg("I have problems retrieving data from the database:$@");
-	$response->status("FAILED");
-    } else {
-	$response->out_msg({"graph" => $graph,
-			    "html" => $html});
-    }
+eval {
+    my $graph = formAnalyses($dbConn);
+    my $html = formResponse($dbConn);
+    $response->out_msg({"graph" => $graph, "html" => $html});
+};
+if ($@) {
+    $response->err_msg("I have problems retrieving data from the database:$@");
+    $response->status("FAILED");
+}
 
 print $response->toJSON();
 
