@@ -40,9 +40,8 @@ my $json_url = shift @ARGV || '{"version":["53"],"url":["mysql://ensro@127.0.0.1
 my $url = decode_json($json_url)->{url}->[0];
 
 # Set up @INC and paths for static content
-my $project_dir = $ENV{EHIVE_ROOT_DIR} . "/../";
-my $hive_config_file = "${project_dir}config/hive_config.json";
-my $connection_template = "${project_dir}static/connection_details.html";
+my @hive_config_files = ($ENV{GUIHIVE_BASEDIR}.'/config/hive_config.json', $ENV{EHIVE_ROOT_DIR}.'/hive_config.json');
+my $connection_template = $ENV{GUIHIVE_BASEDIR}."/static/connection_details.html";
 
 my $response = msg->new();
 
@@ -118,7 +117,7 @@ sub formResponse {
 
 sub formAnalyses {
     my ($dbConn) = @_;
-    my $graph = Bio::EnsEMBL::Hive::Utils::Graph->new($dbConn, $hive_config_file);
+    my $graph = Bio::EnsEMBL::Hive::Utils::Graph->new($dbConn, @hive_config_files);
     my $graphviz = $graph->build();
 
     return $graphviz->as_svg;
