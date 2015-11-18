@@ -279,7 +279,7 @@ sub template_mappings_SELECT {
   $curr_val = "NULL" unless(defined $curr_val);
 
   my $newVals = insert_val_if_needed($vals,$curr_val);
-  if ((defined $displays) && (length(@$newVals) != length(@$vals))) {
+  if ((defined $displays) && (scalar(@$newVals) != scalar(@$vals))) {
     $displays = insert_val_if_needed($displays,$curr_val);
   }
 
