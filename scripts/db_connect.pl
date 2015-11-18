@@ -35,7 +35,7 @@ use msg;
 use version_check;
 
 my $json_url = shift @ARGV || '{"version":["53"],"url":["mysql://ensro@127.0.0.1:2912/mp12_compara_nctrees_74clean2"]}';
-my $hive_config_file = $ENV{EHIVE_ROOT_DIR} . "/../config/hive_config.json";
+my @hive_config_files = ($ENV{GUIHIVE_BASEDIR}.'/config/hive_config.json', $ENV{EHIVE_ROOT_DIR}.'/hive_config.json');
 
 # Input data
 my $decoded_json = decode_json($json_url);
@@ -83,7 +83,7 @@ sub formResponse {
 
 sub formAnalyses {
     my ($dbConn) = @_;
-    my $graph = Bio::EnsEMBL::Hive::Utils::Graph->new($dbConn, $hive_config_file);
+    my $graph = Bio::EnsEMBL::Hive::Utils::Graph->new($dbConn, @hive_config_files);
     my $graphviz = $graph->build();
 
     return $graphviz->as_svg;
