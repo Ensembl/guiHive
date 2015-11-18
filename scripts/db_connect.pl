@@ -70,7 +70,7 @@ sub formResponse {
     $info->{port}      = $dbConn->dbc->port;
     $info->{driver}    = $dbConn->dbc->driver;
     $info->{username}  = $dbConn->dbc->username;
-    $info->{hive_db_version} = get_hive_db_version($dbConn);
+    $info->{hive_db_version} = get_hive_db_meta_key($dbConn, 'hive_sql_schema_version');
     $info->{hive_code_version} = get_hive_code_version();
 
     my $template = HTML::Template->new(filename => $connection_template);

@@ -39,15 +39,11 @@ use version_check;
 my $json_data = shift @ARGV || '{"version":["53"],"adaptor":["AnalysisJob"],"method":["status"],"url":["mysql://ensro@127.0.0.1:2911/mp12_long_mult"],"value":["DONE"],"dbID":["3,9"]}'; #'{"analysis_id":["2"],"adaptor":["ResourceDescription"],"method":["parameters"],"args":["-C0 -M8000000  -R\"select[mem>8000]  rusage[mem=8000]\""],"url":["mysql://ensro@127.0.0.1:2912/mp12_compara_nctrees_69a2"]}'; #'{"url":["mysql://ensro@127.0.0.1:2912/mp12_compara_nctrees_69b"], "column_name":["parameters"], "analysis_id":["27"], "newval":["cmalign_exe"]}';
 
 my $var          = decode_json($json_data);
-my $url          = $var->{url}->[0];
 my $args         = $var->{value}->[0];
 my $addArg       = $var->{key}->[0];
 my $dbIDs        = $var->{dbID}->[0];
 my $adaptor_name = $var->{adaptor}->[0];
 my $method       = $var->{method}->[0];
-my $version      = $var->{version}->[0];
-
-my $project_dir = $ENV{GUIHIVE_BASEDIR};
 
 my @dbIDs = split(/,/,$dbIDs);
 my @args  = ($args); #split(/,/,$args); ### TODO: JEditable only gives one value, so it is not possible to
@@ -68,20 +64,7 @@ unshift (@args, $addArg) if (defined $addArg);
 my $response = msg->new();
 
 
-my $dbConn = Bio::EnsEMBL::Hive::DBSQL::DBAdaptor->new( -no_sql_schema_version_check => 1, -url => $url );
-
-if (defined $dbConn) {
-
-  ## First check if the code version is OK
-  my $code_version = get_hive_code_version();
-  my $hive_db_version = get_hive_db_version($dbConn);
-
-  if ($code_version != $version) {
-    $response->status("VERSION MISMATCH");
-    $response->err_msg("$code_version $hive_db_version");
-    print $response->toJSON;
-    exit 0;
-  }
+my $dbConn = check_db_versions_match($var);
 
   $adaptor_name = "get_".$adaptor_name."Adaptor";
   my $adaptor = $dbConn->$adaptor_name;
@@ -124,10 +107,6 @@ if (defined $dbConn) {
     $dbConn->get_Queen()->synchronize_AnalysisStats($dbConn->get_AnalysisAdaptor->fetch_by_dbID($objs->[0]->analysis_id)->stats);
   }
 
-} else {
-  $response->err_msg("Error connecting to the database. Please try to connect again");
-  $response->status("FAILED");
-}
 
 print $response->toJSON();
 
