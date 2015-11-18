@@ -70,6 +70,8 @@ sub formResponse {
     $info->{username}  = $dbConn->dbc->username;
     $info->{hive_db_version} = get_hive_db_meta_key($dbConn, 'hive_sql_schema_version');
     $info->{hive_code_version} = get_hive_code_version();
+    $info->{pipeline_name} = get_hive_db_meta_key($dbConn, 'hive_pipeline_name');
+    $info->{hive_use_param_stack} = get_hive_db_meta_key($dbConn, 'hive_use_param_stack') ? 'Enabled' : 'Disabled';
 
     my $template = HTML::Template->new(filename => $connection_template);
     $template->param(%$info);

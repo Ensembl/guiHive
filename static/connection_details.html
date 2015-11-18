@@ -14,6 +14,7 @@
 -->
 
 
+<h4>Connection Details</h4>
 <table id="connection_table">
   <tr>
     <td>DB name:</td>
@@ -42,6 +43,17 @@
   <tr>
     <td>Hive code version:</td>
     <td><TMPL_VAR NAME=hive_code_version></td>
+  </tr>
+  <tr>
+    <td>Pipeline name:</td>
+    <td><TMPL_VAR NAME=pipeline_name></td>
+  </tr>
+</table>
+<h4>eHive flags</h4>
+<table id="hivemeta_table">
+  <tr>
+    <td>Parameter stack:</td>
+    <td><TMPL_VAR NAME=hive_use_param_stack></td>
   </tr>
 </table>
 
