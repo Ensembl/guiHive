@@ -62,7 +62,7 @@ You should now be able to connect to your database and start monitoring your pip
 
 ### Browser compatibility
 
-guiHive and all the 3rd party libraries used in guiHive are supposed to work in reasonably recent versions of the mainstream web browsers. IE>=9 should also work but I haven't tested. If you experience any problem, please send your comments to hive-users@ebi.ac.uk or mp@ebi.ac.uk
+guiHive and all the 3rd party libraries used in guiHive are supposed to work in reasonably recent versions of the mainstream web browsers. IE>=9 should also work but I haven't tested. If you experience any problem, please send your comments to hive-users@ebi.ac.uk
 
 AFAIK everything works fine in Firefox (v7.0.1, v8.0.1, v12.0, v18.0.1), Chrome (v24.0.1312.56), Safari (v5.1.7) and Opera (v12.12).
 
@@ -70,5 +70,4 @@ AFAIK everything works fine in Firefox (v7.0.1, v8.0.1, v12.0, v18.0.1), Chrome 
 
 Feedback is more than welcome.
 Please send your bug reports to the hive mailing list (hive-users@ebi.ac.uk).
-Comments can also be sent to me directly (mp@ebi.ac.uk)
 

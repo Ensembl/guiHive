@@ -36,7 +36,7 @@ import (
 )
 
 const (
-	projectDirName = "github.com/emepyc/guiHive"
+	projectDirName = "github.com/Ensembl/guiHive"
 )
 
 var (

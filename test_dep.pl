@@ -213,7 +213,7 @@ print "\$EHIVE_ROOT_DIR/scripts/db_cmd.pl -url <mysql_path_to_your_db>\n";
 print "\$GUIHIVE_BASEDIR/scripts/db_test.pl <mysql_path_to_your_db>\n";
 print "3.- If you have problems refreshing the data during a guiHive run try the following script:\n";
 print "\$GUIHIVE_BASEDIR/scripts/db_refresh_test.pl <mysql_path_to_your_db>\n";
-print "\nIf you have any problem email mp[AT]ebi.ac.uk\n\n";
+print "\nIf you have any problem email ehive-users[AT]ebi.ac.uk\n\n";
 
 sub not_met_dep {
   my ($who, $command, $desc, $help) = @_;
