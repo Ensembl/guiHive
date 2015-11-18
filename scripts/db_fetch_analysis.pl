@@ -88,8 +88,8 @@ sub formAnalysisInfo {
   $info->{analysis_capacity} = template_mappings_SELECT("Analysis",
 							$analysis,
 							"analysis_capacity",
-							build_values({0=>["NULL"],  ## values
-								      1=>[0,9],
+							build_values({0=>["NULL", "0"],  ## values
+								      1=>[1,9],
 								      10=>[10,90],
 								      100=>[100,1000]}),
 							build_values({0=>["NULL (unlimited)", "0 (blocked)"],   ## displays
@@ -263,7 +263,7 @@ sub build_values {
   my @vals;
   @vals = @{$ranges->{0}} if (defined $ranges->{0});
   delete $ranges->{0};
-  for my $step (keys %$ranges) {
+  for my $step (sort { $a <=> $b } keys %$ranges) {
     for (my $i = $ranges->{$step}->[0]; $i <= $ranges->{$step}->[1]; $i+=$step) {
       push @vals, $i;
     }
