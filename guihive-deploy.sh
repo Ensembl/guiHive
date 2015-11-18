@@ -45,12 +45,19 @@ safe_symlink () {
 
 ## Higher-level functions that wrap the safe functions
 
+trim_ehive_repo () {
+  # $dir
+  rm -rf "$1/docs"
+  rm -rf "$1/wrappers"
+  rm -rf "$1/scripts"
+  rm -rf "$1/t"
+}
+
 add_guihive_version () {
   echo "checkout $1: guiHive $2 and eHive $3"
   safe_clone "$2" "$GUIHIVE_CLONE_LOCATION" "${GUIHIVE_VERSIONS_DIR}/$1"
   safe_clone "$3" "$EHIVE_CLONE_LOCATION" "${EHIVE_VERSIONS_DIR}/$1"
-  rm -rf "${EHIVE_VERSIONS_DIR}/$1/docs"
-  rm -rf "${EHIVE_VERSIONS_DIR}/$1/wrappers"
+  trim_ehive_repo "${EHIVE_VERSIONS_DIR}/$1"
 }
 
 link_guihive_version () {
@@ -59,8 +66,7 @@ link_guihive_version () {
   echo "checkout $1: guiHive =$2 and eHive $EHIVE_COMMIT"
   safe_symlink "$2" "${GUIHIVE_VERSIONS_DIR}/$1"
   safe_clone "$EHIVE_COMMIT" "$EHIVE_CLONE_LOCATION" "${EHIVE_VERSIONS_DIR}/$1"
-  rm -rf "${EHIVE_VERSIONS_DIR}/$1/docs"
-  rm -rf "${EHIVE_VERSIONS_DIR}/$1/wrappers"
+  trim_ehive_repo "${EHIVE_VERSIONS_DIR}/$1"
 }
 
 
