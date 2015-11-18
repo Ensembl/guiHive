@@ -84,6 +84,7 @@ func version(r *http.Request) string {
 		checkError("Can't read dir " + path, err)
 		sort.Sort(sortableFiles(files))
 		version = files[len(files)-1].Name()
+		debug("Will use the latest version %s", version)
 		return version
 	}
 	return ""
@@ -116,7 +117,7 @@ func scriptHandler(w http.ResponseWriter, r *http.Request) {
 	debug("VERSION: %s", version)
 	
 	versionRootDir := os.Getenv("GUIHIVE_PROJECTDIR") + "/versions/" + version + "/";
-	ehiveRootDir := versionRootDir + "/ensembl-hive"
+	ehiveRootDir := os.Getenv("GUIHIVE_PROJECTDIR") + "/ensembl-hive/" + version + "/";
 	ehiveRootLib := ehiveRootDir + "/modules"
 	guihiveRootLib := versionRootDir + "/scripts/lib"
 	newPerl5Lib  := addPerl5Lib(ehiveRootLib + ":" + guihiveRootLib)

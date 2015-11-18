@@ -232,6 +232,7 @@ print "\nIf you have any problem email mp[AT]ebi.ac.uk\n\n";
 
 sub not_met_dep {
   my ($who, $command, $desc, $help) = @_;
+  print "\n";
   my $msg = "\n\n" . "#"x80 . "\n";
   $msg .= "UNMET DEPENDECY: $who\n";
   $msg .= "   COMM: $command\n";
