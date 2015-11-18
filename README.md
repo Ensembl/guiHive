@@ -31,8 +31,10 @@ guiHive depends on the following components that need to be installed in your sy
    * URI::Escape
    * HTML::Template
 
-There is a script in the guiHive root directory called "test_dep.pl" that tests all the dependencies. To run it:
+There is a script in the guiHive root directory called `test_dep.pl` that tests all the dependencies. To run it:
+``
 $ perl test_dep.pl
+``
 If you experience problems setting up guiHive you can also follow the tips printed at the end of that script.
 
 #### Compilation
@@ -40,21 +42,27 @@ If you experience problems setting up guiHive you can also follow the tips print
 Once you have all the dependencies installed and up to date follow these steps:
 
 * Clone the guiHive repository (if you haven't done yet) and cd into it.
-  $ git clone https://github.com/Ensembl/guiHive
+```
+$ git clone https://github.com/Ensembl/guiHive
+```
 
 * cd into the "server" folder and build the web server
-     $ cd guiHive/server
-     $ go build
+```
+$ cd guiHive/server
+$ go build
+```
 
 * This will create the "server" executable in the current directory
 
 #### Running
 
 * Execute the server:
-    $ ./server
+```
+$ ./server
+```
 
 * Open your preferred browser (check the browser compatibility below first!) and go to the following URL:
-   127.0.0.1:8080
+   http://127.0.0.1:8080
 (Note: The 8080 port is the default one used by guiHive, you can change it when invoking the server executable using the -port option)
 
 You should now be able to connect to your database and start monitoring your pipeline.
