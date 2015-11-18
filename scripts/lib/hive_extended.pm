@@ -279,37 +279,6 @@ use Bio::EnsEMBL::Hive::Utils;
   }
 };
 
-## Method to get all the jobs in the database
-## Too tricky. It would be better to have a _generic_count directly in the AnalysisJob adaptor
-## or better still in Hive's BaseAdaptor
-*Bio::EnsEMBL::Hive::DBSQL::AnalysisJobAdaptor::_generic_count = sub {
-  my ($self, $constraints) = @_;
-
-  # We save previous _columns and _objs_from_sth methods
-  my $old_columns = *Bio::EnsEMBL::Hive::DBSQL::AnalysisJobAdaptor::_columns;
-  my $old_objs_from_sth = *Bio::EnsEMBL::Hive::DBSQL::AnalysisJobAdaptor::_objs_from_sth;
-
-  # _columns and _objs_from_sth methods are redefined
-  no warnings 'redefine';
-  *Bio::EnsEMBL::Hive::DBSQL::AnalysisJobAdaptor::_columns = sub {
-    return "COUNT(*)";
-  };
-  *Bio::EnsEMBL::Hive::DBSQL::AnalysisJobAdaptor::_objs_from_sth = sub {
-    my ($self, $sth) = @_;
-    my ($n) = $sth->fetchrow_array();
-    $sth->finish();
-    return $n;
-  };
-
-  ## We call _generic_fetch as usual and get back only the count
-  my $n = $self->_generic_fetch($constraints);
-
-  ## We reassign the _columns and _objs_from_sth to their original form
-  *Bio::EnsEMBL::Hive::DBSQL::AnalysisJobAdaptor::_columns = $old_columns;
-  *Bio::EnsEMBL::Hive::DBSQL::AnalysisJobAdaptor::_objs_from_sth = $old_objs_from_sth;
-
-  return $n;
-};
 
 ## forgive_failed_jobs sets FAILED jobs to DONE updating the semaphore count of dependent jobs
 ## This method is safer than the previous "forgive_dependent_jobs_semaphored_by_failed_jobs"

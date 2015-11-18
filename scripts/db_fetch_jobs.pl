@@ -62,8 +62,8 @@ my $response = msg->new();
       ## TODO: If the jobs are very short, we get some inconsistency between the jobs fetched and the number of jobs
       ## We can't assument that $njobs = scalar @$jobs because the $final_clause include a LIMIT
       ## So, for now $njobs is "aproximate"
-      $jobs = $dbConn->get_AnalysisJobAdaptor()->_generic_fetch($constraints, undef, $final_clause);
-      $njobs = $dbConn->get_AnalysisJobAdaptor()->_generic_count($constraints);
+      $jobs = $dbConn->get_AnalysisJobAdaptor()->fetch_all("WHERE " . $constraints . " " . $final_clause);
+      $njobs = $dbConn->get_AnalysisJobAdaptor()->count_all($constraints);
     };
     if ($@) {
 	$response->err_msg("I can't retrieve jobs with analysis_id $analysis_id: $@");
@@ -82,7 +82,7 @@ sub formJobsInfo {
   my ($jobs, $analysis_id, $iTotalDisplayRecords) = @_;
   my $adaptor = "AnalysisJob";
 
-  my $iTotalRecords = $dbConn->get_AnalysisJobAdaptor()->_generic_count("analysis_id = '$analysis_id'");
+  my $iTotalRecords = $dbConn->get_AnalysisJobAdaptor()->count_all("analysis_id = '$analysis_id'");
   my @aaData;
 
   my $template = HTML::Template->new(filename=> $input_ids_template);
