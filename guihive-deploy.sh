@@ -83,8 +83,8 @@ link_guihive_version "69" "73"
 link_guihive_version "70" "73" "sql_schema_71_start^2"	# because the merge of the python branch has swapped its two parents
 link_guihive_version "71" "73"
 link_guihive_version "72" "73"
-link_guihive_version "74" "73"
-link_guihive_version "75" "73"
+link_guihive_version "74" "77"
+link_guihive_version "75" "77"
 link_guihive_version "76" "77"
 
 trap - EXIT
