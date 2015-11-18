@@ -70,7 +70,7 @@ sub formResponse {
     $info->{port}      = $dbConn->dbc->port;
     $info->{driver}    = $dbConn->dbc->driver;
     $info->{username}  = $dbConn->dbc->username;
-    $info->{hive_db_version} = get_hive_db_version($dbConn);
+    $info->{hive_db_version} = get_hive_db_meta_key($dbConn, 'hive_sql_schema_version');
     $info->{hive_code_version} = get_hive_code_version();
     $info->{pipeline_name} = get_hive_db_meta_key($dbConn, 'hive_pipeline_name');
     $info->{hive_auto_rebalance_semaphores} = get_hive_db_meta_key($dbConn, 'hive_auto_rebalance_semaphores') ? 'Enabled' : 'Disabled';

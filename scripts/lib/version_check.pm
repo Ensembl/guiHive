@@ -28,7 +28,7 @@ use Bio::EnsEMBL::Hive::DBSQL::SqlSchemaAdaptor;
 use vars qw(@ISA @EXPORT);
 
 @ISA = qw(Exporter);
-@EXPORT = qw(get_hive_code_version get_hive_db_version get_hive_db_meta_key check_db_versions_match);
+@EXPORT = qw(get_hive_code_version get_hive_db_meta_key check_db_versions_match);
 
 sub get_hive_code_version {
   return Bio::EnsEMBL::Hive::DBSQL::SqlSchemaAdaptor->get_code_sql_schema_version();
@@ -40,15 +40,6 @@ sub get_hive_db_meta_key {
   my $val;
   $val = eval { $metaAdaptor->fetch_by_meta_key( $key_name )->{'meta_value'}; };
   return $val;
-}
-
-
-sub get_hive_db_version {
-  my ($dbConn) = @_;
-  my $metaAdaptor = $dbConn->get_MetaAdaptor;
-  my $db_sql_schema_version;
-  $db_sql_schema_version = eval { $metaAdaptor->fetch_by_meta_key( 'hive_sql_schema_version' )->{'meta_value'}; };
-  return $db_sql_schema_version;
 }
 
 sub _fail_with_status_message {
@@ -81,10 +72,10 @@ sub check_db_versions_match {
 
     if (defined $pipeline) {
         ## Check if the code version is OK
-        my $code_version = get_hive_code_version();
+        my $code_version = $version || get_hive_code_version();
         my $hive_db_version;
         eval {
-            $hive_db_version = get_hive_db_version($pipeline->hive_dba);
+            $hive_db_version = get_hive_db_meta_key($pipeline->hive_dba, 'hive_sql_schema_version');
         };
         if ($@) {
             exit(0) if $silent;
