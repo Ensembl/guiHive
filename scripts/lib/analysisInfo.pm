@@ -25,7 +25,7 @@ use warnings;
 
 use Bio::EnsEMBL::Hive::Utils::Graph;
 
-my $hive_config_file = $ENV{EHIVE_ROOT_DIR} . "/../config/hive_config.json";
+my @hive_config_files = ($ENV{GUIHIVE_BASEDIR}.'/config/hive_config.json', $ENV{EHIVE_ROOT_DIR}.'/hive_config.json');
 
 ## TODO:  normalize these colors with Hive colors
 ## It would be good to have this in a centralize language-agnostic format (JSON?)
@@ -70,7 +70,7 @@ sub parse_msecs {
 sub fetch {
   my ($class, $analysis) = @_;
   my $analysis_stats = $analysis->stats();
-  my $config = Bio::EnsEMBL::Hive::Utils::Config->new($hive_config_file);
+  my $config = Bio::EnsEMBL::Hive::Utils::Config->new(@hive_config_files);
   my $status = $analysis_stats->status();
 #  my $status_colour = $config->get('Graph', 'Node', 'AnalysisStatus', $analysis_stats->status, 'Colour');
   my ($breakout_label, $total_job_count, $job_counts) = $analysis_stats->job_count_breakout();
