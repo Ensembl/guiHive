@@ -22,7 +22,7 @@ function bubbleCloud() {
     var layout_gravity = 0.05;
     var damper = 0.1;
     var friction = 0.9;
-    var data = [];
+    var data = {};
     var attr = "";
     var node;
     var force;
@@ -40,8 +40,9 @@ function bubbleCloud() {
             .range([min_range,max_range]);
 
         node = vis.selectAll("node")
-            .data(data)
-            .enter().append("g")
+            .data(data, function (d) {return d.analysis_id})
+            .enter()
+	    .append("g")
             .attr("class", "node")
 	    .attr("rel", "tooltip-it");
 
@@ -92,7 +93,7 @@ function bubbleCloud() {
 	    node
 		.attr("title", function(x, i){
 		    var d = data[i];
-		    var tooltip_msg = "Analysis ID: " + (i+1) + "<br/>Logic name: " + d.logic_name + "<br/>Number of jobs:" + d.total_job_count + "<br/>Avg msec per job: " + d.avg_msec_per_job_parsed;
+		    var tooltip_msg = "Analysis ID: " + (d.analysis_id) + "<br/>Logic name: " + d.logic_name + "<br/>Number of jobs:" + d.total_job_count + "<br/>Avg msec per job: " + d.avg_msec_per_job_parsed;
 		    if (d.mem !== undefined) {
 			tooltip_msg = tooltip_msg + "<br/>Min memory used: " + d.mem[0] + "<br/>Mean memory used: " + d.mem[1] + "<br/>Max memory used:" + d.mem[2];
 		    }
@@ -242,7 +243,13 @@ function bubbleCloud() {
         if (!arguments.length) {
             return data
         }
-        data = d.filter(function(d){return d !== null});
+	var data_list = [];
+	for (var o in d) {
+	    if (d.hasOwnProperty(o)) {
+		data_list.push (d[o]);
+	    }
+	}
+	data = data_list;
         return bCloud;
     };
     

@@ -47,7 +47,6 @@ function pieChart() {
 
   // chart is the returned closure
   var chart = function(g) {
-
     // path defined the parts of the pie chart.
     // It is stored internally in the closure (i.e. not returned).
     // In each path node we store its current value. This is needed for the transitions later
@@ -76,6 +75,7 @@ function pieChart() {
         
         // The size of the pie chart (outerRadius) is dynamic.
         var total_counts_extent = [0, chart.max_counts()];
+	  
         var pie_size_scale = d3.scale.linear()
                                .range([max_height/5, max_height/3])
                                .domain(total_counts_extent);
@@ -89,15 +89,19 @@ function pieChart() {
 	  // We update the panic_circle
 	  panic_circle.transition().duration(duration).delay(delay).attr("fill",function(){if (chart.data().counts[3] === 0){return "white"} else {return "red"}});
 
-        path.transition().delay(delay).duration(newT.duration()).attrTween("d", function(a) {
-         var i = d3.interpolate(this._current, a),
-             k = d3.interpolate(arc.outerRadius()(),pie_size_scale(d3.sum(data.counts)));
-          this._current = i(0);
-          return function(t) {
-	      return arc.outerRadius(k(t))(i(t));
-//            return arc.innerRadius(k(t)/radiusFactor).outerRadius(k(t))(i(t));
-          };
-        }); // redraw the arcs
+          path
+	      .transition()
+	      .delay(delay)
+	      .duration(newT.duration())
+	      .attrTween("d", function(a) {
+		  var i = d3.interpolate(this._current, a),
+		  k = d3.interpolate(arc.outerRadius()(),pie_size_scale(d3.sum(data.counts)));
+		  this._current = i(0);
+		  return function(t) {
+		      return arc.outerRadius(k(t))(i(t));
+		      //            return arc.innerRadius(k(t)/radiusFactor).outerRadius(k(t))(i(t));
+		  };
+              }); // redraw the arcs
       };
  
       // duration is a method that allows to change the duration of the transition

@@ -242,7 +242,9 @@ function hStackedBarChart(raw_data) {
 	// Let's just assume that we want values with name associated... so loop through all the names
 
 	var transfData = [];
-	
+
+	console.log("--- DATA:");
+	console.log(data);
 	for (var i=0; i<data.jobs_counts.names.length; i++) {
 	    transfData[i] = [];
 	}

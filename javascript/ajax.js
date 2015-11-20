@@ -273,14 +273,22 @@ function refresh_data_and_views(callback) {
 		    guiHive.analysis_board = allAnalysisRes.out_msg;
 
 		    // If we have mem and cpu information, we allow selecting color schemas for them
-		    var mems = allAnalysisRes.out_msg.filter(function(d){return (d !== null && d.mem !== undefined)});
-		    var cpus = allAnalysisRes.out_msg.filter(function(d){return (d !== null && d.cpu !== undefined)});
-		    if (mems.length) {
+		    var mems = 0;
+		    var cpus = 0;
+		    for (var analysis in allAnalysisRes.out_msg) {
+			if (allAnalysisRes.out_msg[analysis]["mem"] !== undefined) {
+			    mems++;
+			}
+			if (allAnalysisRes.out_msg[analysis]["cpu"] !== undefined) {
+			    cpus++;
+			}
+		    }
+		    if (mems>0) {
 			$("#select_analysis_colors option[value='mem']").attr("disabled", null);
 		    } else {
 			$("#select_analysis_colors option[value='mem']").attr("disabled", 1);
 		    }
-		    if (cpus.length) {
+		    if (cpus>0) {
 			$("#select_analysis_colors option[value='cpu']").attr("disabled", null);
 		    } else {
 			$("#select_analysis_colors option[value='mem']").attr("disabled", 1);
@@ -308,8 +316,7 @@ function onSuccess_dbConnect(res) {
 	$(".hidden_by_default").show();
     
 	// Connection message is displayed
-	var connection_header = "<h4>Connection Details</h4>";
-	$("#connection_msg").html(connection_header + res.out_msg.html);
+	$("#connection_msg").html(res.out_msg.html);
 
 	// We update the timer:
 	guiHive.refresh_data_timer.stop();

@@ -76,10 +76,14 @@ function initialize_pipeline_diagram() {
 	    var analysis_id = matches[1];
 	    var gRoot = $(v).parent()[0];
 
-	    var polygon_coords = points_from_string(d3.select(gRoot).select("polygon").attr("points"));
-	    var posx = polygon_coords[1].x + 15;
-	    var posy = polygon_coords[4].y;
-	    var pChart = pieChart().x(posx).y(posy);
+	    // Trick to get the real bounding box of the <g> element
+	    var bbox = gRoot.getBBox();
+	    var text_elts = $(gRoot).children("text");
+	    var bbox_text1 = text_elts[0].getBBox();
+	    var midx_text = bbox_text1.x + bbox_text1.width/2;
+	    var real_bbox = [0, null, bbox.x + bbox.width, bbox.y];
+	    real_bbox[0] = 2 * midx_text - real_bbox[2];
+	    var pChart = pieChart().x(real_bbox[2]).y(real_bbox[3]);
 	    var gpie = d3.select(gRoot)
 		.append("g");
 	    pChart(gpie);
@@ -90,21 +94,20 @@ function initialize_pipeline_diagram() {
 			  root_node      : v,
 			 });
 
-
 	    // Let's add a label with the analysis_id (should accommodate 3 digits)
-	    d3.select(gRoot)
-		.append("rect")
-      	    .attr("x", polygon_coords[0].x)
-		.attr("y", polygon_coords[4].y - 15)
-		.attr("width", 25)
-		.attr("height", 15)
-		.attr("stroke", "black")
-		.attr("fill", "white");
-	    d3.select(gRoot)
-		.append("text")
-		.text(analysis_id)
-	        .attr("x", polygon_coords[0].x + 3)
-		.attr("y", polygon_coords[4].y - 2);
+		d3.select(gRoot)
+		    .append("rect")
+      		    .attr("x", real_bbox[0] + 15)
+	    	    .attr("y", real_bbox[3] - 15)
+	    	    .attr("width", 25)
+	    	    .attr("height", 15)
+	    	    .attr("stroke", "black")
+	    	    .attr("fill", "white");
+		d3.select(gRoot)
+	    	    .append("text")
+	    	    .text(analysis_id)
+	            .attr("x", real_bbox[0] + 15 + 3)
+	    	    .attr("y", real_bbox[3] - 2);
 
 	    // Links to the analysis_details
 	    // and makes the gRoots tooltip-able
@@ -113,7 +116,6 @@ function initialize_pipeline_diagram() {
 		.attr("rel", "tooltip-it")
 		.on("click", function() {
 		    display(analysis_id, "./scripts/db_fetch_analysis.pl", onSuccess_fetchAnalysis);
-    //		    display(analysis_id, "/scripts/db_fetch_jobs.pl", onSuccess_fetchJobs);
 		});
 	}
     });
@@ -139,7 +141,17 @@ function initialize_pipeline_diagram() {
 }
 
 function pipeline_diagram_update(allCharts) {
-    var max_counts = d3.max(guiHive.analysis_board, function(v){if (v === null) {return 0} return d3.sum(v.jobs_counts.counts)});
+
+    var all_counts = [];
+    for (var a in guiHive.analysis_board) {
+	if (guiHive.analysis_board.hasOwnProperty(a)) {
+	    all_counts.push(guiHive.analysis_board[a].jobs_counts.counts);
+	}
+    }
+    var max_counts = d3.max(all_counts, function (v) {
+	return d3.sum(v)
+    });
+
 //    var node_colors = nodeColor(); // closure
 //    node_colors.attr("avg_msec_per_job");
     for (var i = 0; i < allCharts.length; i++) {

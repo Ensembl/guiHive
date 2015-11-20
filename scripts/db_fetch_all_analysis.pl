@@ -77,12 +77,7 @@ sub formAnalysisInfo {
       $all_analysis_info{$new_analysis->{analysis_id}} = $new_analysis;
     }
 
-    my @all_analysis_info = ();
-    for my $pos (keys %all_analysis_info) {
-      $all_analysis_info[$pos] = $all_analysis_info{$pos};
-    }
-
-    return [@all_analysis_info];
+    return {%all_analysis_info};
 }
 
 

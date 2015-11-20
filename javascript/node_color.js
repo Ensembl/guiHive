@@ -50,16 +50,28 @@ function nodeColor() {
     node_range.range = function() {
 	if (attr === 'total_job_count' ||
 	    attr === 'avg_msec_per_job'){
-	    var extent = d3.extent(guiHive.analysis_board.filter(function(d){return d!==null}), function(d,i){return parseInt(d[attr]) });
+	    var vals = [];
+	    for (var analysis in guiHive.analysis_board) {
+		if (guiHive.analysis_board.hasOwnProperty(analysis) && (guiHive.analysis_board[analysis][attr]!==null)) {
+		    vals.push (parseInt(guiHive.analysis_board[analysis][attr]));
+		}
+	    }
+	    var extent = d3.extent(vals);
 	    color_scale = d3.scale.linear()
 		.domain(extent)
-		.range(["#FFEDAO","#F03B20"]);
+		.range(["#FFEDA0","#F03B20"]);
 	} else if (attr === 'mem' ||
 		   attr === 'cpu') {
-	    var extent = d3.extent(guiHive.analysis_board.filter(function(d){return d!==null}), function(d,i){return parseInt(d[attr][1]) });
+	    var vals = [];
+	    for (var analysis in guiHive.analysis_board) {
+		if (guiHive.analysis_board.hasOwnProperty(analysis) && (guiHive.analysis_board[analysis][attr]!==null)) {
+		    vals.push (parseInt(guiHive.analysis_board[analysis][attr][1]));
+		}
+	    }
+	    var extent = d3.extent(vals);
 	    color_scale = d3.scale.linear()
 		.domain(extent)
-		.range(['#FFEDAO',"#F03B20"]);
+		.range(['#FFEDA0',"#F03B20"]);
 	}
 
 	return;

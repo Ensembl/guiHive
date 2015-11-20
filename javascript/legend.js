@@ -67,12 +67,12 @@ legend = function() {
 		if ((mode === "guiHiveStatus") || (mode === "status")) {
 		    // Categorical legend
 		    var objs = [];
-		    for (var i = 0; i < guiHive.analysis_board.length; i++) {
-			if (guiHive.analysis_board[i]) {
-			    objs[guiHive.analysis_board[i][mode]] = {
-				"name"  : guiHive.analysis_board[i][mode],
-				"color" : guiHive.config.Graph.Node.AnalysisStatus[guiHive.analysis_board[i][mode]].Colour
-			    };
+		    for (var analysis in guiHive.analysis_board) {
+			if (guiHive.analysis_board.hasOwnProperty(analysis)) {
+			    objs[guiHive.analysis_board[analysis][mode]] = {
+				"name" : guiHive.analysis_board[analysis][mode],
+				"color" : guiHive.config.Graph.Node.AnalysisStatus[guiHive.analysis_board[analysis][mode]].Colour
+			    }
 			}
 		    }
 
@@ -122,9 +122,9 @@ legend = function() {
 		    $("#legend").css("height", (gradient_box_height + 20) + "px"); 
 
 		    var data = [];
-		    for (var i = 0; i < guiHive.analysis_board.length; i++) {
-			if (guiHive.analysis_board[i]) {
-			    data.push(parseInt(guiHive.analysis_board[i][mode]));
+		    for (var analysis in guiHive.analysis_board) {
+			if (guiHive.analysis_board.hasOwnProperty(analysis)) {
+			    data.push(parseInt(guiHive.analysis_board[analysis][mode]));
 			}
 		    }
 
