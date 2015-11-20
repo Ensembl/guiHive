@@ -24,6 +24,9 @@ use strict;
 use warnings;
 use JSON;
 use Bio::EnsEMBL::Hive::DBSQL::SqlSchemaAdaptor;
+
+use msg;
+
 use vars qw(@ISA @EXPORT);
 
 @ISA = qw(Exporter);
