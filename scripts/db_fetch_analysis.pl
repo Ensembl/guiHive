@@ -75,7 +75,7 @@ sub formAnalysisInfo {
 				{module  => $analysis->module(),
 				 id      => $analysis->dbID(),
 				 adaptor => "Analysis",
-				 method  => "update_module",
+				 method  => "module",
 				}
 			       ];
 

@@ -56,11 +56,12 @@ my $response = msg->new();
     $adaptor_name = "get_".$adaptor_name."Adaptor";
     my $adaptor = $dbConn->$adaptor_name;
     my $obj = $adaptor->fetch_by_dbID($analysis_id);
+    my $update_method = "update_$method";
 
     if ($obj) {
       eval {
 	$obj->$method(@args);
-	$obj->adaptor->update($obj);
+	$obj->adaptor->$update_method($obj);
       };
       $response->err_msg($@);
       $response->status($response->err_msg) if ($@);
