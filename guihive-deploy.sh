@@ -9,6 +9,12 @@ GUIHIVE_CLONE_LOCATION="${DEPLOY_LOCATION}/clones/guiHive"
 GUIHIVE_VERSIONS_DIR="${DEPLOY_LOCATION}"/versions
 EHIVE_VERSIONS_DIR="${DEPLOY_LOCATION}"/ensembl-hive
 
+if [ -d "$GUIHIVE_VERSIONS_DIR" ] && [ -d "$EHIVE_VERSIONS_DIR" ]
+then
+  echo "'$GUIHIVE_VERSIONS_DIR' and/or '$EHIVE_VERSIONS_DIR' already exist. Press ctrl+c to exit now, or enter otherwise/"
+  read
+fi
+
 # Any failure will cause the script to exit
 trap "echo 'An error occurred. Deployment aborted'; exit 1" EXIT
 set -e
