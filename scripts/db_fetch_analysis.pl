@@ -191,17 +191,6 @@ sub formAnalysisInfo {
   return $template->output();
 }
 
-sub module_mappings {
-  my ($obj, $method) = @_;
-  my $module = $obj->$method;
-  return [
-	  {"module"  => $module,
-	   "id"      => $obj->dbID,
-	   "adaptor" => "Analysis",
-	   "method"  => "module",
-	  }
-	 ];
-}
 
 sub template_mappings_PARAMS {
   my ($obj, $method) = @_;
