@@ -86,7 +86,7 @@ sub check_db_versions_match {
 
         if ($code_version != $hive_db_version) {
             exit(0) if $silent;
-            _fail_with_status_message('VERSION MISMATCH', "code=$code_version db=$hive_db_version");
+            _fail_with_status_message('VERSION MISMATCH', "$code_version $hive_db_version");
         }
 
     } else {
