@@ -209,12 +209,12 @@ sub template_mappings_PARAMS {
 
     push @{$vals->{existing_parameters}->[$i]->{delete_parameter}}, {"id"             => $obj->dbID,
 								     "adaptor"        => $adaptor,
-								     "method"         => "delete_param",
+								     "method"         => "delete_param_THEN_update_parameters",
 								     "parameterKeyID" => "p_$param",
 								    };
     push @{$vals->{existing_parameters}->[$i]->{change_parameter}}, {"id"               => $obj->dbID,
 								     "adaptor"          => $adaptor,
-								     "method"           => "add_param",
+								     "method"           => "add_param_THEN_update_parameters",
 								     "parameterKeyID"   => "p_$param",
 								     "parameterValueID" => "v_$param",
 								    };
@@ -222,7 +222,7 @@ sub template_mappings_PARAMS {
   }
   $vals->{new_parameter} = [{"id"     => $obj->dbID,
 			    "adaptor" => $adaptor,
-			    "method"  => "add_param",
+			    "method"  => "add_param_THEN_update_parameters",
 			   }],
   return [$vals];
 }

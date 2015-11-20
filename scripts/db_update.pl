@@ -41,6 +41,12 @@ my $args         = uri_unescape($var->{args}->[0]);
 my $analysis_id  = $var->{analysis_id}->[0];
 my $adaptor_name = $var->{adaptor}->[0];
 my $method       = $var->{method}->[0];
+my $update_method = "update_$method";
+
+if ($method =~ /^(\w+)_THEN_(\w+)$/) {
+    $method = $1;
+    $update_method = $2;
+}
 
 my @args = split(/,/,$args,2);
 
@@ -56,7 +62,6 @@ my $response = msg->new();
     $adaptor_name = "get_".$adaptor_name."Adaptor";
     my $adaptor = $dbConn->$adaptor_name;
     my $obj = $adaptor->fetch_by_dbID($analysis_id);
-    my $update_method = "update_$method";
 
     if ($obj) {
       eval {
