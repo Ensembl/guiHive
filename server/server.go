@@ -71,6 +71,7 @@ func (s sortableFiles) Swap (i, j int) {
 	s[i], s[j] = s[j], s[i]
 }
 
+// Return the version number defined in the URL, or the latest available eHive version
 func version(r *http.Request) string {
 	parts := strings.SplitN(r.URL.Path, "/", 4)
 	version := parts[2]
