@@ -145,13 +145,13 @@ use Bio::EnsEMBL::Hive::Utils;
     #   throw("This resource name exists in the database\n");
     # }
   }
-  my ($rc) = $self->create_new(-NAME => $rc_name);
+  my ($rc) = $self->create_new('name' => $rc_name);
   my $rc_id = $rc->dbID();
 
   $self->db->get_ResourceDescriptionAdaptor->create_new(
-      -RESOURCE_CLASS_ID   => $rc_id,
-      -MEADOW_TYPE         => $meadow_type,
-      -SUBMISSION_CMD_ARGS => $parameters,
+      'resource_class_id'   => $rc_id,
+      'meadow_type'         => $meadow_type,
+      'submission_cmd_args' => $parameters,
       );
 };
 
