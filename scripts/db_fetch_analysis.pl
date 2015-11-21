@@ -199,7 +199,7 @@ sub template_mappings_PARAMS {
   my $vals;
   my $adaptor = "Analysis";
   my $i = 0;
-  for my $param (keys %$curr_val) {
+  for my $param (sort keys %$curr_val) {
     push @{$vals->{existing_parameters}}, {
 					   "key"              => $param,
 					   "parameterKeyID"   => "p_$param",
