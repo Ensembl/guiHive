@@ -938,8 +938,8 @@ function log(res) {
     // We first see if we had a version error. These are treated differently
     if (res.status === "VERSION MISMATCH") {
 	var versions = res.err_msg.split(" ");
-	alert("Code version (v" + versions[0] + ") and DB version (" + versions[1] + ") mismatch. You will be redirected to the correct code version of your hive database");
-	redirect(versions[0]);
+	alert("Code version (" + versions[0] + ") and DB version (" + versions[1] + ") mismatch. You will be redirected to the correct code version of your hive database");
+	redirect(versions[1]);
 	return;
     }
 
@@ -953,12 +953,12 @@ function log(res) {
     return
 }
 
-function redirect() {
+function redirect(new_version) {
     var loc_url = guiHive.pipeline_url;
     var cur_http_url = $.url();
     console.log(cur_http_url);
     var new_http_url = cur_http_url.attr("base") +
-	"/?" +
+	"/versions/" + new_version + "/?" +
 	cur_http_url.attr("query");
     window.location.href=new_http_url;
 }

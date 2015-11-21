@@ -249,7 +249,6 @@ function bubbleCloud() {
 		data_list.push (d[o]);
 	    }
 	}
-        // data = d.filter(function(d){return d !== null});
 	data = data_list;
         return bCloud;
     };

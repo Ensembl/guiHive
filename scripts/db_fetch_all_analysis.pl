@@ -80,12 +80,6 @@ sub formAnalysisInfo {
       $all_analysis_info{$analysis_info->{logic_name}} = $analysis_info;
     }
 
-    # my @all_analysis_info = ();
-    # for my $pos (keys %all_analysis_info) {
-    #   $all_analysis_info[$pos] = $all_analysis_info{$pos};
-    # }
-
-#    return [@all_analysis_info];
     return {%all_analysis_info};
 }
 
