@@ -16,9 +16,6 @@
 
 function get_totals() {
     var totals = new Array();
-    // for (var k = 0; k<guiHive.analysis_board[1].jobs_counts.counts.length; k++) {
-    // 	totals[k] = 0;
-    // }
     for (var f in guiHive.analysis_board) {
 	if (guiHive.analysis_board[f].hasOwnProperty('jobs_counts')) {
 	    for (var k=0; k<guiHive.analysis_board[f].jobs_counts.counts.length; k++) {
@@ -27,13 +24,6 @@ function get_totals() {
 	    break;
 	}
     }
-    // for (var i = 0; i<guiHive.analysis_board.length; i++) {
-    // 	if (guiHive.analysis_board[i] !== null) {
-    // 	    for (var j = 0; j<guiHive.analysis_board[i].jobs_counts.counts.length; j++) {
-    // 		totals[j] += guiHive.analysis_board[i].jobs_counts.counts[j]
-    // 	    }
-    // 	}
-    // }
 
     for (var f in guiHive.analysis_board) {
 	if (guiHive.analysis_board[f].hasOwnProperty('jobs_counts')) {
@@ -61,8 +51,6 @@ function form_data() {
 	    data.total = d3.sum(totals);
 	}
     }
-    // data.colors = guiHive.analysis_board[1].jobs_counts.colors;
-    // data.names  = guiHive.analysis_board[1].jobs_counts.names;
     data.total  = d3.sum(totals);
 
     return data;

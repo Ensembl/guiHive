@@ -243,8 +243,8 @@ function hStackedBarChart(raw_data) {
 
 	var transfData = [];
 
-	console.log("--- DATA:");
-	console.log(data);
+	//console.log("--- DATA:");
+	//console.log(data);
 	for (var i=0; i<data.jobs_counts.names.length; i++) {
 	    transfData[i] = [];
 	}

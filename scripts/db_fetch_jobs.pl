@@ -133,7 +133,7 @@ sub formInputIDs {
     my ($job, $unique_job_label, $adaptor) = @_;
     my $input_id_hash = eval $job->input_id();
     my $existing_ids = [];
-    for my $inputKeyID (keys %$input_id_hash) {
+    for my $inputKeyID (sort keys %$input_id_hash) {
 	my $inputPair = {};
 	$inputPair->{inputKeyID}       = $inputKeyID; # TODO: We may need stringify_if_needed here
 	                                              #       that is currently defined in db_fetch_analysis.pl
