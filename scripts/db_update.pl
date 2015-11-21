@@ -41,6 +41,12 @@ my $args         = uri_unescape($var->{args}->[0]);
 my $analysis_id  = $var->{analysis_id}->[0];
 my $adaptor_name = $var->{adaptor}->[0];
 my $method       = $var->{method}->[0];
+my $update_method = "update_$method";
+
+if ($method =~ /^(\w+)_THEN_(\w+)$/) {
+    $method = $1;
+    $update_method = $2;
+}
 
 my @args = split(/,/,$args,2);
 
@@ -60,7 +66,7 @@ my $response = msg->new();
     if ($obj) {
       eval {
 	$obj->$method(@args);
-	$obj->adaptor->update($obj);
+	$obj->adaptor->$update_method($obj);
       };
       $response->err_msg($@);
       $response->status($response->err_msg) if ($@);

@@ -43,23 +43,6 @@ no warnings "once";
 
 use Bio::EnsEMBL::Hive::Utils;
 
-# Analysis' module should check that the module exists and is compilable
-*Bio::EnsEMBL::Hive::Analysis::update_module = sub {
-    my $self = shift;
-    $self->{'_module'} = shift if(@_ && do{
-	my $module = $_[0];
-
-	 ## The problem with this, is that we are doing these checks *locally*, but the module is suppose to be used *remotely* (in the farm, etc)
-	## So chances are that the module only exists (or is fully functional) remotely, where we don't have change to test it
-	## TODO: use the regular "module" method instead
-#	eval "require $module";
-#	die "The module '$module' can't be loaded: $@\n" if ($@);
-#	die "Problem accessing methods in '$module'. Please check that it inherits from Bio::EnsEMBL::Hive::Process and is named correctly\n" unless ($module->isa('Bio::EnsEMBL::Hive::Process'));
-	1;
-				  });
-    return $self->{'_module'};
-};
-
 # add_input_id_key adds a new key with empty value
 *Bio::EnsEMBL::Hive::AnalysisJob::add_input_id_key = sub {
     my ($self, $key) = @_;
@@ -162,13 +145,13 @@ use Bio::EnsEMBL::Hive::Utils;
     #   throw("This resource name exists in the database\n");
     # }
   }
-  my ($rc) = $self->create_new(-NAME => $rc_name);
+  my ($rc) = $self->create_new('name' => $rc_name);
   my $rc_id = $rc->dbID();
 
   $self->db->get_ResourceDescriptionAdaptor->create_new(
-      -RESOURCE_CLASS_ID   => $rc_id,
-      -MEADOW_TYPE         => $meadow_type,
-      -SUBMISSION_CMD_ARGS => $parameters,
+      'resource_class_id'   => $rc_id,
+      'meadow_type'         => $meadow_type,
+      'submission_cmd_args' => $parameters,
       );
 };
 

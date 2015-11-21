@@ -75,7 +75,7 @@ sub formAnalysisInfo {
 				{module  => $analysis->module(),
 				 id      => $analysis->dbID(),
 				 adaptor => "Analysis",
-				 method  => "update_module",
+				 method  => "module",
 				}
 			       ];
 
@@ -191,17 +191,6 @@ sub formAnalysisInfo {
   return $template->output();
 }
 
-sub module_mappings {
-  my ($obj, $method) = @_;
-  my $module = $obj->$method;
-  return [
-	  {"module"  => $module,
-	   "id"      => $obj->dbID,
-	   "adaptor" => "Analysis",
-	   "method"  => "module",
-	  }
-	 ];
-}
 
 sub template_mappings_PARAMS {
   my ($obj, $method) = @_;
@@ -210,7 +199,7 @@ sub template_mappings_PARAMS {
   my $vals;
   my $adaptor = "Analysis";
   my $i = 0;
-  for my $param (keys %$curr_val) {
+  for my $param (sort keys %$curr_val) {
     push @{$vals->{existing_parameters}}, {
 					   "key"              => $param,
 					   "parameterKeyID"   => "p_$param",
@@ -220,12 +209,12 @@ sub template_mappings_PARAMS {
 
     push @{$vals->{existing_parameters}->[$i]->{delete_parameter}}, {"id"             => $obj->dbID,
 								     "adaptor"        => $adaptor,
-								     "method"         => "delete_param",
+								     "method"         => "delete_param_THEN_update_parameters",
 								     "parameterKeyID" => "p_$param",
 								    };
     push @{$vals->{existing_parameters}->[$i]->{change_parameter}}, {"id"               => $obj->dbID,
 								     "adaptor"          => $adaptor,
-								     "method"           => "add_param",
+								     "method"           => "add_param_THEN_update_parameters",
 								     "parameterKeyID"   => "p_$param",
 								     "parameterValueID" => "v_$param",
 								    };
@@ -233,7 +222,7 @@ sub template_mappings_PARAMS {
   }
   $vals->{new_parameter} = [{"id"     => $obj->dbID,
 			    "adaptor" => $adaptor,
-			    "method"  => "add_param",
+			    "method"  => "add_param_THEN_update_parameters",
 			   }],
   return [$vals];
 }

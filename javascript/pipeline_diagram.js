@@ -123,7 +123,6 @@ function initialize_pipeline_diagram() {
 		.attr("rel", "tooltip-it")
 		.on("click", function() {
 		    display(analysis_id, "./scripts/db_fetch_analysis.pl", onSuccess_fetchAnalysis);
-		    //		    display(analysis_id, "/scripts/db_fetch_jobs.pl", onSuccess_fetchJobs);
 		});
 	}
     });
