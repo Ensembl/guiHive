@@ -44,6 +44,7 @@ no warnings "once";
 use Bio::EnsEMBL::Hive::Utils;
 use Bio::EnsEMBL::Hive::ResourceClass;
 use Bio::EnsEMBL::Hive::ResourceDescription;
+use Bio::EnsEMBL::Hive::DBSQL::BaseAdaptor;
 
 # add_input_id_key adds a new key with empty value
 *Bio::EnsEMBL::Hive::AnalysisJob::add_input_id_key = sub {
@@ -235,6 +236,8 @@ use Bio::EnsEMBL::Hive::ResourceDescription;
 *Bio::EnsEMBL::Hive::DBSQL::AnalysisJobAdaptor::update = sub {
   my ($self, $job) = @_;
 
+  return Bio::EnsEMBL::Hive::DBSQL::BaseAdaptor::update($self, $job, $_[2]) if $_[2];
+
   my $curr_data_id = $self->_input_id_is_extended($job);
 
   if (length($job->input_id) >= 255) {
@@ -259,10 +262,6 @@ use Bio::EnsEMBL::Hive::ResourceDescription;
   my $sth = $self->prepare($sql);
   $sth->execute();
   $sth->finish();
-
-  unless ($job->when_completed) {
-    $self->update_status($job);
-  }
 };
 
 
