@@ -6,7 +6,7 @@
         "Node" : {
             "Font"        : "Times-Roman",
             "Colour"      : "cyan",
-            "Table"       : { "Colour" : "black", "Font" : "Courier" },
+            "Table"       : { "Colour" : "orange", "Font" : "Courier" },
             "Details"     : { "Font"   : "Helvetica" },
 
             "JobStatus"   : {
