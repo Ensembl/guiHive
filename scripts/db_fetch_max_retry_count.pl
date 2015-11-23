@@ -28,6 +28,11 @@ use Bio::EnsEMBL::Hive::DBSQL::DBAdaptor;
 use JSON::PP;
 use Data::Dumper;
 
+use lib "./lib"; ## Only needed for local testing
+use hive_extended;
+use msg;
+use version_check;
+
 my $json_data = shift @ARGV || '{"version":["53"],"url":["mysql://ensro@127.0.0.1:2912/mp12_compara_nctrees_69d"], "job_id":["5"]}';
 
 my $var = decode_json($json_data);
@@ -35,10 +40,9 @@ my $url = $var->{url}->[0];
 my $job_id = $var->{job_id}->[0];
 $job_id =~ s/job_//;
 
-my $dbConn = Bio::EnsEMBL::Hive::DBSQL::DBAdaptor->new(-no_sql_schema_version_check => 1, -url => $url);
+my $dbConn = check_db_versions_match($var);
 
 my $resp;
-if (defined $dbConn) {
   my $job;
   eval {
     $job = $dbConn->get_AnalysisJobAdaptor()->fetch_by_dbID($job_id);
@@ -56,7 +60,6 @@ if (defined $dbConn) {
       $resp->{$i} = $i;
     }
   }
-}
 
 ## keys are sorted in numerical order
 my $js = JSON::PP->new->allow_nonref->sort_by(sub {$JSON::PP::a <=> $JSON::PP::b});
