@@ -283,7 +283,7 @@ sub template_mappings_SELECT {
       push @final_vals, [$newVals->[$i], $displays->[$i]];
   }
 
-  return [{"id"       => $obj->can("analysis_id") ? $obj->analysis_id : $obj->dbID,
+  return [{"id"       => $obj->isa('Bio::EnsEMBL::Hive::AnalysisStats') ? $obj->analysis_id : $obj->dbID,
 	   "adaptor"  => $adaptor,
 	   "method"   => $method,
 	   "values"   => [map {{is_current => $curr_val eq $_->[0], $method."_value" => $_->[0], $method."_display" => $_->[1]}} @final_vals],

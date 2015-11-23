@@ -25,7 +25,7 @@ use warnings;
 
 use Bio::EnsEMBL::Hive::Utils::Graph;
 
-my @hive_config_files = ($ENV{GUIHIVE_BASEDIR}.'/config/hive_config.json', $ENV{EHIVE_ROOT_DIR}.'/hive_config.json');
+my @hive_config_files = ($ENV{EHIVE_ROOT_DIR}.'/hive_config.json', $ENV{GUIHIVE_BASEDIR}.'/config/hive_config.json');
 
 ## TODO:  normalize these colors with Hive colors
 ## It would be good to have this in a centralize language-agnostic format (JSON?)
