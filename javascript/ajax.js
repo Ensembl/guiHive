@@ -796,14 +796,14 @@ function listen_Analysis(analysis_id, fetch_url) {
     // TODO: analysis_id should be named only dbID or something similar
     // to make it more clear that also resources calls update_db --
     // even if it doesn't use the dbID field
-    $(".update_param").change(
+    $("select.update_param").change(
 	    { analysis_id:analysis_id,
 	      fetch_url:fetch_url,
 	      script:"./scripts/db_update.pl",
 	      callback:onSuccess_fetchAnalysis},
 	    update_db);
 
-    $(".update_param").click(
+    $("a.update_param").click(
 	{analysis_id:analysis_id,
 	 fetch_url:fetch_url,
 	 script:"./scripts/db_update.pl",
