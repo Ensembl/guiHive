@@ -55,12 +55,12 @@ if ((scalar @args == 1) && ($args[0] eq "NULL")) {
   @args = undef;
 }
 
-my $dbConn = check_db_versions_match($var);
+my $pipeline = check_db_versions_match($var);
 
 my $response = msg->new();
 
     $adaptor_name = "get_".$adaptor_name."Adaptor";
-    my $adaptor = $dbConn->$adaptor_name;
+    my $adaptor = $pipeline->hive_dba->$adaptor_name;
     my $obj = $adaptor->fetch_by_dbID($analysis_id);
 
     if ($obj) {

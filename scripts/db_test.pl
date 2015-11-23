@@ -38,13 +38,13 @@ my $url = shift @ARGV;
 my $connection_template = "static/connection_details.html";
 my $hive_config_file = "config/hive_config.json";
 
-my $dbConn = check_db_versions_match($var);
+my $pipeline = check_db_versions_match($var);
 
 my $response = msg->new();
     my ($graph, $status);
     eval {
-	$graph = formAnalyses($dbConn);
-	$status = formResponse($dbConn->hive_dba);
+	$graph = formAnalyses($pipeline);
+	$status = formResponse($pipeline->hive_dba);
     };
     if ($@) {
 	$response->err_msg("I have problems retrieving data from the database:$@");
@@ -75,8 +75,8 @@ sub formResponse {
 }
 
 sub formAnalyses {
-    my ($dbConn) = @_;
-    my $graph = Bio::EnsEMBL::Hive::Utils::Graph->new($dbConn, $hive_config_file);
+    my ($pipeline) = @_;
+    my $graph = Bio::EnsEMBL::Hive::Utils::Graph->new($pipeline, $hive_config_file);
     my $graphviz = $graph->build();
 
     return $graphviz->as_svg;

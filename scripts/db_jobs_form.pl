@@ -42,16 +42,16 @@ my $jobs_form_template = $ENV{GUIHIVE_BASEDIR} . "static/jobs_form.html";
 
   ## First check if the code version is OK
   ## Don't print any error message
-my $dbConn = check_db_versions_match($var, 1);
+my $pipeline = check_db_versions_match($var, 1);
 
-my $form = formJobsForm($dbConn);
+my $form = formJobsForm($pipeline);
 print $form;
 
 
 sub formJobsForm {
-  my ($dbConn) = @_;
+  my ($pipeline) = @_;
 
-  my $all_analysis = $dbConn->get_AnalysisAdaptor()->fetch_all();
+  my $all_analysis = $pipeline->collection_of('Analysis')->listref;
   my @values = (map {{analysis_id => $_->dbID, analysis_display => "analysis_".$_->dbID." (".$_->logic_name.")"}} @$all_analysis);
 
   unshift @values, {

@@ -64,10 +64,10 @@ unshift (@args, $addArg) if (defined $addArg);
 my $response = msg->new();
 
 
-my $dbConn = check_db_versions_match($var);
+my $pipeline = check_db_versions_match($var);
 
   $adaptor_name = "get_".$adaptor_name."Adaptor";
-  my $adaptor = $dbConn->$adaptor_name;
+  my $adaptor = $pipeline->hive_dba->$adaptor_name;
 
   my ($objs, $failed) = fetch_objs($adaptor, @dbIDs);
 
@@ -104,7 +104,7 @@ my $dbConn = check_db_versions_match($var);
   ## We assume that only one analysis_id is changed
   ## If there may be more, we should change synchronize_AnalysisStats for synchronize_hive (without arguments)
   if ($adaptor_name  =~ /AnalysisJob/) {
-    $dbConn->get_Queen()->synchronize_AnalysisStats($dbConn->get_AnalysisAdaptor->fetch_by_dbID($objs->[0]->analysis_id)->stats);
+    $pipeline->hive_dba->get_Queen()->synchronize_AnalysisStats($pipeline->hive_dba->get_AnalysisAdaptor->fetch_by_dbID($objs->[0]->analysis_id)->stats);
   }
 
 
