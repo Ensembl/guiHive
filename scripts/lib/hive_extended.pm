@@ -286,7 +286,7 @@ use Bio::EnsEMBL::Hive::DBSQL::BaseAdaptor;
   # We sync the analysis_stats table (TODO: I think this is not really working)
   my @analysis_ids = ($analysis_id, keys %semaphored_analysis_ids);
   for my $analysis_id (@analysis_ids) {
-    $self->db->get_Queen()->synchronize_AnalysisStats($self->db->get_AnalysisAdaptor->fetch_by_dbID($analysis_id)->stats);
+    $self->db->get_Queen()->synchronize_AnalysisStats($self->db->get_AnalysisStatsAdaptor->fetch_by_analysis_id($analysis_id));
   }
 
   return scalar @$jobs;
@@ -314,7 +314,7 @@ use Bio::EnsEMBL::Hive::DBSQL::BaseAdaptor;
     # We sync the analysis_stats table:
     my @analysis_ids = ($analysis_id, keys %semaphored_analysis_ids);
     for my $analysis_id (@analysis_ids) {
-      $self->db->get_Queen()->synchronize_AnalysisStats($self->db->get_AnalysisAdaptor->fetch_by_dbID($analysis_id)->stats);
+      $self->db->get_Queen()->synchronize_AnalysisStats($self->db->get_AnalysisStatsAdaptor->fetch_by_analysis_id($analysis_id));
     }
 
     return;
@@ -338,7 +338,7 @@ use Bio::EnsEMBL::Hive::DBSQL::BaseAdaptor;
   # We sync the analysis_stats table:
   my @analysis_ids = ($analysis_id, keys %semaphored_analysis_ids);
   for my $analysis_id (@analysis_ids) {
-    $self->db->get_Queen()->synchronize_AnalysisStats($self->db->get_AnalysisAdaptor->fetch_by_dbID($analysis_id)->stats);
+    $self->db->get_Queen()->synchronize_AnalysisStats($self->db->get_AnalysisStatsAdaptor->fetch_by_analysis_id($analysis_id));
   }
 
 
@@ -366,7 +366,7 @@ use Bio::EnsEMBL::Hive::DBSQL::BaseAdaptor;
   my ($self, $analysis_id) = @_;
 
   $self->reset_jobs_for_analysis_id($analysis_id);
-  $self->db->get_Queen()->synchronize_AnalysisStats($self->db->get_AnalysisAdaptor->fetch_by_dbID($analysis_id)->stats);
+  $self->db->get_Queen()->synchronize_AnalysisStats($self->db->get_AnalysisStatsAdaptor->fetch_by_analysis_id($analysis_id));
 
   return;
 };
