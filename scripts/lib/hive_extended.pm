@@ -42,6 +42,8 @@ use Data::Dumper;
 no warnings "once";
 
 use Bio::EnsEMBL::Hive::Utils;
+use Bio::EnsEMBL::Hive::ResourceClass;
+use Bio::EnsEMBL::Hive::ResourceDescription;
 
 # add_input_id_key adds a new key with empty value
 *Bio::EnsEMBL::Hive::AnalysisJob::add_input_id_key = sub {
@@ -145,14 +147,15 @@ use Bio::EnsEMBL::Hive::Utils;
     #   throw("This resource name exists in the database\n");
     # }
   }
-  my ($rc) = $self->create_new('name' => $rc_name);
-  my $rc_id = $rc->dbID();
+  my $rc = Bio::EnsEMBL::Hive::ResourceClass->new('name' => $rc_name);
+  $self->store($rc);
 
-  $self->db->get_ResourceDescriptionAdaptor->create_new(
-      'resource_class_id'   => $rc_id,
+  my $rd = Bio::EnsEMBL::Hive::ResourceDescription->new(
+      'resource_class'      => $rc,
       'meadow_type'         => $meadow_type,
       'submission_cmd_args' => $parameters,
       );
+  $self->db->get_ResourceDescriptionAdaptor->store($rd);
 };
 
 ## _input_id_is_extended determines if the input_id of a job is too large in the
