@@ -44,7 +44,7 @@ my $response = msg->new();
     my ($graph, $status);
     eval {
 	$graph = formAnalyses($dbConn);
-	$status = formResponse($dbConn);
+	$status = formResponse($dbConn->hive_dba);
     };
     if ($@) {
 	$response->err_msg("I have problems retrieving data from the database:$@");
@@ -57,17 +57,17 @@ my $response = msg->new();
 print $response->toJSON();
 
 sub formResponse {
-    my ($dbConn) = @_;
+    my ($dba) = @_;
     my $info;
 
-    $info->{db_name}   = $dbConn->dbc->dbname;
-    $info->{host}      = $dbConn->dbc->host;
-    $info->{port}      = $dbConn->dbc->port;
-    $info->{driver}    = $dbConn->dbc->driver;
-    $info->{username}  = $dbConn->dbc->username;
+    $info->{db_name}   = $dba->dbc->dbname;
+    $info->{host}      = $dba->dbc->host;
+    $info->{port}      = $dba->dbc->port;
+    $info->{driver}    = $dba->dbc->driver;
+    $info->{username}  = $dba->dbc->username;
     $info->{hive_db_version} = get_hive_db_meta_key('hive_sql_schema_version');
     $info->{hive_code_version} = get_hive_code_version();
-    # $info->{mysql_url} = "?username=" . $dbConn->dbc->username . "&host=" . $dbConn->dbc->host . "&dbname=" . $dbConn->dbc->dbname . "&port=" . $dbConn->dbc->port;
+    # $info->{mysql_url} = "?username=" . $dba->dbc->username . "&host=" . $dba->dbc->host . "&dbname=" . $dba->dbc->dbname . "&port=" . $dba->dbc->port;
 
     my $template = HTML::Template->new(filename => $connection_template);
     $template->param(%$info);

@@ -62,19 +62,19 @@ if ($@) {
 print $response->toJSON();
 
 sub formResponse {
-    my ($dbConn) = @_;
+    my ($dba) = @_;
     my $info;
 
-    $info->{db_name}   = $dbConn->dbc->dbname;
-    $info->{host}      = $dbConn->dbc->host;
-    $info->{port}      = $dbConn->dbc->port;
-    $info->{driver}    = $dbConn->dbc->driver;
-    $info->{username}  = $dbConn->dbc->username;
-    $info->{hive_db_version} = get_hive_db_meta_key($dbConn, 'hive_sql_schema_version');
+    $info->{db_name}   = $dba->dbc->dbname;
+    $info->{host}      = $dba->dbc->host;
+    $info->{port}      = $dba->dbc->port;
+    $info->{driver}    = $dba->dbc->driver;
+    $info->{username}  = $dba->dbc->username;
+    $info->{hive_db_version} = get_hive_db_meta_key($dba, 'hive_sql_schema_version');
     $info->{hive_code_version} = get_hive_code_version();
-    $info->{pipeline_name} = get_hive_db_meta_key($dbConn, 'hive_pipeline_name');
-    $info->{hive_auto_rebalance_semaphores} = get_hive_db_meta_key($dbConn, 'hive_auto_rebalance_semaphores') ? 'Enabled' : 'Disabled';
-    $info->{hive_use_param_stack} = get_hive_db_meta_key($dbConn, 'hive_use_param_stack') ? 'Enabled' : 'Disabled';
+    $info->{pipeline_name} = get_hive_db_meta_key($dba, 'hive_pipeline_name');
+    $info->{hive_auto_rebalance_semaphores} = get_hive_db_meta_key($dba, 'hive_auto_rebalance_semaphores') ? 'Enabled' : 'Disabled';
+    $info->{hive_use_param_stack} = get_hive_db_meta_key($dba, 'hive_use_param_stack') ? 'Enabled' : 'Disabled';
 
     my $template = HTML::Template->new(filename => $connection_template);
     $template->param(%$info);
