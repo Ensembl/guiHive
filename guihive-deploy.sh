@@ -96,7 +96,7 @@ link_guihive_version "70" "73" "sql_schema_71_start^2"	# because the merge of th
 link_guihive_version "71" "73"
 link_guihive_version "72" "73"
 link_guihive_version "74" "77"
-link_guihive_version "75" "77"
+link_guihive_version "75" "77" "44d78112401c21e2a704b8335dd4b247b85fe93a"  # this is the last "safe" commit for guiHive 75, i.e. before Utils/Graph starts printing extra messages on stdout
 link_guihive_version "76" "77"
 
 trap - EXIT
