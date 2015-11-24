@@ -1,7 +1,7 @@
 #!/bin/sh
 
-GUIHIVE_URL='http://www.github.com/Ensembl/guiHive'
-EHIVE_URL='http://www.github.com/Ensembl/ensembl-hive'
+GUIHIVE_URL='git://www.github.com/Ensembl/guiHive'
+EHIVE_URL='git://www.github.com/Ensembl/ensembl-hive'
 
 DEPLOY_LOCATION="$(dirname "$0")"
 EHIVE_CLONE_LOCATION="${DEPLOY_LOCATION}/clones/ensembl-hive"
