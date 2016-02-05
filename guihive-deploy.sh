@@ -82,7 +82,7 @@ link_guihive_version () {
 add_guihive_version "56" "db_version/56" "version/2.0"
 add_guihive_version "62" "db_version/62" "version/2.2"
 add_guihive_version "73" "db_version/73" "version/2.3"
-add_guihive_version "78" "db_version/77" "master"
+add_guihive_version "78" "db_version/78" "master"
 
 # $db_version  $aliased_db_version
 link_guihive_version "63" "62"
