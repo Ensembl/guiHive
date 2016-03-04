@@ -335,14 +335,8 @@ use Bio::EnsEMBL::Hive::DBSQL::BaseAdaptor;
 *Bio::EnsEMBL::Hive::DBSQL::AnalysisJobAdaptor::unblock_jobs = sub {
   my ($self, $analysis_id) = @_;
 
-  for my $job (@{$self->fetch_all_by_analysis_id_status($analysis_id, 'SEMAPHORED')}) {
-    my $semaphore_count = $job->semaphore_count;
-    $self->decrease_semaphore_count_for_jobid($job->dbID, $semaphore_count);
-
-    # Update the status
-    $job->status('READY');
-    $self->update_status($job);
-  }
+  my $analysis = $self->db->hive_pipeline->collection_of('Analysis')->find_one_by('dbID', $analysis_id);
+  $self->unblock_jobs_for_analysis_id( [$analysis] );
 
   return;
 };
