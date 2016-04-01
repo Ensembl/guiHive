@@ -84,7 +84,7 @@ link_guihive_version () {
 add_guihive_version "56" "db_version/56" "version/2.0"
 add_guihive_version "62" "db_version/62" "version/2.2"
 add_guihive_version "73" "db_version/73" "version/2.3"
-add_guihive_version "79" "db_version/79" "master"
+add_guihive_version "80" "db_version/80" "master"
 
 # $db_version  $aliased_db_version
 link_guihive_version "63" "62"
@@ -97,11 +97,12 @@ link_guihive_version "69" "73"
 link_guihive_version "70" "73" "sql_schema_71_start^2"	# because the merge of the python branch has swapped its two parents
 link_guihive_version "71" "73"
 link_guihive_version "72" "73"
-link_guihive_version "74" "79"
-link_guihive_version "75" "79" "44d78112401c21e2a704b8335dd4b247b85fe93a"  # this is the last "safe" commit for guiHive 75, i.e. before Utils/Graph starts printing extra messages on stdout
-link_guihive_version "76" "79"
-link_guihive_version "77" "79"
-link_guihive_version "78" "79"
+link_guihive_version "74" "80"
+link_guihive_version "75" "80" "44d78112401c21e2a704b8335dd4b247b85fe93a"  # this is the last "safe" commit for guiHive 75, i.e. before Utils/Graph starts printing extra messages on stdout
+link_guihive_version "76" "80"
+link_guihive_version "77" "80"
+link_guihive_version "78" "80"
+link_guihive_version "79" "80"
 
 trap - EXIT
 
