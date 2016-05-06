@@ -1,0 +1,5 @@
+.gitignore
+clones
+ensembl-hive
+versions
+server/server
