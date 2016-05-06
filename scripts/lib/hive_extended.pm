@@ -103,7 +103,7 @@ use Bio::EnsEMBL::Hive::ResourceDescription;
     my $curr_raw_parameters = $self->parameters;
     $curr_raw_parameters = '{}' unless ($curr_raw_parameters);
     my $curr_parameters = Bio::EnsEMBL::Hive::Utils->destringify($curr_raw_parameters);
-    $curr_parameters->{$key} = $value;
+    $curr_parameters->{$key} = Bio::EnsEMBL::Hive::Utils->destringify( $value );
     my $new_raw_parameters = Bio::EnsEMBL::Hive::Utils->stringify($curr_parameters);
     $self->parameters($new_raw_parameters);
     return;
