@@ -40,6 +40,7 @@ sub main {
 
     my $url = decode_json($json_input_with_url)->{url}->[0];
 
+    $url=~s/^\s+//;     # remove leading whitespace - the most common problem when people copy-and-paste URLs around
 
     my $hive_dba;
     eval {  # ------------------------- can we create the DBAdaptor?
