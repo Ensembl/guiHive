@@ -552,9 +552,9 @@ function fetch_and_setup_change_listener(fetch_url, write_url, target_div) {
             $(target).autocomplete( {
                 source: vals,
             });
-            /*$(e).find("a").click( function(evt) {
+            $(e).find("a").click( function(evt) {
                 target.val(this.innerHTML);
-            });*/
+            });
         });
 
         jQuery.map(d.find("select.combobox"), function(e,i) {
