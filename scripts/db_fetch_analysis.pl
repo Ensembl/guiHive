@@ -80,7 +80,10 @@ sub formAnalysisInfo {
 				}
 			       ];
 
-  # FIXME: there should be a select box for the "language".
+  $info->{language}          = template_mappings_SELECT("Language",
+							$analysis,
+							"language",
+                                                        ['perl', 'python3']);
 
   $info->{parameters}        = template_mappings_PARAMS($analysis,
 							"parameters",
