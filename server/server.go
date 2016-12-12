@@ -191,13 +191,6 @@ func setEnvVar() error {
 	}
 	debug("PROJECT_DIRECTORY: %s\n", os.Getenv("GUIHIVE_PROJECTDIR"))
 
-	// PER5LIB
-	newPerl5Lib := addPerl5Lib(path.Clean(projectDirectory + "/scripts/lib"))
-	err = setPerl5Lib(newPerl5Lib)
-	if (err != nil) {
-		return err
-	}
-
 	return nil
 }
 
@@ -209,16 +202,6 @@ func addPerl5Lib (newDir string) string {
 		perl5lib = newDir + ":" + perl5lib
 	}
 	return perl5lib
-}
-
-func setPerl5Lib (perl5lib string) error {
-	err := os.Setenv("PERL5LIB", perl5lib)
-	if err != nil {
-		return err
-	}
-	debug("PERL5LIB: %s\n", os.Getenv("PERL5LIB"))
-
-	return nil
 }
 
 func main() {

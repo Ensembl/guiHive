@@ -23,12 +23,11 @@
 use strict;
 use warnings;
 
-## The servers should have already set the PERL5LIB to point to the latest hive API in versions
+## The server should have already set the PERL5LIB to point to the latest hive API in versions/
 use Bio::EnsEMBL::Hive::DBSQL::DBAdaptor;
 use Bio::EnsEMBL::Hive::Utils::URL;
 
 use JSON;
-use lib ("../lib");
 use msg;
 
 my $response = msg->new();
