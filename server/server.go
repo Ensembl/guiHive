@@ -73,7 +73,7 @@ func (s sortableFiles) Swap (i, j int) {
 }
 
 // Return the version number defined in the URL, or the latest available eHive version
-func version(r *http.Request) string {
+func parseVersion(r *http.Request) string {
 	parts := strings.SplitN(r.URL.Path, "/", 4)
 	version := parts[2]
 	if (isVersion.MatchString(version)) {
@@ -93,7 +93,7 @@ func version(r *http.Request) string {
 }
 
 func unknown(w http.ResponseWriter, r *http.Request) {
-	version := version(r)
+	version := parseVersion(r)
 	fmt.Fprintln(w, r.URL)
 	fmt.Fprintf(w, "version %s is currently not supported by guiHive\n", version)
 }
@@ -115,9 +115,9 @@ func scriptHandler(w http.ResponseWriter, r *http.Request) {
 
 	debug("EXECUTING SCRIPT: %s", fname)
 	debug("ARGS: %s", args)
-	version := version(r);
+	version := parseVersion(r);
 	debug("VERSION: %s", version)
-	
+
 	versionRootDir := os.Getenv("GUIHIVE_PROJECTDIR") + "/versions/" + version + "/";
 	ehiveRootDir := os.Getenv("GUIHIVE_PROJECTDIR") + "/ensembl-hive/" + version + "/";
 	ehiveRootLib := ehiveRootDir + "/modules"
