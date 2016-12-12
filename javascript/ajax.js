@@ -446,7 +446,7 @@ function fetch_and_setup_change_listener(fetch_url, write_url, target_div) {
             });
         }
         var is_error = !!new_tooltip;
-        var tooltip_placeholder = $(input_object).closest('.input-append');
+        var tooltip_placeholder = $(input_object);
         if (is_error) {
             if (!tooltip_placeholder.data("tooltip") || (tooltip_placeholder.data("tooltip").options.title !== new_tooltip)) {
                 tooltip_placeholder.tooltip('destroy');
