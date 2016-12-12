@@ -561,7 +561,7 @@ function fetch_and_setup_change_listener(fetch_url, write_url, target_div) {
             $(e).combobox();
         });
 
-        d.find("#p_new_key").keyup( function(evt) {
+        d.find(".control-add").keyup( function(evt) {
             var is_error = key_check(d, this, false);
             $(this).closest("tr").find(".btn").toggleClass("disabled", (is_error || (this.value === "")))
         });
