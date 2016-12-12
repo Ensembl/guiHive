@@ -224,13 +224,19 @@ func main() {
 	checkError("Can't open dir " + versionRootDir, terr)
 	files, terr := dir.Readdir(-1)
 	for _, verdir := range files {
+		isvalid := true;
 		if ((verdir.Mode() & os.ModeSymlink) != 0) {
 			targetF, _ := os.Readlink(versionRootDir + verdir.Name())
-			debug("Found a symlink from %s to version %s", verdir.Name(), targetF)
-			http.Handle(fmt.Sprintf("/versions/%s/", verdir.Name()), http.FileServer(http.Dir(relPath)))
-			http.Handle(fmt.Sprintf("/versions/%s/javascript/", verdir.Name()), http.FileServer(http.Dir(relPath)))
-			http.HandleFunc(fmt.Sprintf("/versions/%s/scripts/", verdir.Name()), scriptHandler)
+			debug("Found a symlink from guiHive %s to version %s", verdir.Name(), targetF)
 		} else if (verdir.IsDir()) {
+			debug("Found guiHive version %s", verdir.Name())
+		} else {
+			isvalid = false
+		}
+		if (isvalid) {
+			ehive_dir := os.Getenv("GUIHIVE_PROJECTDIR") + "/ensembl-hive/" + verdir.Name()
+			_, err := os.Stat(ehive_dir)
+			checkError(ehive_dir + " does not exist: ", err)
 			debug("Found eHive version %s", verdir.Name())
 			http.Handle(fmt.Sprintf("/versions/%s/", verdir.Name()), http.FileServer(http.Dir(relPath)))
 			http.Handle(fmt.Sprintf("/versions/%s/javascript/", verdir.Name()), http.FileServer(http.Dir(relPath)))
