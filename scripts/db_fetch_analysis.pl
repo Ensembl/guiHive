@@ -143,13 +143,16 @@ sub formAnalysisInfo {
   $info->{can_be_empty}      = template_mappings_SELECT("Analysis",
 							$analysis,
 							"can_be_empty",
-							build_values({1=>[0,1]}),
+                                                        [0, 1], ['No', 'Yes'],
 						       );
 
   $info->{meadow_type}       = template_mappings_SELECT("Analysis",
 							$analysis,
 							"meadow_type",
-							build_values({0=>["NULL","LOCAL","LSF"]}));
+                                                        # FIXME: we need a way of enumerating the meadows that are available
+                                                        ["NULL","LOCAL","LSF"],
+                                                        ['No restriction', 'Only LOCAL', 'Only LSF'],
+                                                    );
 
   $info->{resource_class_id} = template_mappings_SELECT("Analysis",
 							$analysis,

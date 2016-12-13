@@ -17,8 +17,7 @@
 
 
 /* IMPORTS */
-@import url("../../../lib/bootstrap/css/bootstrap.css");
-@import url(http://fonts.googleapis.com/css?family=Rambla|Dosis|Armata|Duru+Sans|Ropa+Sans|Istok+Web|Oxygen+Mono|Monda|Fjalla+One|Montserrat|Cinzel+Decorative|Gafata|Galdeano|Nunito|Coda);
+@import url("../lib/bootstrap/css/bootstrap.css");
 
 /* ELEMENTS */
 body {
