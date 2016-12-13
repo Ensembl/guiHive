@@ -71,12 +71,6 @@ $(document).ready(function() {
 	     }
     });
 
-    $(".myHeader").on("click", function() {
-	var curr = $.url();
-	window.location.href="http://" + curr.attr("host") + ":" + curr.attr("port");
-    });
-
-
     // Listening to changes in the height of the window
     $(window).on("resize", function(){
 	var new_height = $(window).height() - guiHive.offset;
