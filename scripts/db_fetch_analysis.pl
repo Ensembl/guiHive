@@ -296,7 +296,7 @@ sub get_resource_class_ids {
     my (@ids, @names);
     for my $rc_id (sort {$a <=> $b} keys %$rcs) {
 	push @ids, $rc_id;
-	push @names, "$rc_id (" . $rcs->{$rc_id} . ")";
+	push @names, sprintf('%s (%d)', $rcs->{$rc_id}, $rc_id);
     }
     return [@ids], [@names];
 }
