@@ -169,11 +169,15 @@ sub fetch_last_error_for_jobid {
     my ($job_id) = @_;
 
     # LogMessageAdaptor inherits from BaseAdaptor that has a special AUTOLOAD method that is able to return hashes with specific data
-    my $all_msgs = $dbConn->get_LogMessageAdaptor()->fetch_by_job_id_HASHED_FROM_log_message_id_and_is_error_TO_msg($job_id);
-    my @all_key_errors = grep {$all_msgs->{$_}->{1}} keys %$all_msgs;
+    my $all_msgs = $dbConn->get_LogMessageAdaptor()->fetch_by_job_id_HASHED_FROM_log_message_id_and_message_class_TO_msg($job_id);
+    my @all_key_errors = grep {grep {/ERROR/} keys %{$all_msgs->{$_}}} keys %$all_msgs;
     my ($msg_key) = sort {$b<=>$a} @all_key_errors;
 
-    my $errmsg = defined ($msg_key)? $all_msgs->{$msg_key}->{1} : "";
+    my $errmsg = "";
+    if (defined ($msg_key)) {
+        # since msg_key is a log_message id, we assume there is one message_class and one message associated with it
+        ($errmsg) = values(%{$all_msgs->{$msg_key}});
+    }
     return $errmsg;
 }
 
