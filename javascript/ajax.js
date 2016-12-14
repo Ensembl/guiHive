@@ -153,6 +153,37 @@ $(document).ready(function() {
     // });
 });
 
+function ask_for_number(title, ini_value, callback) {
+
+    function validate_input () {
+        var new_value = $('#number-popup-input').val();
+        // ==  to allow matching a number with its stringified version
+        //if (new_value == ini_value) {
+            //console.log("same");
+        //} else {
+            callback(new_value);
+        //}
+        $('#number-popup-div').modal('hide');
+    };
+    if (ini_value == "NULL") {ini_value = 0};
+
+    $('#number-popup-title').text(title);
+    $('#number-popup-input').val(ini_value);
+
+    $('#number-popup-div').keyup(function(e) {
+        if (e.keyCode === 13) {
+            validate_input();
+        }
+    });
+    $('#number-popup-setter').on("click", function() {
+        validate_input();
+    });
+
+    $('#number-popup-div').modal("show");
+    $('#number-popup-div').on("shown", function(){
+        $('#number-popup-input').focus();
+    });
+}
 
 function guess_database_url () {
 
@@ -780,6 +811,9 @@ function listen_Analysis(analysis_id, fetch_url) {
     // TODO: analysis_id should be named only dbID or something similar
     // to make it more clear that also resources calls update_db --
     // even if it doesn't use the dbID field
+    $("select.update_param").on('focus', function() {
+        $(this).data.ini_value = this.value;
+    } );
     $("select.update_param").change(
 	    { analysis_id:analysis_id,
 	      fetch_url:fetch_url,
@@ -846,9 +880,11 @@ function update_db(obj) {
     var url = obj.data.script;
     var fetch_url = obj.data.fetch_url;
     var analysis_id = obj.data.analysis_id;
+    var payload = buildURL(this);
+    if (!payload) {return};
     $.ajax({url        : url,
 	    type       : "post",
-	    data       : buildURL(this),
+	    data       : payload,
 	    dataType   : "json",
 	    async      : false,
 	    cache      : false,
@@ -879,6 +915,11 @@ function buildURL(obj) {
 	value = vals.join(",");
     } else {
 	value = obj.value;
+    }
+
+    if (value == "...") {
+        ask_for_number($(obj).attr("data-method"), $(obj).data.ini_value, function(x) {obj.add(new Option(x, x, true)); $(obj).change()} );
+        return;
     }
 
     var URL = "url="+ guiHive.pipeline_url + 
