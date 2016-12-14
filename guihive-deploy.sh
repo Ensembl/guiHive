@@ -11,6 +11,8 @@ GUIHIVE_CLONE_LOCATION="${DEPLOY_LOCATION}/clones/guiHive"
 GUIHIVE_VERSIONS_DIR="${DEPLOY_LOCATION}"/versions
 EHIVE_VERSIONS_DIR="${DEPLOY_LOCATION}"/ensembl-hive
 
+umask 0002
+
 if [ -d "$GUIHIVE_VERSIONS_DIR" ] && [ -d "$EHIVE_VERSIONS_DIR" ]
 then
   echo "'$GUIHIVE_VERSIONS_DIR' and/or '$EHIVE_VERSIONS_DIR' already exist. Press ctrl+c to exit now, or enter otherwise/"
@@ -85,7 +87,7 @@ add_guihive_version "56" "db_version/56" "version/2.0"
 add_guihive_version "62" "db_version/62" "version/2.2"
 add_guihive_version "73" "db_version/73" "version/2.3"
 add_guihive_version "80" "db_version/80" "version/2.4"
-add_guihive_version "83" "db_version/80" "master"
+add_guihive_version "84" "db_version/84" "master"
 
 # $db_version  $aliased_db_version
 link_guihive_version "63" "62"
@@ -104,8 +106,9 @@ link_guihive_version "76" "80"
 link_guihive_version "77" "80"
 link_guihive_version "78" "80"
 link_guihive_version "79" "80"
-link_guihive_version "81" "83"
-link_guihive_version "82" "83"
+link_guihive_version "81" "80"
+link_guihive_version "82" "80"
+link_guihive_version "83" "80"
 
 trap - EXIT
 
