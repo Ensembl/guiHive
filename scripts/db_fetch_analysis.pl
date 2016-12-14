@@ -132,7 +132,7 @@ sub formAnalysisInfo {
   $info->{priority}          = template_mappings_SELECT("Analysis",
 							$analysis,
 							"priority",
-							build_values({1=>[0,20]}),
+							build_values({1=>[-10,20]}),
                             undef, 'allow_extra',
 						       );
 
