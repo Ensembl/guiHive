@@ -222,6 +222,23 @@
     </td>
   </tr>
 
+  <tr>  <!-- IS_EXCLUDED -->
+    <td>Is excluded ?</td>
+    <td>
+      <TMPL_LOOP NAME=is_excluded>
+	<select size="1"
+		class="update_param"
+		data-analysisID="<TMPL_VAR NAME=id>"
+		data-adaptor="<TMPL_VAR NAME=adaptor>"
+		data-method="<TMPL_VAR NAME=method>">
+	  <TMPL_LOOP NAME=values>
+	    <option <TMPL_IF NAME=is_current>selected </TMPL_IF>value="<TMPL_VAR NAME=is_excluded_value>"><TMPL_VAR NAME=is_excluded_display></option>
+	  </TMPL_LOOP>
+	</select>
+      </TMPL_LOOP>
+    </td>
+  </tr>
+
   <tr>  <!-- MEADOW TYPE -->
     <td> Meadow type:</td>
     <td>

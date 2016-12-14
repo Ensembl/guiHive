@@ -158,6 +158,12 @@ sub formAnalysisInfo {
                                                         [0, 1], ['No', 'Yes'],
 						       );
 
+  $info->{is_excluded}       = template_mappings_SELECT('AnalysisStats',
+							$analysis_stats,
+							'is_excluded',
+                                                        [0, 1], ['No', 'Yes'],
+						       );
+
   $info->{meadow_type}       = template_mappings_SELECT("Analysis",
 							$analysis,
 							"meadow_type",
