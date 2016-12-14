@@ -141,7 +141,7 @@ sub formAnalysisInfo {
 							"batch_size",
 							build_values({1=>[0,9],
 								      10=>[10,90],
-								      100=>[100,1000]}),
+								      50=>[100,250]}),
                               undef, 'allow_extra',
 						       );
 
