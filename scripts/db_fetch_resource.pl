@@ -38,62 +38,70 @@ use hive_extended;
 use version_check;
 
 # Input data
-my $json_url = shift @ARGV || '{"version":["53"],"url":["mysql://ensro@127.0.0.1:2911/mp12_long_mult"]}';
+my $json_data = shift @ARGV || '{"version":["53"],"url":["mysql://ensro@127.0.0.1:2911/mp12_long_mult"]}';
 
-my $decoded_json = decode_json($json_url);
+main($json_data);
 
-# Initialization
-my $project_dir = $ENV{GUIHIVE_BASEDIR};
-my $resources_template = $project_dir . 'static/resources.html';
+sub main {
+    my ($json_url) = @_;
+    ## Input
+    my $decoded_json = decode_json($json_url);
 
-my $dbConn = check_db_versions_match($decoded_json);
-my $response = msg->new();
+    ## Initialization
+    my $dbConn = check_db_versions_match($decoded_json);
+    my $response = msg->new();
 
-    my $all_resources;
     eval {
-	$all_resources = $dbConn->get_ResourceClassAdaptor()->fetch_all();
+        $response->out_msg(formResources($dbConn));
     };
     if ($@) {
 	$response->err_msg("I can't retrieve the resources from the database:$@");
 	$response->status("FAILED");
-    } else {
-	$response->out_msg(formResources($all_resources));
     }
 
-print $response->toJSON();
+    print $response->toJSON();
+}
 
 sub formResources {
-  my ($all_resources) = @_;
-  my $template = HTML::Template->new(filename => $resources_template);
-  my $info;
-  my $i = 0;
-  for my $rc (sort {$a->dbID <=> $b->dbID} @$all_resources) {
-    my $rd = $rc->description();
-    my $meadow_type = defined $rd ? $rd->meadow_type : '';
-    my $submission_cmd_args = defined $rd ? $rd->submission_cmd_args : '';
+    my ($dbConn) = @_;
 
-    $info->{"resources"}->[$i]->{ 'rcID' } = $rc->dbID;
-    $info->{"resources"}->[$i]->{ 'meadow' } = $meadow_type;
-    $info->{"resources"}->[$i]->{"resourceName"} = [{ "name"      => $rc->name(),
-  						      "id"        => $rc->dbID,
-  						      "adaptor"   => "ResourceClass",
-  						      "method"    => "name",
-  						      "rcName"    => "rc_".$rc->name(),
-  						    }];
+    my $project_dir = $ENV{GUIHIVE_BASEDIR};
+    my $resources_template = $project_dir . 'static/resources.html';
+    my $template = HTML::Template->new(filename => $resources_template);
 
-    $info->{"resources"}->[$i]->{"resourceParams"} = [{ "params"   => encode_entities($submission_cmd_args),
-  							"id"       => $rc->dbID(),
-  							"adaptor"  => "ResourceDescription",
-  							"method"   => "submission_cmd_args",
-  							"rcParams" => "rc_".$rc->dbID()."_".$meadow_type,
-  						      }];
-    $i++;
-  }
+    my $all_resources = $dbConn->get_ResourceClassAdaptor()->fetch_all();
+    my $rd_adaptor = $dbConn->get_ResourceDescriptionAdaptor;
+    my %meadow_types = ('LOCAL' => 1);
 
-  $info->{create_resource} = [{ "adaptor"    => "ResourceClass",
-				"method"     => "create_full_description",
-  			   }],
+    my @param_rc = ();
+    for my $rc (sort {$a->dbID <=> $b->dbID} @$all_resources) {
+        my $all_rds = $rd_adaptor->fetch_all_by_resource_class_id($rc->dbID);
+        my @param_rd = ();
+        foreach my $rd (sort {$a->meadow_type <=> $b->meadow_type} @$all_rds) {
+            $meadow_types{$rd->meadow_type} = 1;
+            push @param_rd, {
+                'rcID' => $rc->dbID,
+                'meadow_type' => $rd->meadow_type,
+                'submission_cmd_args' => encode_entities($rd->submission_cmd_args || ''),
+                'worker_cmd_args' => encode_entities($rd->worker_cmd_args || ''),
+                'rd_desc' => "rc_".$rc->dbID()."_".$rd->meadow_type,
+            };
+        }
+        push @param_rc, {
+            'rcID' => $rc->dbID,
+            'name' => $rc->name(),
+            'rd'   => \@param_rd,
+            'n_rd' => scalar(@param_rd),
+        }
+    }
 
-  $template->param(%$info);
-  return $template->output();
+    my %toplevel_params = (
+        'resources' => \@param_rc,
+        'available_meadow_types' => [map {{'meadow_type' => $_}} sort (keys %meadow_types)],
+        'used_resource_classes' => [map {{'resource_class' => $_->name}} sort {$a->name cmp $b->name} @$all_resources],
+    );
+
+    $template->param(%toplevel_params);
+        #'resources' => \@param_rc, 'available_meadow_types' => [map {{'meadow_type' => $_}} (keys %meadow_types)]);
+    return $template->output();
 }
