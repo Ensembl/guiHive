@@ -80,7 +80,7 @@ sub formAnalysisInfo {
 				}
 			       ];
 
-  $info->{language}          = template_mappings_SELECT("Language",
+  $info->{language}          = template_mappings_SELECT("Analysis",
 							$analysis,
 							"language",
                                                         ['perl', 'python3']);
