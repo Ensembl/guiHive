@@ -37,7 +37,8 @@ use version_check;
 my $json_data = shift @ARGV || '{"adaptor":["PipelineWideParameters"],"method":["store"],"url":["mysql://ensro@127.0.0.1:4306/mm14_protein_trees_78"],"fields":["param_name,param_value"],"args":["a,2"],"version":["62"]}';
 
 my $var = decode_json($json_data);
-my $dbConn = check_db_versions_match($var);
+my $pipeline = check_db_versions_match($var);
+my $dbConn = $pipeline->hive_dba;
 my $response = msg->new();
 
 warn Dumper $var;
