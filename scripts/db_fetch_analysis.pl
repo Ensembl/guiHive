@@ -84,8 +84,8 @@ sub formAnalysisInfo {
   $info->{language}          = template_mappings_SELECT("Analysis",
 							$analysis,
 							"language",
-                                                        ['NULL', 'python3'],
-                                                        ['default (perl)', 'python3']);
+                                                        ['NULL', 'python3', 'java'],
+                                                        ['default (perl)', 'python3', 'java']);
 
   $info->{parameters}        = template_mappings_PARAMS($analysis,
 							"parameters",
