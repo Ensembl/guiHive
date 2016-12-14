@@ -81,7 +81,10 @@ sub formAnalysisInfo {
 				}
 			       ];
 
-  # FIXME: there should be a select box for the "language".
+  $info->{language}          = template_mappings_SELECT("Language",
+							$analysis,
+							"language",
+                                                        ['perl', 'python3']);
 
   $info->{parameters}        = template_mappings_PARAMS($analysis,
 							"parameters",
@@ -98,7 +101,8 @@ sub formAnalysisInfo {
 								      1=>[1,9],
 								      10=>[10,90],
 								      100=>[100,1000]
-								     })
+								     }),
+                                 'allow_extra',
 						       );
 
   $info->{failed_job_tolerance} = template_mappings_SELECT("Analysis",
@@ -106,12 +110,14 @@ sub formAnalysisInfo {
 							   "failed_job_tolerance",
 							   build_values({10 => [0,100]}),
  #							   build_values({int($analysis_stats->total_job_count()/10)||1=>[0,$analysis_stats->total_job_count()]}),
+                               undef, 'allow_extra',
 							  );
 
   $info->{max_retry_count}   = template_mappings_SELECT("Analysis",
 							$analysis,
 							"max_retry_count",
 							build_values({1=>[0,3]}),
+                            undef, 'allow_extra',
 						       );
 
   $info->{hive_capacity}     = template_mappings_SELECT("AnalysisStats",
@@ -125,14 +131,15 @@ sub formAnalysisInfo {
 								      1=>[1,9],
 								      10=>[10,90],
 								      100=>[100,1000]
-								     })
-
+								     }),
+                                 'allow_extra',
 						       );
 
   $info->{priority}          = template_mappings_SELECT("Analysis",
 							$analysis,
 							"priority",
-							build_values({1=>[0,20]}),
+							build_values({1=>[-10,20]}),
+                            undef, 'allow_extra',
 						       );
 
   $info->{batch_size}        = template_mappings_SELECT("AnalysisStats",
@@ -140,19 +147,23 @@ sub formAnalysisInfo {
 							"batch_size",
 							build_values({1=>[0,9],
 								      10=>[10,90],
-								      100=>[100,1000]}),
+								      50=>[100,250]}),
+                              undef, 'allow_extra',
 						       );
 
   $info->{can_be_empty}      = template_mappings_SELECT("Analysis",
 							$analysis,
 							"can_be_empty",
-							build_values({1=>[0,1]}),
+                                                        [0, 1], ['No', 'Yes'],
 						       );
 
   $info->{meadow_type}       = template_mappings_SELECT("Analysis",
 							$analysis,
 							"meadow_type",
-							build_values({0=>["NULL","LOCAL","LSF"]}));
+                                                        # FIXME: we need a way of enumerating the meadows that are available
+                                                        ["NULL","LOCAL","LSF"],
+                                                        ['No restriction', 'Only LOCAL', 'Only LSF'],
+                                                    );
 
   $info->{resource_class_id} = template_mappings_SELECT("Analysis",
 							$analysis,
@@ -263,7 +274,7 @@ sub build_values {
 }
 
 sub template_mappings_SELECT {
-  my ($adaptor, $obj, $method, $vals, $displays) = @_;
+  my ($adaptor, $obj, $method, $vals, $displays, $allow_extra) = @_;
 
   # We have to make sure that the current value as one of the possible values to choose from
   # If the value is undefined (hive_capacity and analysis_capacity can be NULL, for example)
@@ -283,6 +294,7 @@ sub template_mappings_SELECT {
   for (my $i=0; $i<scalar(@$newVals); $i++) {
       push @final_vals, [$newVals->[$i], $displays->[$i]];
   }
+  push @final_vals, ['...', '...'] if $allow_extra;
 
   return [{"id"       => $obj->isa('Bio::EnsEMBL::Hive::AnalysisStats') ? $obj->analysis_id : $obj->dbID,
 	   "adaptor"  => $adaptor,
@@ -299,7 +311,7 @@ sub get_resource_class_ids {
     my (@ids, @names);
     for my $rc_id (sort {$a <=> $b} keys %$rcs) {
 	push @ids, $rc_id;
-	push @names, "$rc_id (" . $rcs->{$rc_id} . ")";
+	push @names, sprintf('%s (%d)', $rcs->{$rc_id}, $rc_id);
     }
     return [@ids], [@names];
 }

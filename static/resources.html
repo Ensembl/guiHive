@@ -1,58 +1,117 @@
-<!-- TODO: Avoid formatting references here (size of the columns, etc...) -->
+<blockquote style="margin-left: 10px;">
+    <div style="width:40px; float:left; height: 40px">
+        <i class="icon-info-sign"></i>
+    </div>
+    <div>
+        A resource-class name can be used across multiple meadow-types, for instance to define woerker parameters like <code>-reg_conf</code> that apply regardless of the meadow-type.<br/>
+        The LOCAL meadow ignores the "meadow parameter" field.<br/>
+    </div>
+</blockquote>
+
 <table id="resources_table" class="table">
 
-  <tr>
-    <th>ID</th>
-    <th>Name</th>
-    <th></th>
-    <th>Meadow type</th>
-    <th>Parameters</th>
-    <th></th>
-  </tr>
-
-  <TMPL_LOOP NAME=resources>
     <tr>
-      <td><TMPL_VAR NAME=rcID></td>
-      <TMPL_LOOP NAME=resourceName>
-  	<td>
-  	  <input type="text"
-  		 id="<TMPL_VAR NAME=rcName>"
-  		 size=10
-  		 value="<TMPL_VAR NAME=name>" />
-  	</td>
-  	<td> <button class="update_resource"
-  		     data-analysisID="<TMPL_VAR NAME=id>"
-  		     data-adaptor="<TMPL_VAR NAME=adaptor>"
-  		     data-method="<TMPL_VAR NAME=method>"
-  		     data-linkTo="<TMPL_VAR NAME=rcName>">+</button></td>
-      </TMPL_LOOP>
-      <td><TMPL_VAR NAME=meadow></td>
-      <TMPL_LOOP NAME=resourceParams>
-  	<td class="large-field"><input class="large-input" type="text"
-  		   id="<TMPL_VAR NAME=rcParams>"
-  		   size=80
-  		   value="<TMPL_VAR NAME=params>"></td>
-  	<td><button class="update_resource"
-  		  data-analysisID="<TMPL_VAR NAME=id>"
-  		  data-adaptor="<TMPL_VAR NAME=adaptor>"
-  		  data-method="<TMPL_VAR NAME=method>"
-  		  data-linkTo="<TMPL_VAR NAME=rcParams>">+</button></td>
-      </TMPL_LOOP>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Meadow&nbsp;type</th>
+        <th>Meadow parameters</th>
+        <th>Worker parameters</th>
+        <th></th>
     </tr>
-  </TMPL_LOOP>
 
-  <TMPL_LOOP NAME=create_resource>
     <tr>
-      <td>ID</td>
-      <td><input type="text" size=30 id="r_new_name" /></td>
-      <td></td>
-      <td><input class="short-input" type="text" id="r_new_meadow"></td>
-      <td class="large-field"><input class="large-input" type="text" size=50 id="r_new_parameters"></td>
-      <td><button class="create_resource"
-  		  data-adaptor="<TMPL_VAR NAME=adaptor>"
-  		  data-method="<TMPL_VAR NAME=method>"
-  		  data-linkTo="r_new_name,r_new_meadow,r_new_parameters">+</button>
-      </td>
+        <TMPL_LOOP NAME=resources>
+        <td rowspan="<TMPL_VAR NAME=n_rd>"><TMPL_VAR NAME=rcID></td>
+
+        <td rowspan="<TMPL_VAR NAME=n_rd>">
+            <input type="text"
+            id="rc_<TMPL_VAR NAME=rcID>"
+            class="monitored input-medium"
+            value="<TMPL_VAR NAME=name>"
+            data-method="update_class_name"
+            data-args="rcID=<TMPL_VAR NAME=rcID>"
+            data-linkTo="new_name=rc_<TMPL_VAR NAME=rcID>"
+            />
+        </td>
+
+        <TMPL_LOOP NAME=rd>
+
+        <td><TMPL_VAR NAME=meadow_type></td>
+
+        <td>
+            <input class="monitored input-xxlarge" type="text"
+            id="mead_<TMPL_VAR NAME=rd_desc>"
+            value="<TMPL_VAR NAME=submission_cmd_args>"
+            data-method="update_description_meadow"
+            data-args="rcID=<TMPL_VAR NAME=rcID>&meadow_type=<TMPL_VAR NAME=meadow_type>"
+            data-linkTo="new_args=mead_<TMPL_VAR NAME=rd_desc>"
+
+            ></td>
+
+        <td>
+            <input class="monitored input-large" type="text"
+            id="work_<TMPL_VAR NAME=rd_desc>"
+            value="<TMPL_VAR NAME=worker_cmd_args>"
+            data-method="update_description_worker"
+            data-args="rcID=<TMPL_VAR NAME=rcID>&meadow_type=<TMPL_VAR NAME=meadow_type>"
+            data-linkTo="new_args=work_<TMPL_VAR NAME=rd_desc>"
+
+            ></td>
+
+        <td><a class="ajaxable_btn btn btn-mini"
+                data-method="remove"
+                data-args="rcID=<TMPL_VAR NAME=rcID>&meadow_type=<TMPL_VAR NAME=meadow_type>"><i class="icon-remove"></i></a>
+        </td>
+
     </tr>
-  </TMPL_LOOP>
+    <tr>
+        </TMPL_LOOP>
+        </TMPL_LOOP>
+
+        <td>ID</td>
+
+        <td>
+        <div class="input-append btn-group">
+          <input class="input-medium control-add" type="text" id="r_new_name" placeholder="new resource's name" />
+            <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
+                <span class="caret"></span>
+            </a>
+            <ul class="input-medium dropdown-menu" data-target="r_new_name">
+                <TMPL_LOOP NAME=used_resource_classes>
+                <li><a><TMPL_VAR NAME=resource_class></a></li>
+                </TMPL_LOOP>
+            </ul>
+        </div>
+        </td>
+
+        <td>
+            <div class="input-append btn-group"><!-- Can add the class "dropup" -->
+                <input class="input-mini" type="text" id="r_new_meadow_type" placeholder="LSF/LOCAL" />
+                <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
+                    <span class="caret"></span>
+                </a>
+                <ul class="dropdown-menu" data-target="r_new_meadow_type">
+                    <TMPL_LOOP NAME=available_meadow_types>
+                    <li><a href="#"><TMPL_VAR NAME=meadow_type></a></li>
+                    </TMPL_LOOP>
+                </ul>
+            </div>
+
+        </td>
+        <td><input class="input-xxlarge" type="text" id="r_new_parameters" placeholder="memory, queue, etc"></td>
+        <td><input class="input-large" type="text" id="r_new_worker_parameters" placeholder="lifespan, registry, etc"></td>
+        <td><a class="ajaxable_btn btn btn-mini disabled"
+                data-method="create_full_description"
+                data-adaptor="ResourceClass"
+                data-method="create_full_description"
+                data-linkTo="class_name=r_new_name,meadow_type=r_new_meadow_type,submission_cmd_args=r_new_parameters,worker_cmd_args=r_new_worker_parameters"
+                ><i class="icon-plus"></i></a>
+        </td>
+    </td>
+</tr>
 </table>
+
+
+
+<div class="footer_spacer"></div>
+
