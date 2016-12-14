@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<meta charset="utf-8">
 <html>
 <head>
+<meta charset="utf-8">
 <title>guiHive -- Take control over your eHive production system!</title>
 
 <!-- STYLES -->
@@ -9,59 +9,58 @@
 <link rel="stylesheet" href="./styles/main.css" type="text/css" />
 <link rel="stylesheet" href="./styles/tipsy.css" type="text/css" />
 
+<link rel="stylesheet" href="./lib/jquery-ui-1.11.0/jquery-ui.min.css" type="text/css" />
 
-<!-- JS CODE -->
-<!-- Remote JQuery -->
-<!--<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>-->
-<!--<script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.1/jquery-ui.min.js"></script>-->
-<script src="/lib/jquery.min.js"></script>
-<script src="/lib/jquery-ui.min.js"></script>
+    <!-- JS CODE -->
+    <!-- Local JQuery -->
+    <script src="./lib/jquery.min.js"></script> <!-- 1.9.1 -->
+    <script src="./lib/jquery-ui-1.11.0/jquery-ui.min.js"></script> <!-- 1.11.0 -->
 
-<!-- Local JQuery-URL-Parser -->
-<script src="/lib/jQuery-URL-Parser/purl.js"></script>
+    <!-- Local JQuery-URL-Parser -->
+    <script src="./lib/jQuery-URL-Parser/purl.js"></script>
 
-<!-- tipsy -->
-<script src="/lib/jquery.tipsy.js"></script>
+    <!-- Local JQuery-Tipsy -->
+    <script src="./lib/jquery.tipsy.js"></script>
 
-<!-- cookie -->
-<script src="/lib/jquery.cookie.js"></script>
+    <!-- Local JQuery-Cookie -->
+    <script src="./lib/jquery.cookie.js"></script>
 
-<!-- Twitter bootstrap JS -->
-<script src="/lib/bootstrap/js/bootstrap.min.js"></script>
+    <!-- Twitter bootstrap JS -->
+    <script src="./lib/bootstrap/js/bootstrap.min.js"></script>
 
-<!-- Remote D3.js -->
-<!--<script src="http://d3js.org/d3.v3.min.js"></script>-->
-<script src="/lib/d3.v3.min.js"></script>
+    <!-- Remote D3.js -->
+    <!--<script src="http://d3js.org/d3.v3.min.js"></script>-->
+    <script src="./lib/d3.v3.min.js"></script>
 
-<!-- jEditable.js -->
-<!--<script src="http://www.appelsiini.net/download/jquery.jeditable.js"></script>-->
-<script src="/lib/jquery.jeditable.js"></script>
+    <!-- jEditable.js -->
+    <!--<script src="http://www.appelsiini.net/download/jquery.jeditable.js"></script>-->
+    <script src="./lib/jquery.jeditable.js"></script>
 
-<!-- Remote DataTables.js -->
-<!--<script src="http://datatables.net/download/build/jquery.dataTables.min.js"></script>-->
-<script src="/lib/jquery.dataTables.min.js"></script>
+    <!-- Remote DataTables.js -->
+    <!--<script src="http://datatables.net/download/build/jquery.dataTables.min.js"></script>-->
+    <script src="./lib/jquery.dataTables.min.js"></script>
 
-<!-- DataTables - column filters -->
-<script src="/lib/jquery.dataTables.columnFilter.js"></script>
+    <!-- DataTables - column filters -->
+    <script src="./lib/jquery.dataTables.columnFilter.js"></script>
 
-<!-- Local javascripts -->
-<script src="./javascript/node_color.js"></script>
-<script src="./javascript/views.js"></script>
-<script src="./javascript/jobs_chart.js"></script>
-<script src="./javascript/pipeline_overview.js"></script>
-<script src="./javascript/toggleDiv.js"></script>
-<script src="./javascript/timer.js"></script>
-<script src="./javascript/hBarChart.js"></script>
-<script src="./javascript/legend.js"></script>
-<script src="./javascript/pipeline_diagram.js"></script>
-<script src="./javascript/pieChart.js"></script>
-<script src="./javascript/bubblesCloud.js"></script>
-<script src="./javascript/bubbles_cloud.js"></script>
-<script src="./javascript/hStackedBarChart.js"></script>
-<script src="./javascript/ajax.js"></script>
+    <!-- Local ColVis (Hide/Show columns for dataTables  -->
+    <script src="./lib/ColVis.min.js"></script>
 
-<!-- Local ColVis (Hide/Show columns for dataTables  -->
-<script src="/lib/ColVis.min.js"></script>
+    <!-- Local javascripts -->
+    <script src="./javascript/node_color.js"></script>
+    <script src="./javascript/views.js"></script>
+    <script src="./javascript/jobs_chart.js"></script>
+    <script src="./javascript/pipeline_overview.js"></script>
+    <script src="./javascript/toggleDiv.js"></script>
+    <script src="./javascript/timer.js"></script>
+    <script src="./javascript/hBarChart.js"></script>
+    <script src="./javascript/legend.js"></script>
+    <script src="./javascript/pipeline_diagram.js"></script>
+    <script src="./javascript/pieChart.js"></script>
+    <script src="./javascript/bubblesCloud.js"></script>
+    <script src="./javascript/bubbles_cloud.js"></script>
+    <script src="./javascript/hStackedBarChart.js"></script>
+    <script src="./javascript/ajax.js"></script>
 
 </head>
 <body>
@@ -73,15 +72,27 @@
       <p>Insert your mysql password:</p>
     </div>
     <div class="modal-body">
-      <input id="mysql_password" type="password"></input>
+      <input id="mysql_password" type="password"/>
     </div>
     <div class="modal-footer">
       <button id="set_mysql_passwd" class="btn btn-primary">Ok</button>
     </div>
   </div>
 
+  <div class="modal hide fade" id="number-popup-div">
+    <div class="modal-header">
+        <p>Enter a new value for <span id="number-popup-title"></span>:</p>
+    </div>
+    <div class="modal-body">
+      <input id="number-popup-input" type="number"></input>
+    </div>
+    <div class="modal-footer">
+      <button id="number-popup-setter" class="btn btn-primary">OK</button>
+    </div>
+  </div>
+
   <div id="guiHive_header">
-    <span class="myHeader">guiHive</span><span id="guihiveVersion"></span>
+    <a href="/" class="myHeader">guiHive</a><span id="guihiveVersion"></span>
     <span id="guiHive_url"></span>
     <span id="refreshing"></span>
     <span id="controls">Time to refresh:  <span id="secs_to_refresh">0</span> <a class="btn btn-mini start_refreshing" rel="tooltip-it" title="Start refreshing"><i class="icon-play"></i></a><a class="btn btn-mini stop_refreshing" rel="tooltip-it" title="Stop refreshing"><i class="icon-stop"></i></a><a class="btn btn-mini reset_timer" rel="tooltip-it" title="Reset timer"><i class="icon-backward"></i></a><a class="btn btn-mini refresh_now" rel="tooltip-it" title="Refresh now"><i class="icon-download"></i></a></span>
@@ -162,7 +173,7 @@
 	  </select>
 	</p>
         Bubble size: 
-        <input type=range  id="max-size" value=50 min=20 max=80 step=1></input>
+        <input type=range  id="max-size" value=50 min=20 max=80 step=1 />
       </div>
     </div>
   </div>

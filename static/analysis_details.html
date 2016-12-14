@@ -87,8 +87,8 @@
     </td>
   </tr>
 
-  <tr> <!-- RESOURCE CLASS ID -->
-    <td> Resource class ID:</td>
+  <tr> <!-- RESOURCE CLASS -->
+    <td> Resource class:</td>
     <td>
       <TMPL_LOOP NAME=resource_class_id>
 	<select size="1"
@@ -206,7 +206,7 @@
   </tr>
 
   <tr>  <!-- CAN BE EMPTY --> <!-- We can implement CAN_BE_EMPTY as a radio button -->
-    <td> Can be empty:</td>
+    <td> Can be empty ?</td>
     <td>
       <TMPL_LOOP NAME=can_be_empty>
 	<select size="1"
@@ -239,6 +239,21 @@
     </td>
   </tr>
   
+  <tr> <!-- LANGUAGE -->
+    <td> Language</td>
+    <td><TMPL_LOOP NAME=language>
+	<select size="1"
+		class="update_param"
+		data-analysisID="<TMPL_VAR NAME=id>"
+		data-adaptor="<TMPL_VAR NAME=adaptor>"
+		data-method="<TMPL_VAR NAME=method>">
+	  <TMPL_LOOP NAME=values>
+	    <option <TMPL_IF NAME=is_current>selected</TMPL_IF> value="<TMPL_VAR NAME=language_value>"> <TMPL_VAR NAME=language_display></option>
+	  </TMPL_LOOP>
+	</select>
+    </TMPL_LOOP></td>
+  </tr>
+
 </table>
 </div>
 
