@@ -38,11 +38,9 @@ my $json_data = shift @ARGV || '{"version":["53"],"adaptor":["ResourceClass"],"a
 
 my $var = decode_json($json_data);
 my $url          = $var->{url}->[0];
-my $args         = $var->{args}->[0];
+my @args         = map {uri_unescape($_)} @{ $var->{args} };
 my $adaptor_name = $var->{adaptor}->[0];
 my $method       = $var->{method}->[0];
-
-my @args = split(/,/,$args);
 
 # Initialization
 my $pipeline = check_db_versions_match($var);
