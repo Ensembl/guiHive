@@ -901,10 +901,10 @@ function update_db(obj) {
 
 // TODO: Duplicated with buildSendParams. It would be nice to merge both
 function buildURL(obj) {
-    var value = "";
+    var vals;
     if ($(obj).attr("data-linkTo")) {
 	var ids = $(obj).attr("data-linkTo").split(",");
-	var vals = jQuery.map(ids, function(e,i) {
+	vals = jQuery.map(ids, function(e,i) {
 	    var elem = $('#'+e);
 	    if ($(elem).is("span")) {
 		return $(elem).attr("data-value")
@@ -912,21 +912,20 @@ function buildURL(obj) {
 		return $(elem).val();
 	    }
 	});
-	value = vals.join(",");
-    } else {
-	value = obj.value;
-    }
-
-    if (value == "...") {
+    } else if (obj.value == "...") {
         ask_for_number($(obj).attr("data-method"), $(obj).data.ini_value, function(x) {obj.add(new Option(x, x, true)); $(obj).change()} );
         return;
+    } else {
+	vals = [obj.value];
     }
 
     var URL = "url="+ guiHive.pipeline_url + 
-        "&args="+encodeURIComponent(value) + 
         "&adaptor="+$(obj).attr("data-adaptor") + 
         "&method="+$(obj).attr("data-method") +
 	"&version="+guiHive.version;
+    for(var i=0; i<vals.length; i++) {
+        URL = URL.concat("&args="+encodeURIComponent(vals[i]));
+    }
     if ($(obj).attr("data-analysisID")) {
 	URL = URL.concat("&analysis_id="+$(obj).attr("data-analysisID"));
     }
