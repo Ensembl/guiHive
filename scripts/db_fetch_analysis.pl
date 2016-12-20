@@ -233,7 +233,7 @@ sub template_mappings_PARAMS {
 
 sub stringify_if_needed {
   my ($scalar) = @_;
-  if (ref $scalar) {
+  if ((ref $scalar) or ($scalar =~ /^\[.*\]$/) or ($scalar =~ /^{.*}$/)) {
     local $Data::Dumper::Indent    = 0;  # we want everything on one line
     local $Data::Dumper::Terse     = 1;  # and we want it without dummy variable names
     local $Data::Dumper::Sortkeys  = 1;  # make stringification more deterministic
