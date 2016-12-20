@@ -38,7 +38,7 @@ use version_check;
 my $json_data = shift @ARGV || '{"version":["53"],"adaptor":["Analysis"],"analysis_id":["2"],"args":["plus9,5+6"],"method":["add_param"],"url":["mysql://ensro@127.0.0.1:2911/mp12_long_mult"]}';#'{"analysis_id":["2"],"adaptor":["ResourceDescription"],"method":["parameters"],"args":["-C0 -M8000000  -R\"select[mem>8000]  rusage[mem=8000]\""],"url":["mysql://ensro@127.0.0.1:2912/mp12_compara_nctrees_69a2"]}'; #'{"url":["mysql://ensro@127.0.0.1:2912/mp12_compara_nctrees_69b"], "column_name":["parameters"], "analysis_id":["27"], "newval":["cmalign_exe"]}';
 
 my $var = decode_json($json_data);
-my $args         = uri_unescape($var->{args}->[0]);
+my @args         = map {uri_unescape($_)} @{ $var->{args} };
 my $analysis_id  = $var->{analysis_id}->[0];
 my $adaptor_name = $var->{adaptor}->[0];
 my $method       = $var->{method}->[0];
@@ -48,8 +48,6 @@ if ($method =~ /^(\w+)_THEN_(\w+)$/) {
     $method = $1;
     $update_method = $2;
 }
-
-my @args = split(/,/,$args,2);
 
 # If we pass the 'NULL' string, then we undef the value to update a NULL mysql value:
 if ((scalar @args == 1) && ($args[0] eq "NULL")) {
