@@ -65,6 +65,7 @@ sub main {
 
     my $parsed_url = Bio::EnsEMBL::Hive::Utils::URL::parse($url);
     my $json_obj = {
+        'driver'     => $parsed_url->{driver},
         'user'       => $parsed_url->{user},
         'passwd'     => $parsed_url->{pass},
         'host'       => $parsed_url->{host},

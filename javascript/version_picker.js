@@ -43,20 +43,24 @@ function go_to_version_url (full_url) {
 		      $.cookie('guihive_urls', cookie_obj, {expires : 7});
 
 		      var cur_http_url = $.url();
+
 		      var new_http_url = "http://" +
-			  cur_http_url.attr("host") +
-			  ":" +
-			  cur_http_url.attr("port") +
-			  "/versions/" +
-			  dbConn.out_msg.db_version +
-			  "/?username=" +
-			  dbConn.out_msg.user +
-			  "&host=" +
-			  dbConn.out_msg.host +
-			  "&dbname=" +
-			  dbConn.out_msg.dbname +
-			  "&port=" +
-			  dbConn.out_msg.port;
+                  cur_http_url.attr("host") +
+                  ":" +
+                  cur_http_url.attr("port") +
+                  "/versions/" +
+                  dbConn.out_msg.db_version +
+                  "/?driver=" +
+                  dbConn.out_msg.driver +
+                  "&username=" +
+                  dbConn.out_msg.user +
+                  "&host=" +
+                  dbConn.out_msg.host +
+                  "&port=" +
+                  dbConn.out_msg.port +
+                  "&dbname=" +
+                  dbConn.out_msg.dbname;
+
 		      if (dbConn.out_msg.passwd !== null) {
 			  new_http_url = new_http_url + "&passwd=xxxxx";
 		      }
@@ -86,7 +90,7 @@ function guess_database_url () {
     loc.port   = url.param("port");
     loc.dbname = url.param("dbname");
     loc.server = url.param("host");
-    loc.driver = url.param("driver") || "mysql";
+    loc.driver = url.param("driver");
 
     var autoconnect = false;
     if (loc.user !== undefined && loc.server !== undefined && loc.dbname !== undefined) {
