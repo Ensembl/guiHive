@@ -145,8 +145,8 @@ sub formAnalysisInfo {
                             undef, 'allow_extra',
 						       );
 
-  $info->{batch_size}        = template_mappings_SELECT("AnalysisStats",
-							$analysis_stats,
+  $info->{batch_size}        = template_mappings_SELECT("Analysis",
+							$analysis,
 							"batch_size",
 							build_values({1=>[0,9],
 								      10=>[10,90],
