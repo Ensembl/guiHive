@@ -299,22 +299,12 @@ use Bio::EnsEMBL::Hive::DBSQL::BaseAdaptor;
 *Bio::EnsEMBL::Hive::DBSQL::AnalysisJobAdaptor::discard_ready_jobs = sub {
   my ($self, $analysis_id) = @_;
 
-  my %semaphored_analysis_ids = ();
-  for my $job(@{$self->fetch_all_by_analysis_id_status($analysis_id, 'READY')}) {
-    $self->decrease_semaphore_count_for_jobid($job->semaphored_job_id());
-    $job->set_and_update_status('DONE');
-    if ($job->semaphored_job_id) {
-      my $semaphored_job = $self->fetch_by_dbID($job->semaphored_job_id());
-      $semaphored_analysis_ids{$semaphored_job->analysis_id}++ if (defined $semaphored_job);
-    }
-  }
+  my $analysis = $self->db->hive_pipeline->collection_of('Analysis')->find_one_by('dbID', $analysis_id);
+  $self->discard_jobs_for_analysis_id([$analysis], 'READY');
 
   # We sync the analysis_stats table:
-  my @analysis_ids = ($analysis_id, keys %semaphored_analysis_ids);
-  for my $analysis_id (@analysis_ids) {
-    $self->db->get_Queen()->synchronize_AnalysisStats($self->db->get_AnalysisStatsAdaptor->fetch_by_analysis_id($analysis_id));
-  }
-
+  # # FIXME: sync the semaphored analyses too
+  $self->db->get_Queen()->synchronize_AnalysisStats($analysis->stats);
 
   return;
 };
