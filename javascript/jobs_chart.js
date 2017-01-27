@@ -20,7 +20,7 @@ function jobs_chart(analysis_id) {
     var div = d3.select("#analysis_details");
 
     for (var analysis in guiHive.analysis_board) {
-	if (guiHive.analysis_board[analysis].analysis_id === analysis_id) {
+	if (guiHive.analysis_board[analysis].analysis_id == analysis_id) {
 	    analysis_name = guiHive.analysis_board[analysis].logic_name;
 	    break;
 	}
@@ -46,7 +46,7 @@ function live_analysis_chart(gChart) {
 
     var analysis_name;
     for (var a in guiHive.analysis_board) {
-	if (guiHive.analysis_board[a].analysis_id === analysis_id) {
+	if (guiHive.analysis_board[a].analysis_id == analysis_id) {
 	    analysis_name = guiHive.analysis_board[a].logic_name;
 	}
     }
