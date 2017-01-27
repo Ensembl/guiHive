@@ -66,7 +66,7 @@ sub formResponse {
     $info->{port}      = $dba->dbc->port;
     $info->{driver}    = $dba->dbc->driver;
     $info->{username}  = $dba->dbc->username;
-    $info->{hive_db_version} = get_hive_db_meta_key('hive_sql_schema_version');
+    $info->{hive_db_version} = $pipeline->hive_sql_schema_version();
     $info->{hive_code_version} = get_hive_code_version();
     # $info->{mysql_url} = "?username=" . $dba->dbc->username . "&host=" . $dba->dbc->host . "&dbname=" . $dba->dbc->dbname . "&port=" . $dba->dbc->port;
 
