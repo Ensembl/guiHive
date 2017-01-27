@@ -310,7 +310,7 @@ use Bio::EnsEMBL::Hive::DBSQL::BaseAdaptor;
 	$self->increase_semaphore_count_for_jobid($job->semaphored_job_id());
       }
     }
-    $self->reset_jobs_for_analysis_id($analysis_id, ['DONE']);
+    $self->reset_jobs_for_analysis_id($analysis_id, ['DONE', 'PASSED_ON']);
 
     # We sync the analysis_stats table:
     my @analysis_ids = ($analysis_id, keys %semaphored_analysis_ids);
