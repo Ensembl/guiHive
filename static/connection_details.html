@@ -33,8 +33,8 @@
     <td><TMPL_VAR NAME=pipeline_name></td>
   </tr>
 </table>
-<h4>eHive flags</h4>
-<table id="hivemeta_table">
+<h4>Database-initialization parameters</h4>
+<table>
   <tr>
     <td>Parameter stack:</td>
     <td><TMPL_VAR NAME=hive_use_param_stack></td>
@@ -42,6 +42,10 @@
   <tr>
     <td>Auto-rebalancing of semaphores:</td>
     <td><TMPL_VAR NAME=hive_auto_rebalance_semaphores></td>
+  </tr>
+  <tr>
+      <td>Default <code>max_retry_count</code></td>
+    <td><TMPL_VAR NAME=hive_default_max_retry_count></td>
   </tr>
 </table>
 

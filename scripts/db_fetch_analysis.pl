@@ -69,6 +69,7 @@ print $response->toJSON;
 sub formAnalysisInfo {
   my ($analysis) = @_;
   my $analysis_stats = $analysis->stats();
+  my $default_max_retry_count = $analysis->hive_pipeline->hive_default_max_retry_count;
 
   my $info;
   $info->{id}                = $analysis->dbID();
@@ -117,8 +118,9 @@ sub formAnalysisInfo {
   $info->{max_retry_count}   = template_mappings_SELECT("Analysis",
 							$analysis,
 							"max_retry_count",
-							build_values({1=>[0,3]}),
-                            undef, 'allow_extra',
+							build_values({0=>['NULL'],1=>[0,3]}),
+							build_values({0=>["Pipeline default ($default_max_retry_count)"],1=>[0,3]}),
+                            'allow_extra',
 						       );
 
   $info->{hive_capacity}     = template_mappings_SELECT("AnalysisStats",

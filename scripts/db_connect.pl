@@ -79,6 +79,7 @@ sub formResponse {
     $info->{pipeline_name} = $hive_pipeline->hive_pipeline_name();
     $info->{hive_auto_rebalance_semaphores} = $hive_pipeline->hive_auto_rebalance_semaphores() ? 'Enabled' : 'Disabled';
     $info->{hive_use_param_stack} = $hive_pipeline->hive_use_param_stack() ? 'Enabled' : 'Disabled';
+    $info->{hive_default_max_retry_count} = $hive_pipeline->hive_default_max_retry_count();
 
     my $template = HTML::Template->new(filename => $connection_template);
     $template->param(%$info);
