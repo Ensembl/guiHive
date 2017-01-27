@@ -26,8 +26,6 @@
 # $obj->$method(@args);
 #
 # and work with (for example):
-# $analysis_stats->hive_capacity(555);
-# and
 # $analysis->delete_param("mlss_id");
 # or
 # $analysis->add_param("mlss_id", 40086);

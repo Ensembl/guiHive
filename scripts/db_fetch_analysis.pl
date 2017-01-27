@@ -123,8 +123,8 @@ sub formAnalysisInfo {
                             'allow_extra',
 						       );
 
-  $info->{hive_capacity}     = template_mappings_SELECT("AnalysisStats",
-							$analysis_stats,
+  $info->{hive_capacity}     = template_mappings_SELECT("Analysis",
+							$analysis,
 							"hive_capacity",
 							build_values({0=>["NULL"],
 								      1=>[0,9],
