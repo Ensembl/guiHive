@@ -68,7 +68,7 @@ sub formAnalysisInfo {
       my $analysis_info = analysisInfo->fetch($analysis);
 
       if ($stats_table_has_data) {
-        my ($min_mem, $max_mem, $avg_mem, $min_cpu, $max_cpu, $avg_cpu, $resource_mem) = fetch_stats_worker_resource_usage($analysis->dbID);
+        my ($min_mem, $max_mem, $avg_mem, $min_cpu, $max_cpu, $avg_cpu, $resource_mem) = fetch_stats_worker_resource_usage($analysis);
         $analysis_info->stats($min_mem, $max_mem, $avg_mem, $min_cpu, $max_cpu, $avg_cpu, $resource_mem);
       }
 
@@ -96,16 +96,15 @@ sub stats_table_is_not_empty {
 }
 
 sub fetch_stats_worker_resource_usage {
-  my ($analysis_id) = @_;
-  my $sql = "SELECT min(mem_megs), max(mem_megs), avg(mem_megs), min(cpu_sec), max(cpu_sec), avg(cpu_sec), submission_cmd_args from worker_resource_usage join role using(worker_id) join analysis_base using (analysis_id) join resource_description using (resource_class_id) where analysis_id = ?";
+  my ($analysis) = @_;
+  my $rds = $analysis->hive_pipeline->collection_of('ResourceDescription')->find_all_by('resource_class', $analysis->resource_class);
+  my $sql = "SELECT min(mem_megs), max(mem_megs), avg(mem_megs), min(cpu_sec), max(cpu_sec), avg(cpu_sec) from worker_resource_usage join role using(worker_id) join analysis_base using (analysis_id) where analysis_id = ?";
   my $sth = $dbConn->dbc->prepare($sql);
 
-  $sth->execute($analysis_id);
-  my ($min_mem, $max_mem, $avg_mem, $min_cpu, $max_cpu, $avg_cpu, $resource_params) = $sth->fetchrow_array();
-  my $resource_mem;
-  if (!defined $resource_params) {
-    $resource_mem = 125;
-  } else {
+  $sth->execute($analysis->dbID);
+  my ($min_mem, $max_mem, $avg_mem, $min_cpu, $max_cpu, $avg_cpu) = $sth->fetchrow_array();
+  my $resource_mem = 125;
+  foreach my $resource_params (@$rds) {
     ($resource_mem) = $resource_params =~ /mem=(\d+)/;
   }
   return ($min_mem, $max_mem, $avg_mem, sprintf("%.2f",$min_cpu || 0), sprintf("%.2f", $max_cpu || 0), sprintf("%.2f", $avg_cpu || 0), $resource_mem || 125);
