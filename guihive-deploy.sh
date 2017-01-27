@@ -82,14 +82,21 @@ link_guihive_version () {
 
 ## List of versions
 
+# 1. First we list all the eHive stable branches + master and map them to their database versions
+#    In case several branches are based on the same schema, we keep the latest.
+#    We also list specific guiHive versions that were made whilst developing eHive's master
 # $db_version  guihive_branch  ehive_branch
 add_guihive_version "56" "db_version/56" "version/2.0"
 add_guihive_version "62" "db_version/62" "version/2.2"
 add_guihive_version "73" "db_version/73" "version/2.3"
 add_guihive_version "80" "db_version/80" "version/2.4"
-add_guihive_version "84" "db_version/84" "master"
+add_guihive_version "84" "db_version/84" "sql_schema_85_start^"
+add_guihive_version "88" "db_version/88" "master"
+
+# 2. Then we list all the other eHive database versions and link them to a compatible guiHive version
 
 # $db_version  $aliased_db_version
+# 57 to 61 are skipped
 link_guihive_version "63" "62"
 link_guihive_version "64" "73"
 link_guihive_version "65" "73"
@@ -100,15 +107,22 @@ link_guihive_version "69" "73"
 link_guihive_version "70" "73" "sql_schema_71_start^2"	# because the merge of the python branch has swapped its two parents
 link_guihive_version "71" "73"
 link_guihive_version "72" "73"
+# 73 is listed in the first section
 link_guihive_version "74" "80"
 link_guihive_version "75" "80" "44d78112401c21e2a704b8335dd4b247b85fe93a"  # this is the last "safe" commit for guiHive 75, i.e. before Utils/Graph starts printing extra messages on stdout
 link_guihive_version "76" "80"
 link_guihive_version "77" "80"
 link_guihive_version "78" "80"
 link_guihive_version "79" "80"
+# 80 is listed in the first section
 link_guihive_version "81" "80"
 link_guihive_version "82" "80"
 link_guihive_version "83" "80"
+link_guihive_version "83" "80"
+# 84 is listed in the first section
+link_guihive_version "85" "88"
+link_guihive_version "86" "88"
+link_guihive_version "87" "88"
 
 trap - EXIT
 
