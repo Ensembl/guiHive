@@ -271,24 +271,12 @@ use Bio::EnsEMBL::Hive::DBSQL::BaseAdaptor;
 *Bio::EnsEMBL::Hive::DBSQL::AnalysisJobAdaptor::forgive_failed_jobs = sub {
   my ($self, $analysis_id) = @_;
 
-  my $jobs = $self->fetch_all_by_analysis_id_status($analysis_id, 'FAILED');
+  my $analysis = $self->db->hive_pipeline->collection_of('Analysis')->find_one_by('dbID', $analysis_id);
+  $self->discard_jobs_for_analysis_id([$analysis], 'FAILED');
+  # # FIXME: sync the semaphored analyses too
+  $self->db->get_Queen()->synchronize_AnalysisStats($analysis->stats);
 
-  my %semaphored_analysis_ids = ();
-
-  for my $job (@$jobs) {
-    $self->decrease_semaphore_count_for_jobid($job->semaphored_job_id());
-    $job->set_and_update_status('DONE');
-    my $semaphored_job = $self->fetch_by_dbID($job->semaphored_job_id());
-    $semaphored_analysis_ids{$semaphored_job->analysis_id}++ if (defined $semaphored_job)
-  }
-
-  # We sync the analysis_stats table (TODO: I think this is not really working)
-  my @analysis_ids = ($analysis_id, keys %semaphored_analysis_ids);
-  for my $analysis_id (@analysis_ids) {
-    $self->db->get_Queen()->synchronize_AnalysisStats($self->db->get_AnalysisStatsAdaptor->fetch_by_analysis_id($analysis_id));
-  }
-
-  return scalar @$jobs;
+  return;
 };
 
 ## This method is equivalent to AnalysisJobAdaptor's reset_jobs_for_analysis_id
