@@ -233,7 +233,7 @@ sub _merge_constraints {
 
 sub get_final_clause {
   my ($order_by, $dir, $iDisplayStart, $iDisplayLength) = @_;
-  return   "ORDER BY $order_by $dir LIMIT $iDisplayStart, $iDisplayLength";
+  return   "ORDER BY $order_by $dir LIMIT $iDisplayLength OFFSET $iDisplayStart"
 }
 
 ## TODO: There is more than 1 instance of this sub in the scripts. Factor out
