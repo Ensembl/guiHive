@@ -291,30 +291,17 @@ use Bio::EnsEMBL::Hive::DBSQL::BaseAdaptor;
   return scalar @$jobs;
 };
 
-## This method is equivalent to AnalysisJobAdaptor's reset_job_for_analysis_id
+## This method is equivalent to AnalysisJobAdaptor's reset_jobs_for_analysis_id
 ## but updating the semaphore counts accordingly
 *Bio::EnsEMBL::Hive::DBSQL::AnalysisJobAdaptor::reset_jobs_and_semaphores_for_analysis_id = sub {
     my ($self, $analysis_id) = @_;
 
-    my %semaphored_analysis_ids = ();
-    for my $job(@{$self->fetch_all_by_analysis_id_status($analysis_id, 'DONE')},
-		@{$self->fetch_all_by_analysis_id_status($analysis_id, 'PASSED ON')}) {
-      if ($job->semaphored_job_id()) {
-	my $semaphored_job = $self->fetch_by_dbID($job->semaphored_job_id());
-	$semaphored_analysis_ids{$semaphored_job->analysis_id}++ if (defined $semaphored_job);
-	if ($semaphored_job && ($semaphored_job->status() ne 'SEMAPHORED')) {
-	  $semaphored_job->set_and_update_status('SEMAPHORED');
-	}
-	$self->increase_semaphore_count_for_jobid($job->semaphored_job_id());
-      }
-    }
-    $self->reset_jobs_for_analysis_id($analysis_id, ['DONE', 'PASSED_ON']);
+    my $analysis = $self->db->hive_pipeline->collection_of('Analysis')->find_one_by('dbID', $analysis_id);
+    $self->reset_jobs_for_analysis_id([$analysis], ['DONE', 'PASSED_ON']);
 
     # We sync the analysis_stats table:
-    my @analysis_ids = ($analysis_id, keys %semaphored_analysis_ids);
-    for my $analysis_id (@analysis_ids) {
-      $self->db->get_Queen()->synchronize_AnalysisStats($self->db->get_AnalysisStatsAdaptor->fetch_by_analysis_id($analysis_id));
-    }
+  # # FIXME: sync the semaphored analyses too
+      $self->db->get_Queen()->synchronize_AnalysisStats($analysis->stats);
 
     return;
   };
