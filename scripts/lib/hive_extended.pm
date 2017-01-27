@@ -351,8 +351,9 @@ use Bio::EnsEMBL::Hive::DBSQL::BaseAdaptor;
 *Bio::EnsEMBL::Hive::DBSQL::AnalysisJobAdaptor::reset_jobs_for_analysis_id_and_sync = sub {
   my ($self, $analysis_id) = @_;
 
-  $self->reset_jobs_for_analysis_id($analysis_id, ['FAILED']);
-  $self->db->get_Queen()->synchronize_AnalysisStats($self->db->get_AnalysisStatsAdaptor->fetch_by_analysis_id($analysis_id));
+  my $analysis = $self->db->hive_pipeline->collection_of('Analysis')->find_one_by('dbID', $analysis_id);
+  $self->reset_jobs_for_analysis_id([$analysis], ['FAILED']);
+  $self->db->get_Queen()->synchronize_AnalysisStats($analysis->stats);
 
   return;
 };
