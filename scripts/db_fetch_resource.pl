@@ -92,7 +92,7 @@ sub formResources {
             'name' => $rc->name(),
             'rd'   => \@param_rd,
             'n_rd' => scalar(@param_rd),
-        }
+        } if @param_rd;
     }
 
     my %toplevel_params = (

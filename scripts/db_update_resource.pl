@@ -76,6 +76,9 @@ eval {
         );
         $rd_adaptor->store($rd);
     } elsif ($method eq 'remove') {
+        if (my $a = $dbConn->get_AnalysisAdaptor()->fetch_by_resource_class_id($var->{rcID}->[0])) {
+            die sprintf("The resource-class '%s' cannot be deleted because it is needed by the analysis '%s'\n", $a->resource_class->name, $a->logic_name);
+        }
         my $rd = $rd_adaptor->fetch_by_resource_class_id_AND_meadow_type($var->{rcID}->[0], $var->{meadow_type}->[0]);
         $rd_adaptor->remove($rd);
         my $all_rds = $rd_adaptor->fetch_all_by_resource_class_id($rd->resource_class_id);
