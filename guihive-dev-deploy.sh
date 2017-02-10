@@ -83,7 +83,7 @@ add_guihive_version "56" "db_version/56" "version/2.0"
 add_guihive_version "62" "db_version/62" "version/2.2"
 add_guihive_version "73" "db_version/73" "version/2.3"
 add_guihive_version "80" "db_version/80" "version/2.4"
-add_guihive_version "84" "db_version/84" "sql_schema_85_start^"
+add_guihive_version "84" "db_version/84" "sql_schema_85_start~3"
 add_guihive_version "88" "db_version/88" "master"
 
 # 2. Then we list all the other eHive database versions and link them to a compatible guiHive version
