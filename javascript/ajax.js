@@ -565,6 +565,11 @@ function fetch_and_setup_change_listener(fetch_url, write_url, target_div) {
                     doFetch();
                 }
             };
+            if (o.attr("data-method") == "remove") {
+                if (!confirm("Are you sure you want to delete this ?")) {
+                    return;
+                }
+            }
             onClick_handler(url_data, success, complete);
         });
 
@@ -919,6 +924,11 @@ function buildURL(obj) {
 	vals = [obj.value];
     }
 
+    if ($(obj).attr("data-method") == "delete_param_THEN_update_parameters") {
+        if (!confirm("Are you sure you want to delete this ?")) {
+            return;
+        }
+    }
     var URL = "url="+ guiHive.pipeline_url + 
         "&adaptor="+$(obj).attr("data-adaptor") + 
         "&method="+$(obj).attr("data-method") +
