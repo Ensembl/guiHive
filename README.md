@@ -26,7 +26,7 @@ guiHive depends on the following components that need to be installed in your sy
 * Go tools             : The server of guiHive is written in the Go programming language. Since the current guiHive version doesn't include binaries for the server you will need to compile it.
                          Please refer to the Go website (http://golang.org) for installation instructions.
 * Misc Perl Modules    : Several Perl modules are needed by guiHive.
-                       : Please refer to our cpanfile (https://github.com/Ensembl/guiHive/blob/server/cpanfile).
+                         Please refer to our cpanfile (https://github.com/Ensembl/guiHive/blob/server/cpanfile).
 
 There is a script in the guiHive root directory called `test_dep.pl` that tests all the dependencies. To run it:
 ``
@@ -63,6 +63,19 @@ $ ./server
 (Note: The 8080 port is the default one used by guiHive, you can change it when invoking the server executable using the -port option)
 
 You should now be able to connect to your database and start monitoring your pipeline.
+
+#### Debugging
+
+* If you'd like to investigate a server error, it helps to kill the server and recompile it in debug mode:
+
+```
+$ go build -tags debug
+```
+
+* Then simply start it again. There will be much more debug output which may help to capture the error:
+```
+$ ./server
+```
 
 
 ### Browser compatibility
