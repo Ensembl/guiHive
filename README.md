@@ -25,11 +25,8 @@ guiHive depends on the following components that need to be installed in your sy
    * GraphViz          : eHive depends on dot (from GraphViz) to create the graphical representation of the pipelines. The Perl package GraphViz is also needed.
 * Go tools             : The server of guiHive is written in the Go programming language. Since the current guiHive version doesn't include binaries for the server you will need to compile it.
                          Please refer to the Go website (http://golang.org) for installation instructions.
-* Misc Perl Modules    : Several Perl modules are needed by guiHive:
-   * JSON
-   * JSON::PP
-   * URI::Escape
-   * HTML::Template
+* Misc Perl Modules    : Several Perl modules are needed by guiHive.
+                       : Please refer to our cpanfile (https://github.com/Ensembl/guiHive/blob/server/cpanfile).
 
 There is a script in the guiHive root directory called `test_dep.pl` that tests all the dependencies. To run it:
 ``
