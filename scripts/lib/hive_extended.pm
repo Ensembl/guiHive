@@ -229,7 +229,7 @@ use Bio::EnsEMBL::Hive::DBSQL::BaseAdaptor;
 };
 
 ## AnalysisJobAdaptor doesn't have a generic update method
-## and it doesn't inherits from Hive::DBSQL::BaseAdaptor either
+## and it doesn't inherit from Hive::DBSQL::BaseAdaptor either
 ## I guess that this will change in the future,
 ## but for now I am injecting a generic update for that adaptor.
 *Bio::EnsEMBL::Hive::DBSQL::AnalysisJobAdaptor::update = sub {
@@ -255,8 +255,7 @@ use Bio::EnsEMBL::Hive::DBSQL::BaseAdaptor;
   my $sql = "UPDATE job SET ";
   $sql .= "status='" . $job->status . "'";
   $sql .= ",retry_count=" . $job->retry_count;
-  $sql .= ",semaphore_count=" . $job->semaphore_count;
-  $sql .= ",semaphored_job_id=" . $job->semaphored_job_id if (defined $job->semaphored_job_id);
+  $sql .= ",controlled_semaphore_id=" . $job->controlled_semaphore_id if (defined $job->controlled_semaphore_id);
   $sql .= " WHERE job_id=" . $job->dbID;
   my $sth = $self->prepare($sql);
   $sth->execute();

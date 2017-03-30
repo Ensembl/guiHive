@@ -111,13 +111,8 @@ sub formJobsInfo {
 			   },
 		    "6" => $job->when_completed(),
 		    "7" => $job->runtime_msec(),
-		    "8" => { 'value'     => $job->semaphore_count(),
-			     'job_label' => $unique_job_label,
-			     'adaptor'   => $adaptor,
-			     'method'    => 'semaphore_count'
-			   },
-		    "9" => $job->semaphored_job_id(),
-		    "10" => $msg,
+		    "8" => $job->controlled_semaphore_id(),
+		    "9" => $msg,
 		  };
   }
   my $response = {
@@ -182,7 +177,7 @@ sub fetch_last_error_for_jobid {
 
 sub constraints {
   my ($var) = @_;
-  my @columns = qw/job_id analysis_id input_id worker_id status retry_count completed runtime_msec semaphore_count semaphored_job_id msg/;
+  my @columns = qw/job_id analysis_id input_id worker_id status retry_count completed runtime_msec controlled_semaphore_id msg/;
 
   ## For more information on these values, please see:
   # http://datatables.net/usage/server-side

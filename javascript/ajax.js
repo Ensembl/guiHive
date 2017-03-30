@@ -648,12 +648,12 @@ function fetch_jobs() {
 		$(elem).attr("id", rowData[0].id);
 	    }, "aTargets" : [0]
 	    },
-	    { "mRender"   : "value", "aTargets" : [0,4,5,8] },
+	    { "mRender"   : "value", "aTargets" : [0,4,5] },
 
-	    { "bSortable" : false, "aTargets" : [1,2,4,9,10] },
+	    { "bSortable" : false, "aTargets" : [1,2,4,8,9] },
 	    { "sClass"    : "editableStatus" , "aTargets" : [4] },
 	    { "sClass"    : "editableRetries", "aTargets" : [5] },
-	    //	    { "bVisible": false, "aTargets": [ 3,7,8,9,10 ] },
+	    //	    { "bVisible": false, "aTargets": [ 3,7,8,9 ] },
 	],
 	"bServerSide"   : true,
 	"bProcessing"   : true,
@@ -770,7 +770,6 @@ function fetch_jobs() {
 		      { type : "number-range" },
 		      { type : "date-range" },
 		      { type : "number-range" },
-		      { type : "number" },
 		      { type : "number" },
 		      { type : "text", bRegex : true }
 		    ],
