@@ -1,15 +1,20 @@
 #!/bin/bash
 
-EHIVE_DEFAULT_URL='git://www.github.com/Ensembl/ensembl-hive'
-EHIVE_URL=${EHIVE_URL:-$EHIVE_DEFAULT_URL}
-
-GUIHIVE_URL='git://www.github.com/Ensembl/guiHive'
-
 DEPLOY_LOCATION="$(dirname "$0")"
 EHIVE_CLONE_LOCATION="${DEPLOY_LOCATION}/clones/ensembl-hive"
 GUIHIVE_CLONE_LOCATION="${DEPLOY_LOCATION}/clones/guiHive"
-GUIHIVE_VERSIONS_DIR="${DEPLOY_LOCATION}"/versions
 EHIVE_VERSIONS_DIR="${DEPLOY_LOCATION}"/ensembl-hive
+GUIHIVE_VERSIONS_DIR="${DEPLOY_LOCATION}"/versions
+
+## NB: When you specify a new source (either EHIVE_SOURCE or GUIHIVE_SOURCE) make sure to clean up the corresponding cache:
+##
+# rm -rf "$EHIVE_CLONE_LOCATION" "$GUIHIVE_CLONE_LOCATION" "$EHIVE_VERSIONS_DIR" "$GUIHIVE_VERSIONS_DIR"
+
+EHIVE_DEFAULT_SOURCE='git://www.github.com/Ensembl/ensembl-hive'
+EHIVE_SOURCE=${EHIVE_SOURCE:-$EHIVE_DEFAULT_SOURCE}
+
+GUIHIVE_DEFAULT_SOURCE='git://www.github.com/Ensembl/guiHive'
+GUIHIVE_SOURCE=${GUIHIVE_SOURCE:-$GUIHIVE_DEFAULT_SOURCE}
 
 umask 0002
 
@@ -34,8 +39,8 @@ reference_clone () {
   fi
 }
 
-reference_clone "$EHIVE_URL" "$EHIVE_CLONE_LOCATION"
-reference_clone "$GUIHIVE_URL" "$GUIHIVE_CLONE_LOCATION"
+reference_clone "$EHIVE_SOURCE" "$EHIVE_CLONE_LOCATION"
+reference_clone "$GUIHIVE_SOURCE" "$GUIHIVE_CLONE_LOCATION"
 
 ## "Safe" functions that can deal with pre-incarnations of the target
 
@@ -92,6 +97,7 @@ add_guihive_version "73" "db_version/73" "version/2.3"
 add_guihive_version "80" "db_version/80" "version/2.4"
 add_guihive_version "84" "db_version/84" "sql_schema_85_start~3"
 add_guihive_version "88" "db_version/88" "sql_schema_89_start^"
+add_guihive_version "89" "db_version/89" "master"
 
 # 2. Then we list all the other eHive database versions and link them to a compatible guiHive version
 
@@ -118,11 +124,13 @@ link_guihive_version "79" "80"
 link_guihive_version "81" "80"
 link_guihive_version "82" "80"
 link_guihive_version "83" "80"
-link_guihive_version "83" "80"
 # 84 is listed in the first section
 link_guihive_version "85" "88"
 link_guihive_version "86" "88"
 link_guihive_version "87" "88"
+# 88 is listed in the first section
+# 89 is listed in the first section
+link_guihive_version "90" "89" "master"
 
 trap - EXIT
 
