@@ -98,6 +98,7 @@ add_guihive_version "80" "db_version/80" "version/2.4"
 add_guihive_version "84" "db_version/84" "sql_schema_85_start~3"
 add_guihive_version "88" "db_version/88" "sql_schema_89_start^"
 add_guihive_version "89" "db_version/89" "sql_schema_90_start^"
+add_guihive_version "91" "db_version/91" "master"
 
 # 2. Then we list all the other eHive database versions and link them to a compatible guiHive version
 
@@ -130,7 +131,8 @@ link_guihive_version "86" "88"
 link_guihive_version "87" "88"
 # 88 is listed in the first section
 # 89 is listed in the first section
-link_guihive_version "90" "89" "master"
+link_guihive_version "90" "89"
+# 91 is listed in the first section
 
 trap - EXIT
 
