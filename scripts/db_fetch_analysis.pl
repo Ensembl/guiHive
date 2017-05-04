@@ -75,6 +75,7 @@ sub formAnalysisInfo {
   $info->{id}                = $analysis->dbID();
   $info->{logic_name}        = $analysis->logic_name();
   $info->{comment}           = $analysis->comment();
+  $info->{tags}              = $analysis->tags();
   $info->{module}            = [
 				{module  => $analysis->module(),
 				 id      => $analysis->dbID(),
