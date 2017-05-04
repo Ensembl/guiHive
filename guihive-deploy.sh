@@ -6,9 +6,17 @@ GUIHIVE_CLONE_LOCATION="${DEPLOY_LOCATION}/clones/guiHive"
 EHIVE_VERSIONS_DIR="${DEPLOY_LOCATION}"/ensembl-hive
 GUIHIVE_VERSIONS_DIR="${DEPLOY_LOCATION}"/versions
 
-## NB: When you specify a new source (either EHIVE_SOURCE or GUIHIVE_SOURCE) make sure to clean up the corresponding cache:
-##
-# rm -rf "$EHIVE_CLONE_LOCATION" "$GUIHIVE_CLONE_LOCATION" "$EHIVE_VERSIONS_DIR" "$GUIHIVE_VERSIONS_DIR"
+    # if you specify a new EHIVE_SOURCE, the Hive cache will be automatically cleaned up:
+if [ -n "$EHIVE_SOURCE" ]
+then
+    rm -rf "$EHIVE_CLONE_LOCATION" "$EHIVE_VERSIONS_DIR"
+fi
+
+    # if you specify a new EHIVE_SOURCE, the guiHive cache will be automatically cleaned up:
+if [ -n "$GUIHIVE_SOURCE" ]
+then
+    rm -rf "$GUIHIVE_CLONE_LOCATION" "$GUIHIVE_VERSIONS_DIR"
+fi
 
 EHIVE_DEFAULT_SOURCE='git://www.github.com/Ensembl/ensembl-hive'
 EHIVE_SOURCE=${EHIVE_SOURCE:-$EHIVE_DEFAULT_SOURCE}
