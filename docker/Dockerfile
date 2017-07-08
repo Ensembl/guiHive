@@ -11,7 +11,7 @@ RUN apt-get update -y \
  && apt-get install golang -y \
  && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-RUN cd /repo ; git clone https://github.com/Ensembl/guiHive.git
+RUN git clone https://github.com/Ensembl/guiHive.git /repo/guiHive
 
 RUN cpanm --installdeps --with-recommends /repo/guiHive
 
