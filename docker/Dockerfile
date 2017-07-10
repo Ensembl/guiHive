@@ -17,7 +17,8 @@ RUN cpanm --installdeps --with-recommends /repo/guiHive
 
 RUN /repo/guiHive/guihive-deploy.sh
 
-RUN cd /repo/guiHive/server ; go build
+WORKDIR /repo/guiHive/server
+RUN go build
 
 EXPOSE 8080
 
