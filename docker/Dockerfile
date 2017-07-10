@@ -5,7 +5,7 @@
 # docker run --name guihive_server -p 8081:8080 -d guihive	## Start the server. Port mapping = external:internal
 # docker run -p 8082:8080 -it guihive bash			## If you need to do any prior maintenance/tuning - do it in bash, then manually run the CMD below.
 
-FROM ensembl-hive
+FROM ensemblorg/ensembl-hive
 
 RUN apt-get update -y \
  && apt-get install golang libhtml-parser-perl libhtml-template-perl libjson-perl libjson-pp-perl liburi-perl -y \
