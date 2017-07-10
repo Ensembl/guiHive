@@ -11,11 +11,10 @@ RUN apt-get update -y \
  && apt-get install golang libhtml-parser-perl libhtml-template-perl libjson-perl libjson-pp-perl liburi-perl -y \
  && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-RUN git clone https://github.com/Ensembl/guiHive.git /repo/guiHive
+ARG DEPLOY_LOCATION=/repo/guiHive
+RUN curl -L https://raw.githubusercontent.com/Ensembl/guiHive/server/guihive-deploy.sh | bash
 
 RUN cpanm --installdeps --with-recommends /repo/guiHive
-
-RUN /repo/guiHive/guihive-deploy.sh
 
 WORKDIR /repo/guiHive/server
 RUN go build
