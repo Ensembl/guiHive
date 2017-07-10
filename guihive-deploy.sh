@@ -33,6 +33,8 @@ then
   echo "'$GUIHIVE_VERSIONS_DIR' and/or '$EHIVE_VERSIONS_DIR' already exist. Press ctrl+c to exit now, or enter otherwise/"
   read
 fi
+
+mkdir -p "$DEPLOY_LOCATION"
 mkdir -p "$GUIHIVE_VERSIONS_DIR"
 mkdir -p "$EHIVE_VERSIONS_DIR"
 
@@ -96,6 +98,16 @@ link_guihive_version () {
   trim_ehive_repo "${EHIVE_VERSIONS_DIR}/$1"
 }
 
+
+## Checkout the server branch
+
+if [ -e "$DEPLOY_LOCATION/README.md" ]
+then
+  echo "$DEPLOY_LOCATION/README.md is there, assuming the server branch is checked out"
+else
+  #safe_clone server "$GUIHIVE_CLONE_LOCATION" "$DEPLOY_LOCATION"
+  GIT_DIR="$GUIHIVE_CLONE_LOCATION" GIT_WORK_TREE="$DEPLOY_LOCATION" git checkout -qf 'server'
+fi
 
 ## List of versions
 
