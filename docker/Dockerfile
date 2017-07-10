@@ -8,7 +8,7 @@
 FROM ensembl-hive
 
 RUN apt-get update -y \
- && apt-get install golang -y \
+ && apt-get install golang libhtml-parser-perl libhtml-template-perl libjson-perl libjson-pp-perl liburi-perl -y \
  && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 RUN git clone https://github.com/Ensembl/guiHive.git /repo/guiHive
