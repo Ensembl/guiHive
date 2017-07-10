@@ -31,6 +31,8 @@ then
   echo "'$GUIHIVE_VERSIONS_DIR' and/or '$EHIVE_VERSIONS_DIR' already exist. Press ctrl+c to exit now, or enter otherwise/"
   read
 fi
+mkdir -p "$GUIHIVE_VERSIONS_DIR"
+mkdir -p "$EHIVE_VERSIONS_DIR"
 
 # Any failure will cause the script to exit
 trap "echo 'An error occurred. Deployment aborted'; exit 1" EXIT
