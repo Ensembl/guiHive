@@ -7,17 +7,26 @@
 
 FROM ensemblorg/ensembl-hive
 
+# Install know Perl dependencies with apt (faster than CPAN)
 RUN apt-get update -y \
- && apt-get install golang libhtml-parser-perl libhtml-template-perl libjson-perl libjson-pp-perl liburi-perl -y \
+ && apt-get install libhtml-parser-perl libhtml-template-perl libjson-perl libjson-pp-perl liburi-perl -y \
  && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 ARG DEPLOY_LOCATION=/repo/guiHive
 RUN curl -L https://raw.githubusercontent.com/Ensembl/guiHive/server/guihive-deploy.sh | bash
 
-RUN cpanm --installdeps --with-recommends /repo/guiHive
-
-WORKDIR /repo/guiHive/server
-RUN go build
+# Wrap the cpan and compilation phases with apt-get install/purge to keep the image small
+RUN buildDeps=' \
+      golang \
+      cpanminus \
+      build-essential \
+    ' \
+    && apt-get update -y \
+    && apt-get install -y $buildDeps \
+    && rm -rf /var/lib/apt/lists/* \
+    && cpanm --installdeps --with-recommends /repo/guiHive \
+    && cd /repo/guiHive/server && go build \
+    && apt-get purge -y --auto-remove $buildDeps
 
 EXPOSE 8080
 
