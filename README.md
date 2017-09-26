@@ -5,7 +5,13 @@ See https://github.com/Ensembl/ensembl-hive for more information about the eHive
 
 ### Status
 
-This code is being actively developed. Improvements, new features and bug fixes are being added regularly, so if you use it, please remember to check for updates regularly (or "watch" the github repo to get notification of updates). It is also recommended that you join the hive-users mailing list (see https://github.com/Ensembl/ensembl-hive for more information on how to do this) since news and updates will be announced there.
+This code is being maintained by the Ensembl team. Improvements, new
+features and bug fixes are being added regularly, so if you use it, please
+remember to check for updates regularly (or "watch" the github repo to get
+notification of updates). It is also recommended that you join the
+hive-users mailing list (see https://github.com/Ensembl/ensembl-hive for
+more information on how to do this) since news and updates will be
+announced there.
 
 guiHive consists of:
 
@@ -13,7 +19,39 @@ guiHive consists of:
 * A web server that connects the web interface with the hive code that interacts with your hive database.
 * A Perl layer that gathers information from your pipeline (using the eHive API) and returns it to the web server and interface.
 
-### Installation
+### Architecture
+
+The application is served by a lightweight HTTP server written in GO. It
+merely acts as a middle-man that calls Perl scripts on the server side upon
+incoming HTTP requests and streams back their output. The Perl scripts use
+eHive's Perl API to access and manipulate the database. They write their
+output as JSON or HTML.
+
+On the client side there is a single page that sends AJAX requests to the
+server to populate the various tabs and panels.
+
+Obviously, the main server must have network access to the database server
+in order to manage these pipelines.
+
+### Deployment with Docker
+
+The fastest way to try guiHive on your own system is to use the Docker
+image [ensemblorg/guihive](https://hub.docker.com/r/ensemblorg/guihive). It
+ships all the dependencies and is ready to be used.
+
+```
+docker pull ensemblorg/guihive
+docker run --name guihive_server -p 8081:8080 -d ensemblorg/guihive
+```
+
+This will start the guiHive server in a Docker container and make it
+available on port 8081 of the host machine.
+
+As stated above, the container must be configured to have network access to
+the databases you want to interact with. This is native under Linux, but
+requires additional setup on other OSes.
+
+### Manual installation
 
 #### Pre-requisites
 
