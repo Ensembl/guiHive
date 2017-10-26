@@ -52,8 +52,13 @@ $dbConn->load_collections();
 
 eval {
     my $graph = formAnalyses($dbConn);
-    my $html = formResponse($dbConn);
-    $response->out_msg({"graph" => $graph, "html" => $html});
+    if ($graph) {
+        my $html = formResponse($dbConn);
+        $response->out_msg({"graph" => $graph, "html" => $html});
+    } else {
+        $response->err_msg('GraphViz failed to generate a diagram');
+        $response->status("FAILED");
+    }
 };
 if ($@) {
     $response->err_msg("I have problems retrieving data from the database:$@");
