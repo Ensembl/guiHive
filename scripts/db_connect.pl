@@ -52,8 +52,13 @@ my $dbConn = $pipeline->hive_dba;
 
 eval {
     my $graph = formAnalyses($pipeline);
-    my $html = formResponse($pipeline);
-    $response->out_msg({"graph" => $graph, "html" => $html});
+    if ($graph) {
+        my $html = formResponse($pipeline);
+        $response->out_msg({"graph" => $graph, "html" => $html});
+    } else {
+        $response->err_msg('GraphViz failed to generate a diagram');
+        $response->status("FAILED");
+    }
 };
 if ($@) {
     $response->err_msg("I have problems retrieving data from the database:$@");
