@@ -132,6 +132,7 @@ func scriptHandler(w http.ResponseWriter, r *http.Request) {
 	cmd.Env = append(cmd.Env, "EHIVE_ROOT_DIR=" + ehiveRootDir)
 	cmd.Env = append(cmd.Env, "GUIHIVE_BASEDIR=" + versionRootDir)
 	cmd.Env = append(cmd.Env, "PATH=" + os.Getenv("PATH"))
+        cmd.Env = append(cmd.Env, "PLENV_VERSION=" + os.Getenv("PLENV_VERSION"))
 
 	cmd.Stdout = &outMsg
 	cmd.Stderr = &errMsg
