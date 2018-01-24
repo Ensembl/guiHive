@@ -11,12 +11,14 @@ GUIHIVE_VERSIONS_DIR="${DEPLOY_LOCATION}"/versions
     # if you specify a new EHIVE_SOURCE, the Hive cache will be automatically cleaned up:
 if [ -n "$EHIVE_SOURCE" ]
 then
+    echo "RM " rm -rf "$EHIVE_CLONE_LOCATION" "$EHIVE_VERSIONS_DIR"
     rm -rf "$EHIVE_CLONE_LOCATION" "$EHIVE_VERSIONS_DIR"
 fi
 
     # if you specify a new EHIVE_SOURCE, the guiHive cache will be automatically cleaned up:
 if [ -n "$GUIHIVE_SOURCE" ]
 then
+    echo "RM " rm -rf "$GUIHIVE_CLONE_LOCATION" "$GUIHIVE_VERSIONS_DIR"
     rm -rf "$GUIHIVE_CLONE_LOCATION" "$GUIHIVE_VERSIONS_DIR"
 fi
 
@@ -49,6 +51,7 @@ reference_clone () {
   then
     GIT_DIR="$2" git fetch
   else
+    echo "GITCLONE: " git clone --mirror "$1" "$2"
     git clone --mirror "$1" "$2"
   fi
 }
