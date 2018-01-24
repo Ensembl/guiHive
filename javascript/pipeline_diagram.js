@@ -176,6 +176,8 @@ function pipeline_diagram_update(allCharts) {
 	    .attr("stroke",function() {
 		if($(this).attr("stroke") === "black") {
 		    return "black"
+        } else if($(this).attr("stroke") === "#000000") {
+		    return "black"
 		} else {
 		    return node_color
 		}
