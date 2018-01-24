@@ -1,6 +1,8 @@
 #!/bin/bash
 
-DEPLOY_LOCATION="$(dirname "$0")"
+DEFAULT_DEPLOY_LOCATION="$(dirname "$0")"
+DEPLOY_LOCATION=${DEPLOY_LOCATION:-$DEFAULT_DEPLOY_LOCATION}
+
 EHIVE_CLONE_LOCATION="${DEPLOY_LOCATION}/clones/ensembl-hive"
 GUIHIVE_CLONE_LOCATION="${DEPLOY_LOCATION}/clones/guiHive"
 EHIVE_VERSIONS_DIR="${DEPLOY_LOCATION}"/ensembl-hive
@@ -9,12 +11,14 @@ GUIHIVE_VERSIONS_DIR="${DEPLOY_LOCATION}"/versions
     # if you specify a new EHIVE_SOURCE, the Hive cache will be automatically cleaned up:
 if [ -n "$EHIVE_SOURCE" ]
 then
+    echo "RM " rm -rf "$EHIVE_CLONE_LOCATION" "$EHIVE_VERSIONS_DIR"
     rm -rf "$EHIVE_CLONE_LOCATION" "$EHIVE_VERSIONS_DIR"
 fi
 
     # if you specify a new EHIVE_SOURCE, the guiHive cache will be automatically cleaned up:
 if [ -n "$GUIHIVE_SOURCE" ]
 then
+    echo "RM " rm -rf "$GUIHIVE_CLONE_LOCATION" "$GUIHIVE_VERSIONS_DIR"
     rm -rf "$GUIHIVE_CLONE_LOCATION" "$GUIHIVE_VERSIONS_DIR"
 fi
 
@@ -31,6 +35,8 @@ then
   echo "'$GUIHIVE_VERSIONS_DIR' and/or '$EHIVE_VERSIONS_DIR' already exist. Press ctrl+c to exit now, or enter otherwise/"
   read
 fi
+
+mkdir -p "$DEPLOY_LOCATION"
 mkdir -p "$GUIHIVE_VERSIONS_DIR"
 mkdir -p "$EHIVE_VERSIONS_DIR"
 
@@ -45,6 +51,7 @@ reference_clone () {
   then
     GIT_DIR="$2" git fetch
   else
+    echo "GITCLONE: " git clone --mirror "$1" "$2"
     git clone --mirror "$1" "$2"
   fi
 }
@@ -85,6 +92,16 @@ link_guihive_version () {
   safe_clone "$EHIVE_COMMIT" "$EHIVE_CLONE_LOCATION" "${EHIVE_VERSIONS_DIR}/$1"
 }
 
+
+## Checkout the server branch
+
+if [ -e "$DEPLOY_LOCATION/README.md" ]
+then
+  echo "$DEPLOY_LOCATION/README.md is there, assuming the server branch is checked out"
+else
+  #safe_clone server "$GUIHIVE_CLONE_LOCATION" "$DEPLOY_LOCATION"
+  GIT_DIR="$GUIHIVE_CLONE_LOCATION" GIT_WORK_TREE="$DEPLOY_LOCATION" git checkout -qf 'server'
+fi
 
 ## List of versions
 
