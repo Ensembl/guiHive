@@ -122,10 +122,10 @@ add_guihive_version "56" "db_version/56" "version/2.0"
 add_guihive_version "62" "db_version/62" "version/2.2"
 add_guihive_version "73" "db_version/73" "version/2.3"
 add_guihive_version "80" "db_version/80" "version/2.4"
-add_guihive_version "84" "db_version/84" "sql_schema_85_start~3"
-add_guihive_version "88" "db_version/88" "sql_schema_89_start^"
-add_guihive_version "89" "db_version/89" "sql_schema_90_start^"
-add_guihive_version "91" "db_version/91" "sql_schema_92_start^"
+add_guihive_version "84" "db_version/84" "sql_schema_85_start~3"   # is_excluded analysis property
+add_guihive_version "88" "db_version/88" "sql_schema_89_start^"    # Switched to using HivePipeline and some AnalysisJobAdaptor methods, and added support for global max_retry_count
+add_guihive_version "89" "db_version/89" "sql_schema_90_start^"    # New semaphore table
+add_guihive_version "91" "db_version/91" "sql_schema_92_start^"    # Added analysis tags and comments
 
 # 2. Then we list all the other eHive database versions and link them to a compatible guiHive version
 
@@ -160,7 +160,8 @@ link_guihive_version "87" "88"
 # 89 is listed in the first section
 link_guihive_version "90" "89"
 # 91 is listed in the first section
-link_guihive_version "92" "91" "master"
+link_guihive_version "92" "91"
+link_guihive_version "93" "91" "master"
 
 trap - EXIT
 
