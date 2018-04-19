@@ -63,7 +63,10 @@ function draw_diagram(xmlStr) {
     g.node().appendChild(importedNode);
 
     // We move to front all the nodes to avoid being hidden behind other elements
-    d3.selectAll("#pipeline_diagram .node").moveToFront();
+    d3.selectAll("#pipeline_diagram .node").filter(function(d, i) {
+        var t = $(this).children("title");
+        return t.length && $(t[0]).text().startsWith("analysis");
+    }).moveToFront();
 }
 
 // This is creating the pie charts in the pipeline diagram
