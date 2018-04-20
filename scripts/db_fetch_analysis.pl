@@ -28,7 +28,6 @@ use Bio::EnsEMBL::Hive::DBSQL::DBAdaptor;
 
 use JSON;
 use HTML::Template;
-use Data::Dumper;
 
 use lib ("./lib");
 use hive_extended;
@@ -249,18 +248,6 @@ sub template_mappings_PARAMS {
 			    "method"  => "add_param_THEN_update_parameters",
 			   }],
   return [$vals];
-}
-
-sub stringify_if_needed {
-  my ($scalar) = @_;
-  if ((ref $scalar) or ($scalar =~ /^\[.*\]$/) or ($scalar =~ /^{.*}$/)) {
-    local $Data::Dumper::Indent    = 0;  # we want everything on one line
-    local $Data::Dumper::Terse     = 1;  # and we want it without dummy variable names
-    local $Data::Dumper::Sortkeys  = 1;  # make stringification more deterministic
-
-    return Dumper($scalar);
-  }
-  return $scalar;
 }
 
 ## build_values creates a range of values given its input
