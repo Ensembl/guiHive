@@ -719,6 +719,10 @@ function fetch_jobs() {
 		indicator  : "Saving...",
 		tooltip    : "Click to edit...",
 		event      : "dblclick",
+		data       : function(value) {
+		    var doc = new DOMParser().parseFromString(value, "text/html");
+		    return doc.documentElement.textContent;
+		},
 		callback   : function(response) {
 		    oTable.fnDraw();
 		},
