@@ -40,6 +40,7 @@ use vars qw(@ISA @EXPORT);
 # Doesn't fit well in this module. Should be in a more general one
 sub stringify_if_needed {
     my ($scalar) = @_;
+    return unless defined $scalar;
     if ((ref $scalar) or ($scalar =~ /^\[.*\]$/) or ($scalar =~ /^{.*}$/)) {
         local $Data::Dumper::Indent    = 0;  # we want everything on one line
         local $Data::Dumper::Terse     = 1;  # and we want it without dummy variable names
