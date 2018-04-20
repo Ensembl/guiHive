@@ -64,7 +64,7 @@ use Bio::EnsEMBL::Hive::DBSQL::BaseAdaptor;
     $curr_raw_input_id = '{}' unless ($curr_raw_input_id);
     my $curr_input_id = Bio::EnsEMBL::Hive::Utils::destringify($curr_raw_input_id);
     return $curr_input_id->{$key} unless (defined $value);
-    $curr_input_id->{$key} = $value;
+    $curr_input_id->{$key} = Bio::EnsEMBL::Hive::Utils::destringify($value);
     my $new_raw_input_id = Bio::EnsEMBL::Hive::Utils::stringify($curr_input_id);
     $self->input_id($new_raw_input_id);
     return $value;
@@ -126,15 +126,6 @@ use Bio::EnsEMBL::Hive::DBSQL::BaseAdaptor;
     return $obj;
 };
 
-# This should be fetched correctly by AnalysisStatsAdaptor now
-# TODO: Test that this natively in the Adaptor and if so,
-# remove this injected method from here
-*Bio::EnsEMBL::Hive::DBSQL::AnalysisStatsAdaptor::fetch_by_dbID = sub {
-  my ($self, $id) = @_;
-  my $obj = $self->fetch_by_analysis_id($id);
-  return $obj;
-};
-
 ## To allow the creation of new resources (class + description) in one call
 *Bio::EnsEMBL::Hive::DBSQL::ResourceClassAdaptor::create_full_description = sub {
   my ($self, $rc_name, $meadow_type, $parameters) = @_;
@@ -160,45 +151,6 @@ use Bio::EnsEMBL::Hive::DBSQL::BaseAdaptor;
   $self->db->get_ResourceDescriptionAdaptor->store($rd);
 };
 
-## _input_id_is_extended determines if the input_id of a job is too large in the
-## database. If it is, returns the extended_data_id
-*Bio::EnsEMBL::Hive::DBSQL::AnalysisJobAdaptor::_input_id_is_extended = sub {
-  my ($self, $job) = @_;
-
-  my $sql = "SELECT input_id FROM job WHERE job_id = ?";
-  my $sth = $self->prepare($sql);
-  $sth->execute($job->dbID);
-  my ($real_input_id) = $sth->fetchrow_array();
-  $sth->finish();
-  if ($real_input_id =~ /^_ext(?:\w+)_data_id (\d+)$/) {
-    return $1;
-  }
-  return 0; # 0 is not used as an extended_data_id
-};
-
-## If the input_id of a job has grown over its size limit (255 characters)
-## _move_input_id_to_analysis_data puts it into analysis_data and update the job's input_id
-## to link to that entry in analysis_data
-## The method returns the newly created dbID in the analysis_data table
-*Bio::EnsEMBL::Hive::DBSQL::AnalysisJobAdaptor::_move_input_id_to_analysis_data = sub {
-  my ($self, $job) = @_;
-  my $extended_data_id = $self->db->get_AnalysisDataAdaptor->store($job->input_id);
-  my $extended_input_id = "_extended_data_id $extended_data_id";
-  $self->_update_input_id_in_job_table($job, $extended_input_id);
-  return $extended_data_id;
-};
-
-
-*Bio::EnsEMBL::Hive::DBSQL::AnalysisJobAdaptor::_move_input_id_from_analysis_data = sub {
-  my ($self, $job, $extended_data_id) = @_;
-  my $input_id = $job->input_id;
-  $self->throw("input_id is too large to be moved into the job table (it has to remain in analysis_data)")
-    if (length($input_id)>=255);
-  $self->db->get_AnalysisDataAdaptor->remove($extended_data_id);
-  $self->_update_input_id_in_job_table($job, $input_id);
-  return;
-};
-
 *Bio::EnsEMBL::Hive::DBSQL::AnalysisJobAdaptor::_update_input_id_in_job_table = sub {
   my ($self, $job, $input_id) = @_;
 
@@ -206,27 +158,6 @@ use Bio::EnsEMBL::Hive::DBSQL::BaseAdaptor;
   my $sth = $self->prepare($sql);
   $sth->execute($input_id, $job->dbID);
   $sth->finish();
-  return;
-};
-
-## update updates the corresponding entry in analysis_data with the values
-## provided as arguments
-*Bio::EnsEMBL::Hive::DBSQL::AnalysisDataAdaptor::update = sub {
-  my ($self, $analysis_data_id, $data) = @_;
-  my $sql = "UPDATE analysis_data SET data = ? WHERE analysis_data_id = ?";
-  my $sth = $self->prepare($sql);
-  $sth->execute($data, $analysis_data_id);
-  $sth->finish();
-  return;
-};
-
-## remove deletes the corresponding entry fort the given analysis_data_id in the
-## analysis_data table
-*Bio::EnsEMBL::Hive::DBSQL::AnalysisDataAdaptor::remove = sub {
-  my ($self, $analysis_data_id) = @_;
-  my $sql = "DELETE FROM analysis_data WHERE analysis_data_id = ?";
-  my $sth = $self->prepare($sql);
-  $sth->execute($analysis_data_id);
   return;
 };
 
@@ -239,21 +170,12 @@ use Bio::EnsEMBL::Hive::DBSQL::BaseAdaptor;
 
   return Bio::EnsEMBL::Hive::DBSQL::BaseAdaptor::update($self, $job, $_[2]) if $_[2];
 
-  my $curr_data_id = $self->_input_id_is_extended($job);
-
   if (length($job->input_id) >= 255) {
-    if ($curr_data_id) {
-      $self->db->get_AnalysisDataAdaptor->update($curr_data_id, $job->input_id);
-    } else {
-      $self->_move_input_id_to_analysis_data($job)
-    }
-  } else {
-    if ($curr_data_id) {
-      $self->_move_input_id_from_analysis_data($job, $curr_data_id);
-    } else {
-      $self->_update_input_id_in_job_table($job, $job->input_id);
-    }
+    my $extended_input_id = $self->db->get_AnalysisDataAdaptor->store_if_needed($job->input_id);
+    $job->input_id($extended_input_id);
   }
+  $self->_update_input_id_in_job_table($job, $job->input_id);
+
   my $sql = "UPDATE job SET ";
   $sql .= "status='" . $job->status . "'";
   $sql .= ",retry_count=" . $job->retry_count;

@@ -23,7 +23,10 @@ package version_check;
 
 use strict;
 use warnings;
+
+use Data::Dumper;
 use JSON;
+
 use Bio::EnsEMBL::Hive::HivePipeline;
 use Bio::EnsEMBL::Hive::DBSQL::SqlSchemaAdaptor;
 
@@ -32,18 +35,23 @@ use msg;
 use vars qw(@ISA @EXPORT);
 
 @ISA = qw(Exporter);
-@EXPORT = qw(get_hive_code_version get_hive_db_meta_key check_db_versions_match);
+@EXPORT = qw(stringify_if_needed get_hive_code_version check_db_versions_match);
+
+# Doesn't fit well in this module. Should be in a more general one
+sub stringify_if_needed {
+    my ($scalar) = @_;
+    return unless defined $scalar;
+    if ((ref $scalar) or ($scalar =~ /^\[.*\]$/) or ($scalar =~ /^{.*}$/)) {
+        local $Data::Dumper::Indent    = 0;  # we want everything on one line
+        local $Data::Dumper::Terse     = 1;  # and we want it without dummy variable names
+        local $Data::Dumper::Sortkeys  = 1;  # make stringification more deterministic
+        return Dumper($scalar);
+    }
+    return $scalar;
+}
 
 sub get_hive_code_version {
   return Bio::EnsEMBL::Hive::DBSQL::SqlSchemaAdaptor->get_code_sql_schema_version();
-}
-
-sub get_hive_db_meta_key {
-  my ($dbConn, $key_name) = @_;
-  my $metaAdaptor = $dbConn->get_MetaAdaptor;
-  my $val;
-  $val = eval { $metaAdaptor->fetch_by_meta_key( $key_name )->{'meta_value'}; };
-  return $val;
 }
 
 sub _fail_with_status_message {
@@ -79,7 +87,7 @@ sub check_db_versions_match {
         my $code_version = $version || get_hive_code_version();
         my $hive_db_version;
         eval {
-            $hive_db_version = get_hive_db_meta_key($pipeline->hive_dba, 'hive_sql_schema_version');
+            $hive_db_version = $pipeline->hive_sql_schema_version();
         };
         if ($@) {
             exit(0) if $silent;

@@ -53,7 +53,7 @@ my $dbConn = $pipeline->hive_dba;
 eval {
     my $graph = formAnalyses($pipeline);
     if ($graph) {
-        my $html = formResponse($pipeline->hive_dba);
+        my $html = formResponse($pipeline);
         $response->out_msg({"graph" => $graph, "html" => $html});
     } else {
         $response->err_msg('GraphViz failed to generate a diagram');
@@ -68,19 +68,22 @@ if ($@) {
 print $response->toJSON();
 
 sub formResponse {
-    my ($dba) = @_;
+    my ($hive_pipeline) = @_;
+
+    my $dbc = $pipeline->hive_dba->dbc;
+
     my $info;
 
-    $info->{db_name}   = $dba->dbc->dbname;
-    $info->{host}      = $dba->dbc->host;
-    $info->{port}      = $dba->dbc->port;
-    $info->{driver}    = $dba->dbc->driver;
-    $info->{username}  = $dba->dbc->username;
-    $info->{hive_db_version} = get_hive_db_meta_key($dba, 'hive_sql_schema_version');
+    $info->{db_name}   = $dbc->dbname;
+    $info->{host}      = $dbc->host;
+    $info->{port}      = $dbc->port;
+    $info->{driver}    = $dbc->driver;
+    $info->{username}  = $dbc->username;
+    $info->{hive_db_version} = $hive_pipeline->hive_sql_schema_version();
     $info->{hive_code_version} = get_hive_code_version();
-    $info->{pipeline_name} = get_hive_db_meta_key($dba, 'hive_pipeline_name');
-    $info->{hive_auto_rebalance_semaphores} = get_hive_db_meta_key($dba, 'hive_auto_rebalance_semaphores') ? 'Enabled' : 'Disabled';
-    $info->{hive_use_param_stack} = get_hive_db_meta_key($dba, 'hive_use_param_stack') ? 'Enabled' : 'Disabled';
+    $info->{pipeline_name} = $hive_pipeline->hive_pipeline_name();
+    $info->{hive_auto_rebalance_semaphores} = $hive_pipeline->hive_auto_rebalance_semaphores() ? 'Enabled' : 'Disabled';
+    $info->{hive_use_param_stack} = $hive_pipeline->hive_use_param_stack() ? 'Enabled' : 'Disabled';
 
     my $template = HTML::Template->new(filename => $connection_template);
     $template->param(%$info);

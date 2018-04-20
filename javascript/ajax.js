@@ -440,7 +440,7 @@ function fetch_and_setup_change_listener(fetch_url, write_url, target_div) {
                 var blocks = $(ref_object).attr(name).split(",");
                 var vals = jQuery.map(blocks, function(e,i) {
                     var parts = e.split("=");
-                    return parts[0] + "=" + f($('#'+parts[1])[0]);
+                    return parts[0] + "=" + encodeURIComponent(f($('#'+parts[1])[0]));
                 });
                 return "&" + vals.join("&");
             } else {
@@ -719,6 +719,10 @@ function fetch_jobs() {
 		indicator  : "Saving...",
 		tooltip    : "Click to edit...",
 		event      : "dblclick",
+		data       : function(value) {
+		    var doc = new DOMParser().parseFromString(value, "text/html");
+		    return doc.documentElement.textContent;
+		},
 		callback   : function(response) {
 		    oTable.fnDraw();
 		},
