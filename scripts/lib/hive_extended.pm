@@ -64,7 +64,7 @@ use Bio::EnsEMBL::Hive::DBSQL::BaseAdaptor;
     $curr_raw_input_id = '{}' unless ($curr_raw_input_id);
     my $curr_input_id = Bio::EnsEMBL::Hive::Utils::destringify($curr_raw_input_id);
     return $curr_input_id->{$key} unless (defined $value);
-    $curr_input_id->{$key} = $value;
+    $curr_input_id->{$key} = Bio::EnsEMBL::Hive::Utils::destringify($value);
     my $new_raw_input_id = Bio::EnsEMBL::Hive::Utils::stringify($curr_input_id);
     $self->input_id($new_raw_input_id);
     return $value;
