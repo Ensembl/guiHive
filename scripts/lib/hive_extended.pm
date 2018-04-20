@@ -126,15 +126,6 @@ use Bio::EnsEMBL::Hive::DBSQL::BaseAdaptor;
     return $obj;
 };
 
-# This should be fetched correctly by AnalysisStatsAdaptor now
-# TODO: Test that this natively in the Adaptor and if so,
-# remove this injected method from here
-*Bio::EnsEMBL::Hive::DBSQL::AnalysisStatsAdaptor::fetch_by_dbID = sub {
-  my ($self, $id) = @_;
-  my $obj = $self->fetch_by_analysis_id($id);
-  return $obj;
-};
-
 ## To allow the creation of new resources (class + description) in one call
 *Bio::EnsEMBL::Hive::DBSQL::ResourceClassAdaptor::create_full_description = sub {
   my ($self, $rc_name, $meadow_type, $parameters) = @_;
