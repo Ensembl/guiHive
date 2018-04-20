@@ -70,15 +70,15 @@ print $response->toJSON();
 sub formResponse {
     my ($hive_pipeline) = @_;
 
-    my $dba = $hive_pipeline->hive_dba;
+    my $dbc = $pipeline->hive_dba->dbc;
 
     my $info;
 
-    $info->{db_name}   = $dba->dbc->dbname;
-    $info->{host}      = $dba->dbc->host;
-    $info->{port}      = $dba->dbc->port;
-    $info->{driver}    = $dba->dbc->driver;
-    $info->{username}  = $dba->dbc->username;
+    $info->{db_name}   = $dbc->dbname;
+    $info->{host}      = $dbc->host;
+    $info->{port}      = $dbc->port;
+    $info->{driver}    = $dbc->driver;
+    $info->{username}  = $dbc->username;
     $info->{hive_db_version} = $hive_pipeline->hive_sql_schema_version();
     $info->{hive_code_version} = get_hive_code_version();
     $info->{pipeline_name} = $hive_pipeline->hive_pipeline_name();
