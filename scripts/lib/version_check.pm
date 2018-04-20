@@ -23,7 +23,10 @@ package version_check;
 
 use strict;
 use warnings;
+
+use Data::Dumper;
 use JSON;
+
 use Bio::EnsEMBL::Hive::HivePipeline;
 use Bio::EnsEMBL::Hive::DBSQL::SqlSchemaAdaptor;
 
@@ -32,7 +35,19 @@ use msg;
 use vars qw(@ISA @EXPORT);
 
 @ISA = qw(Exporter);
-@EXPORT = qw(get_hive_code_version check_db_versions_match);
+@EXPORT = qw(stringify_if_needed get_hive_code_version check_db_versions_match);
+
+# Doesn't fit well in this module. Should be in a more general one
+sub stringify_if_needed {
+    my ($scalar) = @_;
+    if ((ref $scalar) or ($scalar =~ /^\[.*\]$/) or ($scalar =~ /^{.*}$/)) {
+        local $Data::Dumper::Indent    = 0;  # we want everything on one line
+        local $Data::Dumper::Terse     = 1;  # and we want it without dummy variable names
+        local $Data::Dumper::Sortkeys  = 1;  # make stringification more deterministic
+        return Dumper($scalar);
+    }
+    return $scalar;
+}
 
 sub get_hive_code_version {
   return Bio::EnsEMBL::Hive::DBSQL::SqlSchemaAdaptor->get_code_sql_schema_version();

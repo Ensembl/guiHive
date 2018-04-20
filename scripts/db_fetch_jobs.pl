@@ -28,7 +28,6 @@ use Bio::EnsEMBL::Hive::DBSQL::DBAdaptor;
 
 use JSON;
 use HTML::Template;
-use Data::Dumper;
 
 use lib ("./lib");
 use msg;
@@ -235,15 +234,3 @@ sub get_final_clause {
   return   "ORDER BY $order_by $dir LIMIT $iDisplayLength OFFSET $iDisplayStart"
 }
 
-## TODO: There is more than 1 instance of this sub in the scripts. Factor out
-sub stringify_if_needed {
-  my ($scalar) = @_;
-  if (ref $scalar) {
-    local $Data::Dumper::Indent    = 0;  # we want everything on one line
-    local $Data::Dumper::Terse     = 1;  # and we want it without dummy variable names
-    local $Data::Dumper::Sortkeys  = 1;  # make stringification more deterministic
-
-    return Dumper($scalar);
-  }
-  return $scalar;
-}
