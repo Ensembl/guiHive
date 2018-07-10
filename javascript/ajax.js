@@ -718,7 +718,7 @@ function fetch_jobs() {
 	    oTable.$("td.editableInputID").editable("./scripts/db_update2.pl", {
 		indicator  : "Saving...",
 		tooltip    : "Click to edit...",
-		event      : "dblclick",
+		event      : "click",
 		data       : function(value) {
 		    var doc = new DOMParser().parseFromString(value, "text/html");
 		    return doc.documentElement.textContent;
@@ -737,7 +737,7 @@ function fetch_jobs() {
 		data       : "{'SEMAPHORED':'SEMAPHORED','READY':'READY','RUN':'RUN','DONE':'DONE'}",
 		type       : "select",
 		submit     : "Ok",
-		event      : "dblclick",
+		event      : "click",
 		callback   : function(response) {
 		    oTable.fnDraw();
 		},
@@ -754,7 +754,7 @@ function fetch_jobs() {
 		    loadurl    : "./scripts/db_fetch_max_retry_count.pl?url=" + guiHive.pipeline_url + "&job_id=" + job_id + "&version=" + guiHive.version,
 		    type       : "select",
 		    submit     : "Ok",
-		    event      : "dblclick",
+		    event      : "click",
 		    callback   : function(response) {
 			oTable.fnDraw();
 		    },
