@@ -41,7 +41,7 @@ my $url = $var->{url}->[0];
 my $job_id = $var->{job_id}->[0];
 $job_id =~ s/job_//;
 
-my $dbConn = check_db_versions_match($var);
+my $dbConn = check_db_versions_match($var)->hive_dba;
 
 my $resp;
   my $job;
