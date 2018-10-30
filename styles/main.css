@@ -406,6 +406,11 @@ input[type="text"], select {
     background-color : "gray";
     width   : 100%;
 }
+.inner_table td {
+	   max-width: 500px;
+	   overflow: hidden;
+}
+
 
 #log-tab {
     color  : #B8B8B8;
