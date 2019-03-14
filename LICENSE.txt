@@ -186,8 +186,7 @@
       same "printed page" as the copyright notice for easier
       identification within third-party archives.
 
-   Copyright [1999-2015] Wellcome Trust Sanger Institute and the EMBL-European Bioinformatics Institute
-   Copyright [2016] EMBL-European Bioinformatics Institute
+   Copyright [1999-2016] Wellcome Trust Sanger Institute and the EMBL-European Bioinformatics Institute
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -208,7 +207,9 @@ ENSEMBL GUIHIVE PROJECT SUBCOMPONENTS
 The Ensembl Guihive Project includes a number of subcomponents with
 separate copyright notices and license terms. Your use of the source
 code for these subcomponents is subject to the terms and conditions 
-stated in the subcomponent source code. Below, a summary of the
+stated in the subcomponent source code.
+All of the files found under lib/ are local copies of external libraries
+and are covered by their own terms and conditions. Below, a summary of the
 licensing terms of these subcomponents is presented. This list may
 not be exhaustive and by no means should be taken as the final licensing
 terms of the subcomponents used in this project. Refer to the source code of
