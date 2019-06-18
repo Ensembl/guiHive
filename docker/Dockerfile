@@ -8,6 +8,7 @@
 FROM ensemblorg/ensembl-hive
 
 # Install know Perl dependencies with apt (faster than CPAN)
+ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update -y \
  && apt-get install libhtml-parser-perl libhtml-template-perl libjson-perl libjson-pp-perl liburi-perl -y \
  && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
