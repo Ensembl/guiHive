@@ -79,6 +79,7 @@ safe_symlink () {
 
 trim_ehive_repo () {
   # $dir
+  rm -rf "$1/docker"
   rm -rf "$1/docs"
   rm -rf "$1/wrappers"
   rm -rf "$1/scripts"
