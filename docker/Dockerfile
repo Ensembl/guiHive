@@ -24,8 +24,8 @@ RUN buildDeps=' \
     && apt-get update -y \
     && apt-get install -y $buildDeps \
     && rm -rf /var/lib/apt/lists/* \
-    && cpanm --installdeps --with-recommends /repo/guiHive \
-    && cd /repo/guiHive/server && go build \
+    && cpanm --installdeps --with-recommends $DEPLOY_LOCATION \
+    && cd $DEPLOY_LOCATION/server && go build \
     && apt-get purge -y --auto-remove $buildDeps
 
 EXPOSE 8080
