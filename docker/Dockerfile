@@ -7,25 +7,29 @@
 
 FROM ensemblorg/ensembl-hive
 
-# Install known guiHive Perl dependencies with apt (faster than CPAN)
+# Install common utilities and known guiHive Perl dependencies with apt (faster than CPAN)
 ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update -y \
- && apt-get install libhtml-parser-perl libhtml-template-perl libjson-perl libjson-pp-perl liburi-perl -y \
+ && apt-get install curl git libhtml-parser-perl libhtml-template-perl libjson-perl libjson-pp-perl liburi-perl -y \
  && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 ARG DEPLOY_LOCATION=/repo/guiHive
 RUN curl -L https://raw.githubusercontent.com/Ensembl/guiHive/server/guihive-deploy.sh | bash
 
-# Wrap the cpan and compilation phases with apt-get install/purge to keep the image small
+# Install guiHive and eHive Perl dependencies (across *all* versions) using eHive's helper scripts
+ARG EHIVE_TMP_CHECKOUT=$DEPLOY_LOCATION/ensembl-hive-tmp
+RUN mkdir $EHIVE_TMP_CHECKOUT \
+    && GIT_DIR=$DEPLOY_LOCATION/clones/ensembl-hive GIT_WORK_TREE=$EHIVE_TMP_CHECKOUT git checkout -qf master \
+    && $EHIVE_TMP_CHECKOUT/docker/setup_cpan.Ubuntu-16.04.sh $DEPLOY_LOCATION $DEPLOY_LOCATION/ensembl-hive/* \
+    && rm -rf $EHIVE_TMP_CHECKOUT
+
+# Wrap the compilation phase with apt-get install/purge to keep the image small
 RUN buildDeps=' \
       golang \
-      cpanminus \
-      build-essential \
     ' \
     && apt-get update -y \
     && apt-get install -y $buildDeps \
     && rm -rf /var/lib/apt/lists/* \
-    && cpanm --installdeps --with-recommends $DEPLOY_LOCATION \
     && cd $DEPLOY_LOCATION/server && go build \
     && apt-get purge -y --auto-remove $buildDeps
 
