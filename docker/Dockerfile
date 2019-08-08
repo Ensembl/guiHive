@@ -12,16 +12,24 @@ RUN apt-get install -y golang
 ADD server /tmp/server
 RUN cd /tmp/server && go build
 
+# Deploy all the guiHive and eHive checkouts
+FROM alpine:3.9.4 AS deployer
+RUN apk add git bash
+ADD guihive-deploy.sh /tmp/guiHive/
+RUN bash /tmp/guiHive/guihive-deploy.sh
+RUN rm -rf /tmp/guiHive/clones
+
 FROM ensemblorg/ensembl-hive
 
 # Install common utilities and known guiHive Perl dependencies with apt (faster than CPAN)
 ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update -y \
- && apt-get install curl git libhtml-parser-perl libhtml-template-perl libjson-perl libjson-pp-perl liburi-perl -y \
+ && apt-get install -y --no-install-recommends \
+            libhtml-parser-perl libhtml-template-perl libjson-perl libjson-pp-perl liburi-perl \
  && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 ARG DEPLOY_LOCATION=/repo/guiHive
-RUN curl -L https://raw.githubusercontent.com/Ensembl/guiHive/server/guihive-deploy.sh | bash
+COPY --from=deployer /tmp/guiHive $DEPLOY_LOCATION
 
 # Install guiHive and eHive Perl dependencies (across *all* versions) using eHive's helper scripts
 RUN /repo/ensembl-hive/docker/setup_cpan.Ubuntu-16.04.sh $DEPLOY_LOCATION $DEPLOY_LOCATION/ensembl-hive/*
