@@ -24,11 +24,7 @@ ARG DEPLOY_LOCATION=/repo/guiHive
 RUN curl -L https://raw.githubusercontent.com/Ensembl/guiHive/server/guihive-deploy.sh | bash
 
 # Install guiHive and eHive Perl dependencies (across *all* versions) using eHive's helper scripts
-ARG EHIVE_TMP_CHECKOUT=$DEPLOY_LOCATION/ensembl-hive-tmp
-RUN mkdir $EHIVE_TMP_CHECKOUT \
-    && GIT_DIR=$DEPLOY_LOCATION/clones/ensembl-hive GIT_WORK_TREE=$EHIVE_TMP_CHECKOUT git checkout -qf master \
-    && $EHIVE_TMP_CHECKOUT/docker/setup_cpan.Ubuntu-16.04.sh $DEPLOY_LOCATION $DEPLOY_LOCATION/ensembl-hive/* \
-    && rm -rf $EHIVE_TMP_CHECKOUT
+RUN /repo/ensembl-hive/docker/setup_cpan.Ubuntu-16.04.sh $DEPLOY_LOCATION $DEPLOY_LOCATION/ensembl-hive/*
 
 COPY --from=go_builder /tmp/server/server $DEPLOY_LOCATION/server/
 
