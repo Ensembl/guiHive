@@ -1,9 +1,16 @@
 # This is a Dockerfile to run a guiHive server in a container
 #
-# docker build -t guihive .
+# docker build -t guihive -f docker/Dockerfile .
 #
 # docker run --name guihive_server -p 8081:8080 -d guihive	## Start the server. Port mapping = external:internal
 # docker run -p 8082:8080 -it guihive bash			## If you need to do any prior maintenance/tuning - do it in bash, then manually run the CMD below.
+
+# Build the server
+FROM ubuntu:16.04 AS go_builder
+RUN apt-get update -y
+RUN apt-get install -y golang
+ADD server /tmp/server
+RUN cd /tmp/server && go build
 
 FROM ensemblorg/ensembl-hive
 
@@ -23,15 +30,7 @@ RUN mkdir $EHIVE_TMP_CHECKOUT \
     && $EHIVE_TMP_CHECKOUT/docker/setup_cpan.Ubuntu-16.04.sh $DEPLOY_LOCATION $DEPLOY_LOCATION/ensembl-hive/* \
     && rm -rf $EHIVE_TMP_CHECKOUT
 
-# Wrap the compilation phase with apt-get install/purge to keep the image small
-RUN buildDeps=' \
-      golang \
-    ' \
-    && apt-get update -y \
-    && apt-get install -y $buildDeps \
-    && rm -rf /var/lib/apt/lists/* \
-    && cd $DEPLOY_LOCATION/server && go build \
-    && apt-get purge -y --auto-remove $buildDeps
+COPY --from=go_builder /tmp/server/server $DEPLOY_LOCATION/server/
 
 EXPOSE 8080
 
