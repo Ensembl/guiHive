@@ -730,7 +730,7 @@ function fetch_jobs() {
 	    oTable.$("td.editableStatus").editable("./scripts/db_update2.pl", {
 		indicator  : "Saving...",
 		tooltip    : "Click to edit...",
-		data       : "{'SEMAPHORED':'SEMAPHORED','READY':'READY','RUN':'RUN','DONE':'DONE'}",
+		data       : "{'SEMAPHORED':'SEMAPHORED','READY':'READY','RUN':'RUN','DONE':'DONE','PASSED_ON':'PASSED_ON'}",
 		type       : "select",
 		submit     : "Ok",
 		event      : "click",
@@ -766,7 +766,7 @@ function fetch_jobs() {
 		      { type : "number" },
 		      { type : "text", bRegex : true },
 		      { type : "number" },
-		      { type : "select", values: [ 'SEMAPHORED', 'READY', 'DONE', 'FAILED', 'RUN' ] },
+		      { type : "select", values: [ 'SEMAPHORED', 'READY', 'DONE', 'FAILED', 'RUN', 'PASSED_ON' ] },
 		      { type : "number-range" },
 		      { type : "date-range" },
 		      { type : "number-range" },
