@@ -927,8 +927,8 @@ function buildURL(obj, callback) {
             $(obj).data.ini_value,
             function(x) {
                 obj.add(new Option(x, x, true));
-                $(obj).change();
                 obj.value = x;
+                $(obj).change();
                 return buildURL(obj, callback)
             }
         );
