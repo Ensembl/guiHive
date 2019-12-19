@@ -893,7 +893,6 @@ function update_db(obj) {
             type       : "post",
             data       : sqlLocator,
             dataType   : "json",
-            async      : false,
             cache      : false,
             success    : function(updateRes) {
             if(updateRes.status !== "ok") {
