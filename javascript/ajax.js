@@ -927,8 +927,7 @@ function buildURL(obj, callback) {
             function(x) {
                 obj.add(new Option(x, x, true));
                 obj.value = x;
-                $(obj).change();
-                return buildURL(obj, callback)
+                $(obj).change(); //will trigger a second call to update_db with new value
             }
         );
         return;
