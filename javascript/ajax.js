@@ -730,7 +730,7 @@ function fetch_jobs() {
 	    oTable.$("td.editableStatus").editable("./scripts/db_update2.pl", {
 		indicator  : "Saving...",
 		tooltip    : "Click to edit...",
-		data       : "{'SEMAPHORED':'SEMAPHORED','READY':'READY','RUN':'RUN','DONE':'DONE'}",
+		data       : "{'SEMAPHORED':'SEMAPHORED','READY':'READY','RUN':'RUN','DONE':'DONE','PASSED_ON':'PASSED_ON'}",
 		type       : "select",
 		submit     : "Ok",
 		event      : "click",
@@ -766,7 +766,7 @@ function fetch_jobs() {
 		      { type : "number" },
 		      { type : "text", bRegex : true },
 		      { type : "number" },
-		      { type : "select", values: [ 'SEMAPHORED', 'READY', 'DONE', 'FAILED', 'RUN' ] },
+		      { type : "select", values: [ 'SEMAPHORED', 'READY', 'DONE', 'FAILED', 'RUN', 'PASSED_ON' ] },
 		      { type : "number-range" },
 		      { type : "date-range" },
 		      { type : "number-range" },
@@ -881,47 +881,58 @@ function buildSendParams(obj) {
 }
 
 function update_db(obj) {
-    var callback = obj.data.callback;
-    var url = obj.data.script;
-    var fetch_url = obj.data.fetch_url;
-    var analysis_id = obj.data.analysis_id;
-    var payload = buildURL(this);
-    if (!payload) {return};
-    $.ajax({url        : url,
-	    type       : "post",
-	    data       : payload,
-	    dataType   : "json",
-	    async      : false,
-	    cache      : false,
-	    success    : function(updateRes) {
-		if(updateRes.status !== "ok") {
-		    log(updateRes);
-		};
-	    },
-	    // TODO: I think the log is populated twice... One in the success callback and one in the
-	    // onSuccess_fetchAnalysis callback. Check!
-	    complete   : function() { display(analysis_id, fetch_url, callback)}
-	   });
+    buildURL(this, actuallyUpdateDb);
+
+    function actuallyUpdateDb(sqlLocator) {
+        var callback = obj.data.callback;
+        var url = obj.data.script;
+        var fetch_url = obj.data.fetch_url;
+        var analysis_id = obj.data.analysis_id;
+
+        $.ajax({url        : url,
+            type       : "post",
+            data       : sqlLocator,
+            dataType   : "json",
+            cache      : false,
+            success    : function(updateRes) {
+            if(updateRes.status !== "ok") {
+                log(updateRes);
+            };
+            },
+            // TODO: I think the log is populated twice... One in the success callback and one in the
+            // onSuccess_fetchAnalysis callback. Check!
+            complete   : function() { display(analysis_id, fetch_url, callback)}
+           });
+    }
 }
 
 // TODO: Duplicated with buildSendParams. It would be nice to merge both
-function buildURL(obj) {
+function buildURL(obj, callback) {
     var vals;
     if ($(obj).attr("data-linkTo")) {
-	var ids = $(obj).attr("data-linkTo").split(",");
-	vals = jQuery.map(ids, function(e,i) {
-	    var elem = $('#'+e);
-	    if ($(elem).is("span")) {
-		return $(elem).attr("data-value")
-	    } else {
-		return $(elem).val();
-	    }
-	});
+        var ids = $(obj).attr("data-linkTo").split(",");
+
+        vals = jQuery.map(ids, function(e,i) {
+            var elem = $('#'+e);
+            if ($(elem).is("span")) {
+              return $(elem).attr("data-value")
+            } else {
+              return $(elem).val();
+            }
+        });
     } else if (obj.value == "...") {
-        ask_for_number($(obj).attr("data-method"), $(obj).data.ini_value, function(x) {obj.add(new Option(x, x, true)); $(obj).change()} );
+        ask_for_number(
+            $(obj).attr("data-method"),
+            $(obj).data.ini_value,
+            function(x) {
+                obj.add(new Option(x, x, true));
+                obj.value = x;
+                $(obj).change(); //will trigger a second call to update_db with new value
+            }
+        );
         return;
     } else {
-	vals = [obj.value];
+       vals = [obj.value];
     }
 
     if ($(obj).attr("data-method") == "delete_param_THEN_update_parameters") {
@@ -929,21 +940,21 @@ function buildURL(obj) {
             return;
         }
     }
-    var URL = "url="+ guiHive.pipeline_url + 
-        "&adaptor="+$(obj).attr("data-adaptor") + 
+    var sqlLocator = "url="+ guiHive.pipeline_url +
+        "&adaptor="+$(obj).attr("data-adaptor") +
         "&method="+$(obj).attr("data-method") +
-	"&version="+guiHive.version;
+        "&version="+guiHive.version;
     for(var i=0; i<vals.length; i++) {
-        URL = URL.concat("&args="+encodeURIComponent(vals[i]));
+        sqlLocator = sqlLocator.concat("&args="+encodeURIComponent(vals[i]));
     }
     if ($(obj).attr("data-analysisID")) {
-	URL = URL.concat("&analysis_id="+$(obj).attr("data-analysisID"));
+        sqlLocator = sqlLocator.concat("&analysis_id="+$(obj).attr("data-analysisID"));
     }
     if ($(obj).attr("data-fields")) {
-	URL = URL.concat("&fields="+$(obj).attr("data-fields"));
+        sqlLocator = sqlLocator.concat("&fields="+$(obj).attr("data-fields"));
     }
 
-    return(URL);
+    callback(sqlLocator);
 }
 
 function show_db_access() {
