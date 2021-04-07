@@ -62,6 +62,7 @@ guiHive depends on the following components that need to be installed in your sy
    * Ensembl API       : eHive depends on the core Ensembl API. BioPerl or any other Ensembl related checkouts are not needed.
    * GraphViz          : eHive depends on dot (from GraphViz) to create the graphical representation of the pipelines. The Perl package GraphViz is also needed.
 * Go tools             : The server of guiHive is written in the Go programming language. Since the current guiHive version doesn't include binaries for the server you will need to compile it.
+                         guiHive is incompatible with later versions of Go, and is currently known to compile with Go version 1.8.3
                          Please refer to the Go website (http://golang.org) for installation instructions.
 * Misc Perl Modules    : Several Perl modules are needed by guiHive.
                          Please refer to our cpanfile (https://github.com/Ensembl/guiHive/blob/server/cpanfile).
