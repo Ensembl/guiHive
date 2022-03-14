@@ -179,7 +179,7 @@ link_guihive_version "92" "91"
 link_guihive_version "93" "91"  # even though the change in procedures.mysql is already pushed at sql_schema_94_start^4
 link_guihive_version "94" "91"
 link_guihive_version "95" "91"
-link_guihive_version "96" "91" "master"
+link_guihive_version "96" "91" "main"
 
 trap - EXIT
 

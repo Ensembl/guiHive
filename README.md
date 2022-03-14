@@ -55,15 +55,21 @@ requires additional setup on other OSes.
 
 #### Pre-requisites
 
+DISCLAIMER - The only officially supported OS is CentOS version 7 and 8.  
+This said, guiHive should work fine also on different Linux systems.   
+The major known issue is about the proper rendering of images via GraphViz libs on different systems/versions.
+
 guiHive depends on the following components that need to be installed in your system:
 
 * Git client           : To clone this repository (http://git-scm.com/downloads).
 * eHive API            : guiHive depends on the eHive API. You can download the latest code from github (https://github.com/Ensembl/ensembl-hive).
+                         Make sure to fulfil also the eHive dependencies, especially GraphViz (dot), GraphViz (Perl) and the SQL client.
    * Ensembl API       : eHive depends on the core Ensembl API. BioPerl or any other Ensembl related checkouts are not needed.
    * GraphViz          : eHive depends on dot (from GraphViz) to create the graphical representation of the pipelines. The Perl package GraphViz is also needed.
 * Go tools             : The server of guiHive is written in the Go programming language. Since the current guiHive version doesn't include binaries for the server you will need to compile it.
-                         guiHive is incompatible with later versions of Go, and is currently known to compile with Go version 1.8.3
+                         guiHive is currently known to compile with Go up to version 1.17.7
                          Please refer to the Go website (http://golang.org) for installation instructions.
+                         Equivalently, you may use your favourite package manager.
 * Misc Perl Modules    : Several Perl modules are needed by guiHive.
                          Please refer to our cpanfile (https://github.com/Ensembl/guiHive/blob/server/cpanfile).
 
@@ -75,6 +81,18 @@ If you experience problems setting up guiHive you can also follow the tips print
 
 #### Compilation
 
+Make sure you have Perl installed in your system. Use of a virtual environment - although not required - is recommended.
+
+The main prerequisites are:
+* build-essential (or equivalent) OS package
+* graphviz (dot) OS package
+* At least one SQL Client among MySQL, SQLite, PostgreSQL
+* cpanm - not required, but handy a utility
+* Go language 1.8 or higher - we assume Go 1.17 is used
+* Ensembl-hive 2.6 and its dependencies - make sure you also install the required Perl modules for eHive
+
+For further details about these dependencies, please see https://ensembl-hive.readthedocs.io/en/version-2.6/quickstart/install.html
+
 Once you have all the dependencies installed and up to date follow these steps:
 
 * Clone the guiHive repository (if you haven't done yet) and cd into it.
@@ -82,9 +100,21 @@ Once you have all the dependencies installed and up to date follow these steps:
 $ git clone https://github.com/Ensembl/guiHive
 ```
 
-* cd into the "server" folder and build the web server
+* cd into guiHive folder and complete the installation
+```
+$ bash guihive-deploy.sh
+$ cpanm --installdeps .
+```
+
+* cd into the "server" folder and make sure the Go version is matches the declaration in go.mod file
+build the web server
 ```
 $ cd guiHive/server
+$ cat go.mod
+```
+
+* build the web server
+```
 $ go build
 ```
 
@@ -98,8 +128,9 @@ $ ./server
 ```
 
 * Open your preferred browser (check the browser compatibility below first!) and go to the following URL:
-   http://127.0.0.1:8080
-(Note: The 8080 port is the default one used by guiHive, you can change it when invoking the server executable using the -port option)
+   http://127.0.0.1:8080  
+(Note1: The 8080 port is the default one used by guiHive, you can change it when invoking the server executable using the -port option)  
+(Note2: The server is actually listening at all incoming traffic to port 8080, not only traffic from localhost)
 
 You should now be able to connect to your database and start monitoring your pipeline.
 
@@ -121,10 +152,11 @@ $ ./server
 
 guiHive and all the 3rd party libraries used in guiHive are supposed to work in reasonably recent versions of the mainstream web browsers. IE>=9 should also work but I haven't tested. If you experience any problem, please send your comments to hive-users@ebi.ac.uk
 
-AFAIK everything works fine in Firefox (v7.0.1, v8.0.1, v12.0, v18.0.1), Chrome (v24.0.1312.56), Safari (v5.1.7) and Opera (v12.12).
+AFAIK everything works fine in Firefox (v7.0.1, v8.0.1, v12.0, v18.0.1, v91.0.2, v92.0), Chrome (v24.0.1312.56, v93.0.4577.63), Safari (v5.1.7, v14.1.2) and Opera (v12.12).
 
 ### Feedback
 
 Feedback is more than welcome.
 Please send your bug reports to the hive mailing list (hive-users@ebi.ac.uk).
+
 
