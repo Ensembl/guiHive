@@ -14,12 +14,6 @@
 //  limitations under the License.
 // */
 
-// +build debug
+module guihive.ensembl.org/server
 
-package main
-
-import "log"
-
-func debug(format string, args ...interface{}) {
-	log.Printf("DEBUG: "+format, args...)
-}
+go 1.17

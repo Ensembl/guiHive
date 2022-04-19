@@ -90,7 +90,7 @@ if ($perl_path) {
 
 print " Checking Perl version: ";
 my ($vers, $subvers, $subsubvers) = `perl -v` =~ /\(v(\d+)\.(\d+)\.(\d+)\)/;
-if ($subvers >= 8) {
+if ($subvers >= 14) {
   print "[v$vers.$subvers.$subsubvers] ... OK\n";
 } else {
   not_met_dep( "Perl",
@@ -156,7 +156,7 @@ eval {
 if($@) {
   not_met_dep( "JSON (Perl API)",
 	       "perl -MJSON -e''",
-	       "The Perl JSON interfaz is missing in your system",
+	       "The Perl JSON module is missing in your system",
 	       "See http://search.cpan.org/~makamaka/JSON-2.90/lib/JSON.pm"
 	     );
 } else {
@@ -211,9 +211,6 @@ print "\nIf you are experiencing problems:\n\n";
 print "1.- Make sure your server is running by opening http://127.0.0.1:8080\n";
 print "2.- Make sure you have access to your database:\n";
 print "\$EHIVE_ROOT_DIR/scripts/db_cmd.pl -url <mysql_path_to_your_db>\n";
-print "\$GUIHIVE_BASEDIR/scripts/db_test.pl <mysql_path_to_your_db>\n";
-print "3.- If you have problems refreshing the data during a guiHive run try the following script:\n";
-print "\$GUIHIVE_BASEDIR/scripts/db_refresh_test.pl <mysql_path_to_your_db>\n";
 print "\nIf you have any problem email ehive-users[AT]ebi.ac.uk\n\n";
 
 sub not_met_dep {
