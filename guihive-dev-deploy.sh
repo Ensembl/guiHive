@@ -36,10 +36,10 @@ then
     rm -rf "$GUIHIVE_CLONE_LOCATION" "$GUIHIVE_VERSIONS_DIR"
 fi
 
-EHIVE_DEFAULT_SOURCE='git://www.github.com/Ensembl/ensembl-hive'
+EHIVE_DEFAULT_SOURCE='https://www.github.com/Ensembl/ensembl-hive'
 EHIVE_SOURCE=${EHIVE_SOURCE:-$EHIVE_DEFAULT_SOURCE}
 
-GUIHIVE_DEFAULT_SOURCE='git://www.github.com/Ensembl/guiHive'
+GUIHIVE_DEFAULT_SOURCE='https://www.github.com/Ensembl/guiHive'
 GUIHIVE_SOURCE=${GUIHIVE_SOURCE:-$GUIHIVE_DEFAULT_SOURCE}
 
 umask 0002
