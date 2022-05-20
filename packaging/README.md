@@ -8,17 +8,9 @@ Additionally, a package for Perl Proc::Daemon version 0.23 is built, since the o
 # Build requirements
 
 ## Go compiler
-Install the go compiler any way you want.
-Example using the official distribution:
 
-    curl -O https://dl.google.com/go/go1.18.1.linux-amd64.tar.gz
-    sudo tar -C /usr/local -xzf go1.18.1.linux-amd64.tar.gz
-
-Add the go binaries to your PATH.
-For example, you can add `pathmunge /usr/local/go/bin after` before the `export PATH ...` in /etc/profile.
-
-    . .profile
-
+    sudo yum install epel-release
+    sudo yum install golang
 
 ## RPM build dependencies
 
