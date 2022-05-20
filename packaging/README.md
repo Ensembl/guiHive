@@ -22,7 +22,7 @@ For example, you can add `pathmunge /usr/local/go/bin after` before the `export 
 
 ## RPM build dependencies
 
-`sudo yum install gcc rpm-build rpm-devel rpmlint make python bash coreutils diffutils patch rpmdevtools perl-ExtUtils-CBuilder perl-Module-Build perl-Test-Simple`
+`sudo yum install gcc rpm-build rpm-devel rpmlint make python bash coreutils diffutils patch rpmdevtools perl-ExtUtils-CBuilder perl-Module-Build perl-Test-Simple perl-Proc-ProcessTable`
 
 # Building the packages
 
@@ -31,6 +31,7 @@ For example, you can add `pathmunge /usr/local/go/bin after` before the `export 
 This sets up the rpmbuild directories in your $HOME.
 
 git-clone the guihive repository if you haven't yet.
+Check out an appropriate branch (e.g. feature/rpm-build).
 
     cd dir-with-guihive-checkout
     cd ..

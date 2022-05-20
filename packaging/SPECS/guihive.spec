@@ -11,7 +11,6 @@ Patch0:		guihive-server.patch
 
 BuildRequires:  make
 BuildRequires:  git
-BuildRequires:  perl-App-cpanminus
 
 Requires: graphviz
 Requires: perl-GraphViz
