@@ -1,0 +1,15 @@
+diff --git a/server/server.go b/server/server.go
+index 608e7fb..d80538e 100644
+--- a/server/server.go
++++ b/server/server.go
+@@ -207,10 +207,6 @@ func addPerl5Lib (newDir string) string {
+ 
+ func main() {
+ 
+-	//  Fix environmental variables
+-	errV := setEnvVar()
+-	checkError("Problem setting environmental variables: ", errV)
+-
+ 	relPath := os.Getenv("GUIHIVE_PROJECTDIR")
+ 
+ 	http.Handle("/", http.FileServer(http.Dir(relPath)))
