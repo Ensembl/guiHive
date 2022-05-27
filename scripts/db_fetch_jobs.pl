@@ -111,7 +111,7 @@ sub formJobsInfo {
 		    "6" => $job->when_completed(),
 		    "7" => $job->runtime_msec(),
 		    "8" => $job->controlled_semaphore_id(),
-		    "9" => $msg,
+		    "9" => $msg ? "<pre style='border:none'>$msg</pre>" : "",
 		  };
   }
   my $response = {
