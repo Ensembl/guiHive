@@ -21,6 +21,7 @@ var guiHive = {
     version                   : undefined, // The guiHive/Hive version
     pipeline_url              : "",        // The url to connect to the pipeline
                                            // This is the value of $("#db_url") i.e. it is entered by the user
+    pipeline_name             : "eHive - Take control over your eHive Production system",        // Hold the pipeline name part of pipeline_url
     refresh_data_timer        : undefined, // The timer for the next data update
     monitorTimeout            : 30000,     // Time for next data update
                                            // TODO: This has to disappear in favor of refresh_data_timer
@@ -244,6 +245,7 @@ function get_mysql_password(loc_url) {
 
     $("#password-id").modal("hide");
     guiHive.pipeline_url = loc_url;
+    guiHive.pipeline_name = loc_url.split("/").pop();
     connect();
 }
 
@@ -351,6 +353,9 @@ function onSuccess_dbConnect(res) {
 	guiHive.refresh_data_timer.reset();
 	// The number of seconds to refresh is exposed
 	guiHive.refresh_data_timer.div($("#secs_to_refresh"));
+
+    document.title = guiHive.pipeline_name + " -- eHive";
+
 
 	// We draw the pipeline diagram
 	draw_diagram(res.out_msg.graph);
