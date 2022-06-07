@@ -23,12 +23,9 @@ Additionally, a package for Perl Proc::Daemon version 0.23 is built, since the o
 This sets up the rpmbuild directories in your $HOME.
 
 Clone the guiHive repository if you haven't yet.
-Check out an appropriate branch (e.g. feature/rpm-build).
+Check out an appropriate branch (e.g. server).
 
     git clone https://github.com/Ensembl/guiHive
-    cd guiHive
-    git checkout feature/rpm-build
-    cd ..
     mv guiHive guihive-1.0
     tar czf guihive-1.0.tgz guihive-1.0/
     mv guihive-1.0.tgz ~/rpmbuild/SOURCES/
@@ -50,7 +47,7 @@ The packages for Perl Proc::Daemon and guihive should now be ready in ~/rpmbuild
 
 # Starting the server
 
-Note that the server binary does not daemonize itself. You might want to use nohup.
+Note that the server binary does not daemonize itself. You might want to use nohup or a terminal multiplexer.
 
     export GUIHIVE_PROJECTDIR=/usr/local/share/guihive/
     guihive-server --port=8080
@@ -59,4 +56,5 @@ You may need to allow the listen port in firewalld. Depending on your set
 up, it should be something like this:
 
     sudo firewall-cmd --zone=public --add-port=8080/tcp --permanent
+    sudo firewall-cmd --reload
 
