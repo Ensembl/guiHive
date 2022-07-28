@@ -1,0 +1,14 @@
+[Unit]
+Description=GuiHive app service
+After=network.target
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=5
+User=ehive
+Environment="GUIHIVE_PROJECTDIR=/usr/local/share/guihive/"
+ExecStart=/usr/local/bin/guihive-server --port=8080
+
+[Install]
+WantedBy=multi-user.target

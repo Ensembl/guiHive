@@ -1,0 +1,4 @@
+
+# We enable guihive service by default
+
+enable guihive.service

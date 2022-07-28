@@ -1,16 +1,22 @@
 Name:           guihive
-Version:        1.0
+Version:        1.1
 Release:        1%{?dist}
-Summary:        guiHive - A Graphic User Interface for the eHive Production System
+Summary:        guiHive - A Graphical User Interface for the eHive Production System
 
 License:        Apachev2
 URL:            https://github.com/Ensembl/guihive
-Source0:        file:///home/arnie/pkgbuild/guihive-1.0.tgz
+Source0:        file://$HOME/pkgbuild/guihive-1.0.tgz
+Source1:        file://$HOME/pkgbuild/guihive.service
+Source2:        file://$HOME/pkgbuild/80-guihive.preset
+Source3:        file://$HOME/pkgbuild/guihive-postinst.sh
 
 Patch0:		guihive-server.patch
 
 BuildRequires:  make
 BuildRequires:  git
+%{?systemd_requires}
+BuildRequires:  systemd
+
 
 Requires: graphviz
 Requires: perl-GraphViz
@@ -42,6 +48,18 @@ make %{?_smp_mflags}
 
 %install
 %make_install
+install -D -m 644 %{SOURCE1} %{buildroot}%{_unitdir}/%{name}.service
+install -D -m 644 %{SOURCE2} %{buildroot}%{_presetdir}/80-%{name}.preset
+
+%post
+%{SOURCE3}
+%systemd_post %{name}.service
+
+%preun
+%systemd_preun %{name}.service
+
+%postun
+%systemd_postun %{name}.service
 
 %files
 /usr/local/bin/guihive-server
@@ -8800,3 +8818,5 @@ make %{?_smp_mflags}
 %changelog
 * Tue May 10 2022 Arne Becker <arne@ebi.ac.uk> - 1.0-1
 - guihive, initial RPM package
+* Wed Jul 27 2022 Arne Becker <arne@ebi.ac.uk> - 1.1-1
+- Set up guihive as systemd service
