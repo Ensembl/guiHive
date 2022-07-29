@@ -6,7 +6,7 @@ After=network.target
 Type=simple
 Restart=always
 RestartSec=5
-User=ehive
+User=guihive
 Environment="GUIHIVE_PROJECTDIR=/usr/local/share/guihive/"
 ExecStart=/usr/local/bin/guihive-server --port=8080
 

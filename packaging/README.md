@@ -26,12 +26,12 @@ Clone the guiHive repository if you haven't yet.
 Check out an appropriate branch (e.g. server).
 
     git clone https://github.com/Ensembl/guiHive
-    mv guiHive guihive-1.0
-    tar czf guihive-1.0.tgz guihive-1.0/
-    mv guihive-1.0.tgz ~/rpmbuild/SOURCES/
+    mv guiHive guihive
+    tar czf guihive.tgz guihive/
+    mv guihive.tgz ~/rpmbuild/SOURCES/
     curl -O https://cpan.metacpan.org/authors/id/A/AK/AKREAL/Proc-Daemon-0.23.tar.gz
     mv Proc-Daemon-0.23.tar.gz ~/rpmbuild/SOURCES/
-    cd guihive-1.0
+    cd guihive
     cp packaging/SPECS/* ~/rpmbuild/SPECS/
     cp packaging/SOURCES/* ~/rpmbuild/SOURCES/
     cd
@@ -47,14 +47,23 @@ The packages for Perl Proc::Daemon and guihive should now be ready in ~/rpmbuild
 
 # Starting the server
 
-Note that the server binary does not daemonize itself. You might want to use nohup or a terminal multiplexer.
+This package installs guihive as a systemd service. The server uses port 8080 by default as defined in the unit file.
+The service is usually started automatically but has to be started once after installation:
 
-    export GUIHIVE_PROJECTDIR=/usr/local/share/guihive/
-    guihive-server --port=8080
+    sudo systemctl start guihive
 
 You may need to allow the listen port in firewalld. Depending on your set
 up, it should be something like this:
 
     sudo firewall-cmd --zone=public --add-port=8080/tcp --permanent
     sudo firewall-cmd --reload
+
+# Debugging
+
+If you want to start the server by hand, you need to define the GUIHIVE\_PROJECTDIR environment variable.
+You can also pass the -d switch to enable debugging.
+Note that the server binary does not daemonize itself.
+
+    export GUIHIVE_PROJECTDIR=/usr/local/share/guihive/
+    guihive-server -d --port=8080
 
