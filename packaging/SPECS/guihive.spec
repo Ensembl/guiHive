@@ -4,7 +4,7 @@ Release:        1%{?dist}
 Summary:        guiHive - A Graphical User Interface for the eHive Production System
 
 License:        Apachev2
-URL:            https://github.com/Ensembl/guihive
+URL:            https://github.com/Ensembl/guiHive
 Source0:        file://$HOME/pkgbuild/guihive.tgz
 Source1:        file://$HOME/pkgbuild/guihive.service
 Source2:        file://$HOME/pkgbuild/80-guihive.preset
@@ -33,10 +33,11 @@ Requires: perl-Proc-Daemon = 0.23
 Requires: perl-Sub-Uplevel
 Requires: perl-Time-Piece
 Requires: perl-URI
-Requires: epel-release
 
 %description
 guiHive is a web-based interface to eHive.
+This package depends on other packages from the EPEL repository.
+Please install it with "yum install epel-release" before installing guihive.
 
 %prep
 %setup -q -n guihive
