@@ -66,6 +66,17 @@ exit 0
 %postun
 %systemd_postun %{name}.service
 
+%posttrans
+systemctl list-unit-files --type service | grep -F firewalld.service | grep -Fq enabled && systemctl status firewalld | grep -q 'Active: active'
+if [ $? -eq 0 ]; then
+        if [ -x /bin/firewall-cmd ]; then
+                /bin/firewall-cmd -q --zone=public --add-port=8080/tcp --permanent
+                /bin/firewall-cmd -q --reload
+        fi
+fi
+systemctl start %{name}
+
+
 %files
 /usr/lib/systemd/system-preset/80-guihive.preset
 /usr/lib/systemd/system/guihive.service
