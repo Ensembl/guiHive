@@ -6,7 +6,7 @@
 # docker run -p 8082:8080 -it guihive bash			## If you need to do any prior maintenance/tuning - do it in bash, then manually run the CMD below.
 
 # Build the server
-FROM golang:1.17 AS go_builder
+FROM golang:1.22 AS go_builder
 RUN apt-get update -y
 ADD server /tmp/server
 RUN cd /tmp/server && go build
