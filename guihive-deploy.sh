@@ -133,37 +133,16 @@ fi
 #    In case several branches are based on the same schema, we keep the latest.
 #    We also list specific guiHive versions that were made whilst developing eHive's master
 # $db_version  guihive_branch  ehive_branch
-#add_guihive_version "56" "db_version/56" "version/2.0"
-#add_guihive_version "62" "db_version/62" "version/2.2"
-#add_guihive_version "73" "db_version/73" "version/2.3"
 add_guihive_version "80" "db_version/80" "version/2.4"
 add_guihive_version "84" "db_version/84" "sql_schema_85_start~3"   # is_excluded analysis property
 add_guihive_version "88" "db_version/88" "sql_schema_89_start^"    # Switched to using HivePipeline and some AnalysisJobAdaptor methods, and added support for global max_retry_count
 add_guihive_version "89" "db_version/89" "sql_schema_90_start^"    # New semaphore table
 add_guihive_version "91" "db_version/91" "sql_schema_92_start^"    # Added analysis tags and comments
-add_guihive_version "97" "db_version/97" "version/2.8"             # Removed analysis_monitor table
+add_guihive_version "97" "db_version/97" "version/2.8"             # Removed analysis_monitor table from eHive schema
 
 # 2. Then we list all the other eHive database versions and link them to a compatible guiHive version
 
 # $db_version  $aliased_db_version
-## 57 to 61 are skipped
-#link_guihive_version "63" "62"
-#link_guihive_version "64" "73"
-#link_guihive_version "65" "73"
-#link_guihive_version "66" "73"
-#link_guihive_version "67" "73"
-#link_guihive_version "68" "73"
-#link_guihive_version "69" "73"
-#link_guihive_version "70" "73" "sql_schema_71_start^2"	# because the merge of the python branch has swapped its two parents
-#link_guihive_version "71" "73"
-#link_guihive_version "72" "73"
-## 73 is listed in the first section
-#link_guihive_version "74" "80"
-#link_guihive_version "75" "80" "44d78112401c21e2a704b8335dd4b247b85fe93a"  # this is the last "safe" commit for guiHive 75, i.e. before Utils/Graph starts printing extra messages on stdout
-#link_guihive_version "76" "80"
-#link_guihive_version "77" "80"
-#link_guihive_version "78" "80"
-#link_guihive_version "79" "80"
 # 80 is listed in the first section
 link_guihive_version "81" "80"
 link_guihive_version "82" "80"
@@ -180,8 +159,10 @@ link_guihive_version "92" "91"
 link_guihive_version "93" "91"  # even though the change in procedures.mysql is already pushed at sql_schema_94_start^4
 link_guihive_version "94" "91"
 link_guihive_version "95" "91"
-#link_guihive_version "96" "91" "main"
+link_guihive_version "95" "91"
 link_guihive_version "96" "91"
+# 97 is listed in the first section
+link_guihive_version "98" "97" "main"
 
 trap - EXIT
 
