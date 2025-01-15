@@ -131,6 +131,7 @@ add_guihive_version "84" "db_version/84" "sql_schema_85_start~3"   # is_excluded
 add_guihive_version "88" "db_version/88" "sql_schema_89_start^"    # Switched to using HivePipeline and some AnalysisJobAdaptor methods, and added support for global max_retry_count
 add_guihive_version "89" "db_version/89" "sql_schema_90_start^"    # New semaphore table
 add_guihive_version "91" "db_version/91" "sql_schema_92_start^"    # Added analysis tags and comments
+add_guihive_version "97" "db_version/97" "version/2.8"             # Added analysis tags and comments
 
 # 2. Then we list all the other eHive database versions and link them to a compatible guiHive version
 
@@ -169,7 +170,7 @@ link_guihive_version "92" "91"
 link_guihive_version "93" "91"  # even though the change in procedures.mysql is already pushed at sql_schema_94_start^4
 link_guihive_version "94" "91"
 link_guihive_version "95" "91"
-link_guihive_version "96" "91" "main"
+link_guihive_version "96" "91"
 
 trap - EXIT
 
