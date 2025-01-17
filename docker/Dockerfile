@@ -6,35 +6,33 @@
 # docker run -p 8082:8080 -it guihive bash			## If you need to do any prior maintenance/tuning - do it in bash, then manually run the CMD below.
 
 # Build the server
-FROM golang:1.17 AS go_builder
+FROM golang:1.22 AS go_builder
 RUN apt-get update -y
 ADD server /tmp/server
 RUN cd /tmp/server && go build
 
 # Deploy all the guiHive and eHive checkouts
-FROM alpine AS deployer
-RUN apk add git bash
-ADD guihive-deploy.sh /tmp/guiHive/
-RUN bash /tmp/guiHive/guihive-deploy.sh
-RUN rm -rf /tmp/guiHive/clones
+FROM ubuntu:noble AS deployer
+ARG DEBIAN_FRONTEND=noninteractive
+RUN apt-get update -y \
+ && apt-get install -y --no-install-recommends git build-essential ca-certificates cpanminus 
+ADD guihive-deploy.sh /tmp/guiHive/guihive-deploy.sh
+RUN /tmp/guiHive/guihive-deploy.sh
 
-FROM ensemblorg/ensembl-hive
-
-# Install common utilities and known guiHive Perl dependencies with apt (faster than CPAN)
+FROM ubuntu:noble
 ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update -y \
  && apt-get install -y --no-install-recommends \
+            graphviz ca-certificates \
             libhtml-parser-perl libhtml-template-perl libjson-perl libjson-pp-perl liburi-perl \
+            libdbi-perl libdbd-sqlite3-perl libdbd-mysql-perl libcapture-tiny-perl \
+            libdatetime-perl libproc-daemon-perl libemail-stuffer-perl libdatetime-format-iso8601-perl \
+            libgetopt-argvfile-perl libbsd-resource-perl libchart-gnuplot-perl libgraphviz-perl \
  && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-
+# requires 'Time::Piece'; requires 'IPC::Cmd'; are already included in ubuntu:noble
 ARG DEPLOY_LOCATION=/repo/guiHive
 COPY --from=deployer /tmp/guiHive $DEPLOY_LOCATION
-
-# Install guiHive and eHive Perl dependencies (across *all* versions) using eHive's helper scripts
-RUN /repo/ensembl-hive/docker/setup_cpan.Ubuntu-16.04.sh $DEPLOY_LOCATION $DEPLOY_LOCATION/ensembl-hive/*
-
 COPY --from=go_builder /tmp/server/server $DEPLOY_LOCATION/server/
 
 EXPOSE 8080
-
 CMD [ "/repo/guiHive/server/server" ]
