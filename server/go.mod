@@ -16,4 +16,4 @@
 
 module guihive.ensembl.org/server
 
-go 1.22
+go 1.20
