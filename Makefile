@@ -32,9 +32,14 @@ build.stamp: server/server
 	rm -f $(BUILD_DIR)/test_dep.pl
 	rm -f $(BUILD_DIR)/.gitignore
 	rm -f $(BUILD_DIR)/guihive-dev-deploy.sh
+	rm -f $(BUILD_DIR)/Makefile
 	rm -rf $(BUILD_DIR)/doc
+	rm -rf $(BUILD_DIR)/server
 	rm -rf $(BUILD_DIR)/clones
 	rm -rf $(BUILD_DIR)/docker
+	rm -rf $(BUILD_DIR)/packaging
+	rm -rf $(BUILD_DIR)/ensembl-hive/*/{.??*,Changelog,cpanfile,LICENSE,perlcriticrc,PULL_REQUEST_TEMPLATE.md,README.md,requirements.txt,setup.py,setup.pyc,setup.pyo,sql}
+	rm -rf $(BUILD_DIR)/versions/*/{.??*,README.md,LICENSE.txt}
 	find $(BUILD_DIR) -depth -name PipeConfig -type d -exec rm -rf {} \;
 	find $(BUILD_DIR) -depth -name Examples -type d -exec rm -rf {} \;
 	find $(BUILD_DIR) -depth -name RunnableDB -type d -exec rm -rf {} \;
